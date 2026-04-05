@@ -4,21 +4,25 @@ import { supabase } from '../lib/supabase';
 import { calculate } from '../engine/calculator';
 import { CATEGORIES, QUALITY, SITE_ACCESS, PROJECT_TYPE, RENOVATION_COMPLEXITY, COMPLEXITY, LAND_PROCUREMENT, LAND_SLOPE, BREAKDOWN_ELEMENTS } from '../engine/rates';
 
-const card = { background:'#fff',borderRadius:'14px',padding:'1.5rem',border:'1px solid #eeede8',marginBottom:'1rem' };
-const lbl  = { display:'block',fontSize:'0.7rem',fontWeight:'600',color:'#999',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'0.5rem' };
-const sel  = { width:'100%',padding:'0.6rem 0.875rem',border:'1.5px solid #e5e5e3',borderRadius:'10px',fontSize:'0.875rem',background:'#fff',color:'#1a1a18',fontFamily:'inherit',outline:'none',cursor:'pointer' };
-const divider = { borderTop:'1px solid #f0f0ee',margin:'1.25rem 0' };
-const PRO_BADGE = <span style={{marginLeft:'5px',fontSize:'0.6rem',background:'#f0f0ee',color:'#aaa',padding:'1px 5px',borderRadius:'6px',verticalAlign:'middle',fontWeight:'600'}}>PRO</span>;
+const card={background:'#fff',borderRadius:'14px',padding:'1.5rem',border:'1px solid #eeede8',marginBottom:'1rem'};
+const lbl={display:'block',fontSize:'0.7rem',fontWeight:'600',color:'#999',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'0.5rem'};
+const sel={width:'100%',padding:'0.6rem 0.875rem',border:'1.5px solid #e5e5e3',borderRadius:'10px',fontSize:'0.875rem',background:'#fff',color:'#1a1a18',fontFamily:'inherit',outline:'none',cursor:'pointer'};
+const divider={borderTop:'1px solid #f0f0ee',margin:'1.25rem 0'};
+const rowStyle={display:'flex',justifyContent:'space-between',padding:'0.45rem 0',borderBottom:'1px solid #f5f5f3',fontSize:'0.82rem'};
+const rowLbl={color:'#555'};
+const rowVal={fontWeight:'600',color:'#1a1a18'};
+const PRO_BADGE=<span style={{marginLeft:'5px',fontSize:'0.6rem',background:'#f0f0ee',color:'#aaa',padding:'1px 5px',borderRadius:'6px',verticalAlign:'middle',fontWeight:'600'}}>PRO</span>;
 
-function fmt(n){ if(!n||isNaN(n)||n===0) return 'R 0'; return 'R '+Math.round(n).toLocaleString('en-ZA'); }
-function pctFmt(p){ return (p*100).toFixed(1)+'%'; }
+function fmtZAR(n){if(!n||isNaN(n)||n===0)return 'R 0';return 'R '+Math.round(n).toLocaleString('en-ZA');}
+function pctFmt(p){return (p*100).toFixed(1)+'%';}
 
 function BtnGroup({label,value,onChange,options,locked,cols,getDesc}){
   const desc=getDesc?getDesc(value):options.find(o=>o.value===value)?.desc||null;
+  const gridCols=cols||options.length;
   return(
     <div style={{marginBottom:'1.1rem'}}>
       {label&&<label style={lbl}>{label}{locked&&PRO_BADGE}</label>}
-      <div style={{display:'grid',gridTemplateColumns:`repeat(${cols||options.length},1fr)`,gap:'6px'}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat('+gridCols+', 1fr)',gap:'6px'}}>
         {options.map(o=>(
           <button key={o.value} onClick={()=>!locked&&onChange(o.value)} disabled={locked}
             style={{padding:'0.5rem 0.35rem',borderRadius:'9px',border:value===o.value?'1.5px solid #1a1a18':'1.5px solid #e5e5e3',background:value===o.value?'#1a1a18':'#fff',color:value===o.value?'#fff':'#666',fontSize:'0.78rem',fontWeight:'500',cursor:locked?'not-allowed':'pointer',fontFamily:'inherit',transition:'all 0.12s',opacity:locked?0.45:1}}>
@@ -36,13 +40,13 @@ function Slider({label,value,min,max,step,onChange,fmtFn,locked}){
   return(
     <div style={{marginBottom:'1.1rem',opacity:locked?0.4:1}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'0.5rem'}}>
-        <label style={{...lbl,marginBottom:0}}>{label}{locked&&PRO_BADGE}</label>
+        {label&&<label style={{...lbl,marginBottom:0}}>{label}{locked&&PRO_BADGE}</label>}
         <span style={{fontSize:'0.875rem',fontWeight:'600',color:'#1a1a18'}}>{fmtFn?fmtFn(value):value}</span>
       </div>
       <div style={{position:'relative',height:'28px',display:'flex',alignItems:'center'}}>
         <div style={{position:'absolute',left:0,right:0,height:'4px',background:'#eee',borderRadius:'4px'}}/>
         <div style={{position:'absolute',left:0,width:pct+'%',height:'4px',background:locked?'#ddd':'#1a1a18',borderRadius:'4px'}}/>
-        <div style={{position:'absolute',left:`calc(${pct}% - 10px)`,width:'20px',height:'20px',background:'#fff',border:`2px solid ${locked?'#ddd':'#1a1a18'}`,borderRadius:'50%',pointerEvents:'none',boxShadow:'0 1px 4px rgba(0,0,0,0.12)',zIndex:1}}/>
+        <div style={{position:'absolute',left:'calc('+pct+'% - 10px)',width:'20px',height:'20px',background:'#fff',border:'2px solid '+(locked?'#ddd':'#1a1a18'),borderRadius:'50%',pointerEvents:'none',boxShadow:'0 1px 4px rgba(0,0,0,0.12)',zIndex:1}}/>
         <input type="range" min={min} max={max} step={step} value={value} disabled={locked}
           onChange={e=>!locked&&onChange(parseFloat(e.target.value))}
           style={{position:'absolute',width:'100%',opacity:0,height:'28px',cursor:locked?'not-allowed':'pointer',margin:0,zIndex:2}}/>
@@ -64,16 +68,44 @@ function NumBox({label,value,onChange,suffix}){
   );
 }
 
-const qualityOpts=[...Object.entries(QUALITY).map(([k,v])=>({value:k,label:v.label}))];
-const projectOpts=[{value:'New',label:'New',desc:'Full new construction on a clear site'},{value:'Renovation',label:'Renovation',desc:'Works to existing structure'},{value:'Addition',label:'Addition',desc:'Adding to existing building (×1.15)'}];
+function RateRow({rawRate,adjustedRate,adjustField,toggleField,adjValue,adjToggle,isPro,upd}){
+  if(!isPro||!rawRate) return null;
+  return(
+    <div style={{background:'#f9f9f7',borderRadius:'10px',padding:'0.65rem 0.875rem',marginTop:'0.35rem',marginBottom:'0.75rem'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <span style={{fontSize:'0.72rem',color:'#aaa'}}>AECOM base rate</span>
+        <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+          {adjToggle&&adjValue!==0&&<span style={{fontSize:'0.72rem',color:adjValue>0?'#27ae60':'#e74c3c',fontWeight:'600'}}>{adjValue>0?'+':''}{adjValue}%</span>}
+          <span style={{fontSize:'0.82rem',fontWeight:'600',color:'#1a1a18'}}>{fmtZAR(adjustedRate)} /m²</span>
+          <label style={{display:'flex',alignItems:'center',gap:'4px',cursor:'pointer',fontSize:'0.7rem',color:'#aaa'}}>
+            <input type="checkbox" checked={adjToggle} onChange={e=>upd(toggleField,e.target.checked)} style={{cursor:'pointer'}}/>
+            Adjust
+          </label>
+        </div>
+      </div>
+      {adjToggle&&(
+        <div style={{marginTop:'0.5rem'}}>
+          <Slider label="" value={adjValue} min={-30} max={30} step={1} onChange={v=>upd(adjustField,v)} fmtFn={v=>(v>0?'+':'')+v+'%'}/>
+          <div style={{display:'flex',justifyContent:'space-between',fontSize:'0.72rem',color:'#aaa',marginTop:'-0.5rem'}}>
+            <span>-30%</span>
+            <span style={{color:'#1a1a18',fontWeight:'600'}}>{fmtZAR(rawRate*(1+adjValue/100))} /m²</span>
+            <span>+30%</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const qualityOpts=Object.entries(QUALITY).map(([k,v])=>({value:k,label:v.label}));
+const projectOpts=[{value:'New',label:'New',desc:'Full new construction on a clear site'},{value:'Renovation',label:'Renovation',desc:'Works to existing structure'},{value:'Addition',label:'Addition',desc:'Adding to existing building (x1.15)'}];
 const renovOpts=Object.entries(RENOVATION_COMPLEXITY).map(([k,v])=>({value:k,label:v.label,desc:v.description}));
 const complexityOpts=[{value:'Low Complexity',label:'Low',desc:'Simple, functional, low-tech'},{value:'Medium Complexity',label:'Medium',desc:'Standard structural works'},{value:'High Complexity',label:'High',desc:'Complex structural requirements'}];
-const siteOpts=[{value:'Urban Setting',label:'Urban',desc:'0–10 km from city'},{value:'Suburban Setting',label:'Suburban',desc:'10–30 km from city'},{value:'Peri-Urban Setting',label:'Peri-Urban',desc:'30–60 km from city'},{value:'Rural Setting',label:'Rural',desc:'60–150 km from city'},{value:'Exurban Setting',label:'Exurban',desc:'150–300 km from city'},{value:'Specialized/Natural Setting',label:'Specialized',desc:'Remote or restricted access'}];
-const slopeOpts=[{value:'Flat Land (0-5%)',label:'Flat',desc:'0–5% slope'},{value:'Moderately Sloped Land (5-15%)',label:'Moderate',desc:'5–15% slope'},{value:'Steep / Hilly Land (15%+)',label:'Steep',desc:'15%+ slope'},{value:'Irregular / Constrained Land',label:'Irregular',desc:'Rocky, wetlands, constrained'}];
+const siteOpts=[{value:'Urban Setting',label:'Urban',desc:'0-10 km from city'},{value:'Suburban Setting',label:'Suburban',desc:'10-30 km from city'},{value:'Peri-Urban Setting',label:'Peri-Urban',desc:'30-60 km from city'},{value:'Rural Setting',label:'Rural',desc:'60-150 km from city'},{value:'Exurban Setting',label:'Exurban',desc:'150-300 km from city'},{value:'Specialized/Natural Setting',label:'Specialized',desc:'Remote or restricted access'}];
+const slopeOpts=[{value:'Flat Land (0-5%)',label:'Flat',desc:'0-5% slope'},{value:'Moderately Sloped Land (5-15%)',label:'Moderate',desc:'5-15% slope'},{value:'Steep / Hilly Land (15%+)',label:'Steep',desc:'15%+ slope'},{value:'Irregular / Constrained Land',label:'Irregular',desc:'Rocky or constrained'}];
 const landOpts=Object.entries(LAND_PROCUREMENT).map(([k,v])=>({value:k,label:v.label}));
 const categoryOpts=CATEGORIES.map(c=>({value:c.key,label:c.label}));
-const qualityDesc={Low:'Budget spec (×0.85)',Medium:'Standard spec (×1.0)',High:'High-end (×1.25)',Premium:'Luxury spec (×1.6)'};
-
+const qualityDesc={Low:'Budget spec (x0.85)',Medium:'Standard spec (x1.0)',High:'High-end (x1.25)',Premium:'Luxury spec (x1.6)'};
 const DEFAULT_PCTS=BREAKDOWN_ELEMENTS.map(e=>e.pct);
 
 const DEFAULT={
@@ -86,6 +118,9 @@ const DEFAULT={
   landProcurementType:'N/A',landArea:0,landSlopeKey:'Flat Land (0-5%)',
   escalationRate:7,estimatedStartDate:null,includeEscalation:false,
   useCustomSplit:false,customElementPcts:DEFAULT_PCTS,
+  adjustRate1:false,rate1Adjustment:0,
+  adjustRate2:false,rate2Adjustment:0,
+  adjustRate3:false,rate3Adjustment:0,
 };
 
 export default function Calculator(){
@@ -108,7 +143,7 @@ export default function Calculator(){
   useEffect(()=>{if(isPro)setResult(calculate(inputs));},[inputs,isPro]);
 
   function upd(field,val){setInputs(p=>({...p,[field]:val}));setSaved(false);}
-  function updCat(n,catKey){const cat=CATEGORIES.find(c=>c.key===catKey);setInputs(p=>({...p,[`use${n}Category`]:catKey,[`use${n}Subtype`]:cat?.subtypes[0]?.key||''}));}
+  function updCat(n,catKey){const cat=CATEGORIES.find(c=>c.key===catKey);setInputs(p=>({...p,['use'+n+'Category']:catKey,['use'+n+'Subtype']:cat?.subtypes[0]?.key||''}));}
 
   function setAlloc1(pct){
     const v=pct/100;
@@ -129,13 +164,7 @@ export default function Calculator(){
     if(n===3){setNumCats(2);setInputs(p=>({...p,use3Category:null,use3Subtype:null,use3Allocation:0}));}
     else{setNumCats(1);setInputs(p=>({...p,use2Category:null,use2Subtype:null,use2Allocation:0,use3Category:null,use3Subtype:null,use3Allocation:0,use1Allocation:1}));}
   }
-
-  function updateCustomPct(i,val){
-    const arr=[...inputs.customElementPcts];
-    arr[i]=Math.max(0,Math.min(1,parseFloat(val)||0));
-    upd('customElementPcts',arr);
-  }
-
+  function updateCustomPct(i,val){const arr=[...inputs.customElementPcts];arr[i]=Math.max(0,Math.min(1,parseFloat(val)||0));upd('customElementPcts',arr);}
   function handleCalc(){setResult(calculate(inputs));setSaved(false);}
 
   async function handleSave(){
@@ -148,7 +177,6 @@ export default function Calculator(){
       quality_multiplier:result.qualityMultiplier,site_access_multiplier:result.siteMultiplier,
       project_type_multiplier:result.projectTypeMultiplier,complexity_multiplier:result.complexityMultiplier,
       land_type:inputs.landProcurementType,land_area:inputs.landArea,
-      slope_multiplier:result.earthworksMultiplier,
       contingency_pct:inputs.contingencyPct*100,profit_pct:inputs.profitPct*100,
       fees_pct:inputs.feesPct*100,vat_pct:inputs.vatPct*100,
       base_construction_cost:result.constructionCost,
@@ -171,17 +199,13 @@ export default function Calculator(){
   const customPctOk=Math.abs(customPctSum-1)<0.005;
   const showEscalation=inputs.includeEscalation&&result?.escalationYears?.length>0;
 
-  const rowStyle={display:'flex',justifyContent:'space-between',padding:'0.45rem 0',borderBottom:'1px solid #f5f5f3',fontSize:'0.82rem'};
-  const rowLbl={color:'#555'};
-  const rowVal={fontWeight:'600',color:'#1a1a18'};
-
   return(
     <div style={{minHeight:'100vh',background:'#f5f5f3',fontFamily:'-apple-system, BlinkMacSystemFont, sans-serif'}}>
 
       <div style={{background:'#fff',borderBottom:'1px solid #eeede8',padding:'0.875rem 1.5rem',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100}}>
         <span style={{fontWeight:'700',fontSize:'1rem',letterSpacing:'-0.02em'}}>AprIQ</span>
         <div style={{display:'flex',alignItems:'center',gap:'0.875rem'}}>
-          {trialOk&&daysLeft<=5&&<span style={{fontSize:'0.72rem',background:'#fff3cd',color:'#856404',padding:'2px 8px',borderRadius:'8px'}}>Trial — {daysLeft}d left</span>}
+          {trialOk&&daysLeft<=5&&<span style={{fontSize:'0.72rem',background:'#fff3cd',color:'#856404',padding:'2px 8px',borderRadius:'8px'}}>Trial {daysLeft}d left</span>}
           <span style={{fontSize:'0.72rem',background:isPro?'#eaf3de':'#f0f0ee',color:isPro?'#27500a':'#aaa',padding:'2px 8px',borderRadius:'8px',fontWeight:'600'}}>{tier==='pro'?'Pro':trialOk?'Trial':'Free'}</span>
           <span style={{fontSize:'0.78rem',color:'#bbb'}}>{profile?.full_name||user?.email}</span>
           <button onClick={handleLogout} style={{fontSize:'0.78rem',color:'#bbb',background:'none',border:'none',cursor:'pointer'}}>Sign out</button>
@@ -190,9 +214,7 @@ export default function Calculator(){
 
       <div style={{maxWidth:'1140px',margin:'0 auto',padding:'1.5rem 1.25rem',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',alignItems:'start'}}>
 
-        {/* LEFT */}
         <div>
-          {/* BUILDING */}
           <div style={card}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1.25rem'}}>
               <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18'}}>Building</span>
@@ -202,37 +224,42 @@ export default function Calculator(){
                 </button>
               )}
             </div>
+
             <label style={lbl}>Category</label>
             <select value={inputs.use1Category} onChange={e=>updCat(1,e.target.value)} style={{...sel,marginBottom:'0.85rem'}}>
               {categoryOpts.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             <label style={lbl}>Building type</label>
-            <select value={inputs.use1Subtype} onChange={e=>upd('use1Subtype',e.target.value)} style={{...sel,marginBottom:numCats>1?'0.85rem':'0'}}>
+            <select value={inputs.use1Subtype} onChange={e=>upd('use1Subtype',e.target.value)} style={{...sel,marginBottom:'0.5rem'}}>
               {subtypes1.map(s=><option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
-            {numCats>1&&<Slider label="Allocation — Use 1" value={Math.round(inputs.use1Allocation*100)} min={0} max={100} step={1} onChange={setAlloc1} fmtFn={v=>v+'%'}/>}
+            <RateRow rawRate={result?.rate1Raw} adjustedRate={result?.rate1} adjustField="rate1Adjustment" toggleField="adjustRate1" adjValue={inputs.rate1Adjustment} adjToggle={inputs.adjustRate1} isPro={isPro} upd={upd}/>
+            {numCats>1&&<Slider label="Allocation - Use 1" value={Math.round(inputs.use1Allocation*100)} min={0} max={100} step={1} onChange={setAlloc1} fmtFn={v=>v+'%'}/>}
+
             {numCats>=2&&(<>
               <div style={divider}/>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.75rem'}}>
                 <span style={{fontSize:'0.7rem',fontWeight:'600',color:'#bbb',textTransform:'uppercase',letterSpacing:'0.05em'}}>Use 2</span>
-                <button onClick={()=>removeCategory(2)} style={{background:'none',border:'none',color:'#ccc',cursor:'pointer',fontSize:'1.1rem',lineHeight:1}}>×</button>
+                <button onClick={()=>removeCategory(2)} style={{background:'none',border:'none',color:'#ccc',cursor:'pointer',fontSize:'1.1rem',lineHeight:1}}>x</button>
               </div>
               <label style={lbl}>Category</label>
               <select value={inputs.use2Category||''} onChange={e=>updCat(2,e.target.value)} style={{...sel,marginBottom:'0.85rem'}}>
                 {categoryOpts.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
               <label style={lbl}>Building type</label>
-              <select value={inputs.use2Subtype||''} onChange={e=>upd('use2Subtype',e.target.value)} style={{...sel,marginBottom:'0.85rem'}}>
+              <select value={inputs.use2Subtype||''} onChange={e=>upd('use2Subtype',e.target.value)} style={{...sel,marginBottom:'0.5rem'}}>
                 {subtypes2.map(s=><option key={s.key} value={s.key}>{s.label}</option>)}
               </select>
-              {numCats===2?<div style={{display:'flex',justifyContent:'space-between',marginBottom:'0.25rem'}}><span style={lbl}>Allocation — Use 2</span><span style={{fontSize:'0.875rem',fontWeight:'600'}}>{Math.round(inputs.use2Allocation*100)}%</span></div>
-                :<Slider label="Allocation — Use 2" value={Math.round(inputs.use2Allocation*100)} min={0} max={Math.round((1-inputs.use1Allocation)*100)} step={1} onChange={setAlloc2} fmtFn={v=>v+'%'}/>}
+              <RateRow rawRate={result?.rate2Raw} adjustedRate={result?.rate2} adjustField="rate2Adjustment" toggleField="adjustRate2" adjValue={inputs.rate2Adjustment} adjToggle={inputs.adjustRate2} isPro={isPro} upd={upd}/>
+              {numCats===2?<div style={{display:'flex',justifyContent:'space-between',marginBottom:'0.25rem'}}><span style={lbl}>Allocation - Use 2</span><span style={{fontSize:'0.875rem',fontWeight:'600'}}>{Math.round(inputs.use2Allocation*100)}%</span></div>
+                :<Slider label="Allocation - Use 2" value={Math.round(inputs.use2Allocation*100)} min={0} max={Math.round((1-inputs.use1Allocation)*100)} step={1} onChange={setAlloc2} fmtFn={v=>v+'%'}/>}
             </>)}
+
             {numCats>=3&&(<>
               <div style={divider}/>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.75rem'}}>
                 <span style={{fontSize:'0.7rem',fontWeight:'600',color:'#bbb',textTransform:'uppercase',letterSpacing:'0.05em'}}>Use 3</span>
-                <button onClick={()=>removeCategory(3)} style={{background:'none',border:'none',color:'#ccc',cursor:'pointer',fontSize:'1.1rem',lineHeight:1}}>×</button>
+                <button onClick={()=>removeCategory(3)} style={{background:'none',border:'none',color:'#ccc',cursor:'pointer',fontSize:'1.1rem',lineHeight:1}}>x</button>
               </div>
               <label style={lbl}>Category</label>
               <select value={inputs.use3Category||''} onChange={e=>updCat(3,e.target.value)} style={{...sel,marginBottom:'0.85rem'}}>
@@ -242,20 +269,21 @@ export default function Calculator(){
               <select value={inputs.use3Subtype||''} onChange={e=>upd('use3Subtype',e.target.value)} style={{...sel,marginBottom:'0.5rem'}}>
                 {subtypes3.map(s=><option key={s.key} value={s.key}>{s.label}</option>)}
               </select>
-              <div style={{display:'flex',justifyContent:'space-between'}}><span style={lbl}>Allocation — Use 3</span><span style={{fontSize:'0.875rem',fontWeight:'600'}}>{Math.round(inputs.use3Allocation*100)}%</span></div>
+              <RateRow rawRate={result?.rate3Raw} adjustedRate={result?.rate3} adjustField="rate3Adjustment" toggleField="adjustRate3" adjValue={inputs.rate3Adjustment} adjToggle={inputs.adjustRate3} isPro={isPro} upd={upd}/>
+              <div style={{display:'flex',justifyContent:'space-between'}}><span style={lbl}>Allocation - Use 3</span><span style={{fontSize:'0.875rem',fontWeight:'600'}}>{Math.round(inputs.use3Allocation*100)}%</span></div>
             </>)}
-            {numCats>1&&(<div style={{marginTop:'0.75rem',borderRadius:'8px',padding:'0.45rem 0.875rem',background:allocOk?'#eaf3de':'#fdecea',fontSize:'0.78rem',color:allocOk?'#27500a':'#c0392b'}}>{allocOk?'✓ Allocations total 100%':`⚠ Allocations total ${Math.round(allocTotal*100)}%`}</div>)}
+
+            {numCats>1&&(<div style={{marginTop:'0.75rem',borderRadius:'8px',padding:'0.45rem 0.875rem',background:allocOk?'#eaf3de':'#fdecea',fontSize:'0.78rem',color:allocOk?'#27500a':'#c0392b'}}>{allocOk?'Allocations total 100%':'Allocations total '+Math.round(allocTotal*100)+'%'}</div>)}
             <div style={divider}/>
             <BtnGroup label="Project type" value={inputs.projectTypeKey} onChange={v=>upd('projectTypeKey',v)} options={projectOpts} getDesc={v=>projectOpts.find(o=>o.value===v)?.desc}/>
             {inputs.projectTypeKey==='Renovation'?(<>
-              <NumBox label="Total floor area" value={inputs.floorArea} onChange={v=>upd('floorArea',v)} suffix="m²"/>
-              <NumBox label="Renovation area" value={inputs.renovationArea} onChange={v=>upd('renovationArea',v)} suffix="m²"/>
-              {inputs.renovationArea>0&&inputs.floorArea>inputs.renovationArea&&(<p style={{fontSize:'0.72rem',color:'#aaa',marginTop:'-0.5rem',marginBottom:'0.75rem'}}>{inputs.floorArea-inputs.renovationArea} m² new · {inputs.renovationArea} m² renovation</p>)}
+              <NumBox label="Total floor area" value={inputs.floorArea} onChange={v=>upd('floorArea',v)} suffix="m2"/>
+              <NumBox label="Renovation area" value={inputs.renovationArea} onChange={v=>upd('renovationArea',v)} suffix="m2"/>
+              {inputs.renovationArea>0&&inputs.floorArea>inputs.renovationArea&&(<p style={{fontSize:'0.72rem',color:'#aaa',marginTop:'-0.5rem',marginBottom:'0.75rem'}}>{inputs.floorArea-inputs.renovationArea} m2 new - {inputs.renovationArea} m2 renovation</p>)}
               <BtnGroup label="Renovation complexity" value={inputs.renovationComplexityKey} onChange={v=>upd('renovationComplexityKey',v)} options={renovOpts} getDesc={v=>renovOpts.find(o=>o.value===v)?.desc}/>
-            </>):(<NumBox label="Floor area" value={inputs.floorArea} onChange={v=>upd('floorArea',v)} suffix="m²"/>)}
+            </>):(<NumBox label="Floor area" value={inputs.floorArea} onChange={v=>upd('floorArea',v)} suffix="m2"/>)}
           </div>
 
-          {/* PROJECT FACTORS */}
           <div style={card}>
             <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1.25rem'}}>Project factors</span>
             <BtnGroup label="Quality" value={inputs.qualityKey} onChange={v=>upd('qualityKey',v)} options={qualityOpts} getDesc={v=>qualityDesc[v]}/>
@@ -263,7 +291,6 @@ export default function Calculator(){
             <BtnGroup label="Building complexity" value={inputs.complexityKey} onChange={v=>upd('complexityKey',v)} options={complexityOpts} getDesc={v=>complexityOpts.find(o=>o.value===v)?.desc}/>
           </div>
 
-          {/* LAND */}
           <div style={card}>
             <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1.25rem'}}>Land</span>
             <label style={lbl}>Procurement type</label>
@@ -271,12 +298,11 @@ export default function Calculator(){
               {landOpts.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             {inputs.landProcurementType!=='N/A'&&(<>
-              <NumBox label="Land area" value={inputs.landArea} onChange={v=>upd('landArea',v)} suffix="m²"/>
+              <NumBox label="Land area" value={inputs.landArea} onChange={v=>upd('landArea',v)} suffix="m2"/>
               <BtnGroup label="Land type / slope" value={inputs.landSlopeKey} onChange={v=>upd('landSlopeKey',v)} options={slopeOpts} cols={2} getDesc={v=>slopeOpts.find(o=>o.value===v)?.desc}/>
             </>)}
           </div>
 
-          {/* FINANCIALS */}
           <div style={card}>
             <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1.25rem'}}>Financial inputs</span>
             <Slider label="Contingency" value={Math.round(inputs.contingencyPct*100)} min={0} max={30} step={0.5} onChange={v=>upd('contingencyPct',v/100)} fmtFn={v=>v+'%'}/>
@@ -307,7 +333,6 @@ export default function Calculator(){
           {!isPro&&(<button onClick={handleCalc} style={{width:'100%',padding:'0.875rem',background:'#1a1a18',color:'#fff',border:'none',borderRadius:'12px',fontSize:'0.9rem',fontWeight:'600',cursor:'pointer',marginBottom:'1.5rem',fontFamily:'inherit'}}>Calculate estimate</button>)}
         </div>
 
-        {/* RIGHT — SUMMARY */}
         <div style={{position:'sticky',top:'4.5rem'}}>
           {!result?(
             <div style={{...card,textAlign:'center',padding:'3rem 1.5rem'}}>
@@ -315,14 +340,12 @@ export default function Calculator(){
             </div>
           ):(<>
 
-            {/* BLOCK 1: TOTAL */}
             <div style={{background:'#1a1a18',borderRadius:'14px',padding:'1.5rem',marginBottom:'1rem',color:'#fff'}}>
               <p style={{fontSize:'0.68rem',color:'#888',marginBottom:'0.3rem',textTransform:'uppercase',letterSpacing:'0.05em'}}>Total project cost</p>
-              <p style={{fontSize:'2rem',fontWeight:'700',letterSpacing:'-1px',lineHeight:1.1,color:'#fff'}}>{fmt(result.totalProjectCost)}</p>
+              <p style={{fontSize:'2rem',fontWeight:'700',letterSpacing:'-1px',lineHeight:1.1,color:'#fff'}}>{fmtZAR(result.totalProjectCost)}</p>
               {isPro&&<p style={{fontSize:'0.68rem',color:'#555',marginTop:'0.5rem'}}>Updates live as you adjust inputs</p>}
             </div>
 
-            {/* BLOCK 2: ELEMENT BREAKDOWN */}
             <div style={card}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
                 <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18'}}>Element breakdown</span>
@@ -338,84 +361,93 @@ export default function Calculator(){
                     <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
                       <input type="number" min={0} max={100} step={0.1} value={Math.round(el.effectivePct*1000)/10}
                         onChange={e=>updateCustomPct(i,parseFloat(e.target.value)/100)}
-                        style={{width:'60px',padding:'2px 6px',border:'1px solid #e5e5e3',borderRadius:'6px',fontSize:'0.78rem',textAlign:'right',fontFamily:'inherit'}}/>
+                        style={{width:'56px',padding:'2px 6px',border:'1px solid #e5e5e3',borderRadius:'6px',fontSize:'0.78rem',textAlign:'right',fontFamily:'inherit'}}/>
                       <span style={{color:'#aaa',fontSize:'0.75rem'}}>%</span>
                     </div>
                   ):(
                     <span style={{color:'#aaa',fontSize:'0.75rem',minWidth:'36px',textAlign:'right'}}>{pctFmt(el.defaultPct)}</span>
                   )}
-                  <span style={{fontWeight:'600',color:'#1a1a18',minWidth:'90px',textAlign:'right'}}>{fmt(el.amount)}</span>
+                  <span style={{fontWeight:'600',color:'#1a1a18',minWidth:'90px',textAlign:'right'}}>{fmtZAR(el.amount)}</span>
                 </div>
               ))}
               {inputs.useCustomSplit&&(
                 <div style={{marginTop:'0.75rem',borderRadius:'8px',padding:'0.45rem 0.875rem',background:customPctOk?'#eaf3de':'#fdecea',fontSize:'0.78rem',color:customPctOk?'#27500a':'#c0392b'}}>
-                  {customPctOk?`✓ Element split totals 100%`:`⚠ Element split totals ${(customPctSum*100).toFixed(1)}% — must equal 100%`}
+                  {customPctOk?'Element split totals 100%':'Element split totals '+(customPctSum*100).toFixed(1)+'% - must equal 100%'}
                 </div>
               )}
               <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18'}}>
-                <span>Construction cost</span><span>{fmt(result.constructionCost)}</span>
+                <span>Construction cost</span><span>{fmtZAR(result.constructionCost)}</span>
               </div>
             </div>
 
-            {/* BLOCK 3: FINANCIAL STACK */}
             <div style={card}>
               <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1rem'}}>Financial additions</span>
               {[
-                {label:`Contingency (${Math.round(inputs.contingencyPct*100)}%)`,value:result.contingencyAmount},
-                {label:`Contractor profit (${Math.round(inputs.profitPct*100)}%)`,value:result.contractorProfit},
+                {label:'Contingency ('+Math.round(inputs.contingencyPct*100)+'%)',value:result.contingencyAmount},
+                {label:'Contractor profit ('+Math.round(inputs.profitPct*100)+'%)',value:result.contractorProfit},
                 {label:'Preliminaries (5%)',value:result.preliminaries},
-                {label:`Professional fees (${Math.round(inputs.feesPct*100)}%)`,value:result.professionalFees},
-                {label:`VAT (${Math.round(inputs.vatPct*100)}%)`,value:result.vatAmount},
-              ].map(r=>(<div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={rowVal}>{fmt(r.value)}</span></div>))}
+                {label:'Professional fees ('+Math.round(inputs.feesPct*100)+'%)',value:result.professionalFees},
+                {label:'VAT ('+Math.round(inputs.vatPct*100)+'%)',value:result.vatAmount},
+              ].map(r=>(<div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={rowVal}>{fmtZAR(r.value)}</span></div>))}
             </div>
 
-            {/* BLOCK 4: TOTAL */}
             <div style={{...card,background:'#f9f9f7'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <span style={{fontSize:'0.95rem',fontWeight:'700',color:'#1a1a18'}}>Total project cost</span>
-                <span style={{fontSize:'1.1rem',fontWeight:'700',color:'#1a1a18'}}>{fmt(result.totalProjectCost)}</span>
+                <span style={{fontSize:'1.1rem',fontWeight:'700',color:'#1a1a18'}}>{fmtZAR(result.totalProjectCost)}</span>
               </div>
             </div>
 
-            {/* BLOCK 5: ESCALATION */}
             {showEscalation&&(
               <div style={card}>
                 <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'0.25rem'}}>Escalation at {inputs.escalationRate}% p.a.</span>
                 <p style={{fontSize:'0.72rem',color:'#aaa',marginBottom:'1rem'}}>Base estimate: {new Date().toLocaleDateString('en-ZA',{year:'numeric',month:'long'})}</p>
-                {result.escalationYears.map(y=>(<div key={y.year} style={rowStyle}><span style={rowLbl}>{y.label}</span><span style={rowVal}>{fmt(y.total)}</span></div>))}
+                {result.escalationYears.map(y=>(<div key={y.year} style={rowStyle}><span style={rowLbl}>{y.label}</span><span style={rowVal}>{fmtZAR(y.total)}</span></div>))}
                 <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',fontSize:'0.9rem',fontWeight:'700',color:'#1a1a18'}}>
-                  <span>Escalated total</span><span>{fmt(result.escalatedTotal)}</span>
+                  <span>Escalated total</span><span>{fmtZAR(result.escalatedTotal)}</span>
                 </div>
               </div>
             )}
 
-            {/* BLOCK 6: ANALYSIS */}
             <div style={card}>
-              <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1rem'}}>Rate analysis</span>
+              <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1rem'}}>Rate summary</span>
               {[
-                {label:'Original base rate',value:fmt(result.weightedBaseRate)+' / m²'},
-                {label:'Quality multiplier',value:'×'+result.qualityMultiplier},
-                {label:'Site access multiplier',value:'×'+result.siteMultiplier},
-                {label:'Complexity multiplier',value:'×'+result.complexityMultiplier},
-                {label:'Project type multiplier',value:'×'+result.projectTypeMultiplier},
-                inputs.useCustomSplit?{label:'Element scope ratio',value:(result.elementScopeRatio*100).toFixed(1)+'%'}:null,
-                {label:'Adjusted base rate',value:fmt(result.adjustedWeightedBaseRate*result.qualityMultiplier*result.siteMultiplier*result.complexityMultiplier)+' / m²'},
-                inputs.floorArea>0?{label:'Effective rate (incl. all)',value:fmt(result.adjustedRatePerM2)+' / m²'}:null,
-              ].filter(Boolean).map(r=>(<div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={{...rowVal,color:'#444'}}>{r.value}</span></div>))}
+                {label:'AECOM base rate ('+inputs.use1Subtype+')',value:fmtZAR(result.rate1Raw)+' /m2'},
+                inputs.rate1Adjustment!==0?{label:'Rate adjustment',value:(inputs.rate1Adjustment>0?'+':'')+inputs.rate1Adjustment+'%'}:null,
+                {label:'Quality - '+inputs.qualityKey,value:'x'+result.qualityMultiplier},
+                {label:'Site - '+inputs.siteAccessKey.replace(' Setting',''),value:'x'+result.siteMultiplier},
+                {label:'Complexity - '+inputs.complexityKey.replace(' Complexity',''),value:'x'+result.complexityMultiplier},
+                inputs.projectTypeKey!=='New'?{label:'Project type - '+inputs.projectTypeKey,value:'x'+result.projectTypeMultiplier}:null,
+                inputs.useCustomSplit&&result.elementScopeRatio!==1?{label:'Element scope',value:(result.elementScopeRatio*100).toFixed(1)+'%'}:null,
+              ].filter(Boolean).map(r=>(
+                <div key={r.label} style={rowStyle}>
+                  <span style={{...rowLbl,fontSize:'0.78rem'}}>{r.label}</span>
+                  <span style={{fontWeight:'500',color:'#888',fontSize:'0.78rem'}}>{r.value}</span>
+                </div>
+              ))}
+              <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18',borderTop:'1.5px solid #e5e5e3',marginTop:'0.25rem'}}>
+                <span>Applied construction rate</span>
+                <span>{fmtZAR(result.appliedRate)} /m2</span>
+              </div>
               {numCats>1&&(<>
                 <div style={{...divider,margin:'0.75rem 0'}}/>
                 <p style={{fontSize:'0.72rem',color:'#aaa',marginBottom:'0.5rem'}}>Mixed-use composition</p>
                 {[
-                  {cat:inputs.use1Category,sub:inputs.use1Subtype,alloc:inputs.use1Allocation,rate:result.rate1},
-                  numCats>=2?{cat:inputs.use2Category,sub:inputs.use2Subtype,alloc:inputs.use2Allocation,rate:result.rate2}:null,
-                  numCats>=3?{cat:inputs.use3Category,sub:inputs.use3Subtype,alloc:inputs.use3Allocation,rate:result.rate3}:null,
-                ].filter(Boolean).map((u,i)=>(<div key={i} style={rowStyle}><span style={rowLbl}>{u.sub} ({Math.round(u.alloc*100)}%)</span><span style={rowVal}>{fmt(u.rate)} / m²</span></div>))}
+                  {sub:inputs.use1Subtype,alloc:inputs.use1Allocation,adj:result.rate1,adjPct:inputs.rate1Adjustment},
+                  numCats>=2?{sub:inputs.use2Subtype,alloc:inputs.use2Allocation,adj:result.rate2,adjPct:inputs.rate2Adjustment}:null,
+                  numCats>=3?{sub:inputs.use3Subtype,alloc:inputs.use3Allocation,adj:result.rate3,adjPct:inputs.rate3Adjustment}:null,
+                ].filter(Boolean).map((u,i)=>(
+                  <div key={i} style={rowStyle}>
+                    <span style={rowLbl}>{u.sub} ({Math.round(u.alloc*100)}%){u.adjPct!==0?<span style={{color:u.adjPct>0?'#27ae60':'#e74c3c',fontSize:'0.7rem',marginLeft:'4px'}}>{u.adjPct>0?'+':''}{u.adjPct}%</span>:null}</span>
+                    <span style={rowVal}>{fmtZAR(u.adj)} /m2</span>
+                  </div>
+                ))}
               </>)}
             </div>
 
             <button onClick={handleSave} disabled={saving||saved}
               style={{width:'100%',padding:'0.75rem',background:saved?'#27ae60':'#fff',color:saved?'#fff':'#1a1a18',border:'1.5px solid #e5e5e3',borderRadius:'12px',fontSize:'0.875rem',fontWeight:'500',cursor:'pointer',fontFamily:'inherit'}}>
-              {saving?'Saving...':saved?'✓ Saved':'Save estimate'}
+              {saving?'Saving...':saved?'Saved':'Save estimate'}
             </button>
           </>)}
         </div>
@@ -427,9 +459,9 @@ export default function Calculator(){
           <div style={{background:'#fff',borderRadius:'16px',padding:'1.5rem',width:'100%',maxWidth:'400px',margin:'1rem'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
               <span style={{fontSize:'0.9rem',fontWeight:'600'}}>Share feedback</span>
-              <button onClick={()=>setFeedback(false)} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:'1.25rem',lineHeight:1}}>×</button>
+              <button onClick={()=>setFeedback(false)} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:'1.25rem',lineHeight:1}}>x</button>
             </div>
-            {fbSent?<p style={{color:'#27ae60',textAlign:'center',padding:'1rem 0'}}>Thanks — noted.</p>:(
+            {fbSent?<p style={{color:'#27ae60',textAlign:'center',padding:'1rem 0'}}>Thanks noted.</p>:(
               <form onSubmit={e=>{e.preventDefault();setFbSent(true);setTimeout(()=>{setFeedback(false);setFbSent(false);setFbText('');},2000);}}>
                 <textarea value={fbText} onChange={e=>setFbText(e.target.value)} required rows={4} placeholder="What is working? What is missing?"
                   style={{width:'100%',padding:'0.75rem',border:'1.5px solid #e5e5e3',borderRadius:'10px',fontSize:'0.875rem',resize:'vertical',boxSizing:'border-box',marginBottom:'0.75rem',fontFamily:'inherit'}}/>
