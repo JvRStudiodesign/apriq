@@ -10,19 +10,16 @@ export function calculate(inputs) {
     use3Category=null,use3Subtype=null,use3Allocation=0,
     floorArea=0,complexityKey='Low Complexity',siteAccessKey='Urban Setting',
     projectTypeKey='New',renovationArea=0,renovationComplexityKey='Low',
-    qualityKey='Medium',contingencyPct=0.10,profitPct=0.10,feesPct=0.12,
+    qualityKey='Medium',contingencyPct=0.10,profitPct=0.10,preliminariesPct=0.05,feesPct=0.12,
     vatPct=0.15,landProcurementType='N/A',landArea=0,landSlopeKey='Flat Land (0-5%)',
     escalationRate=7,estimatedStartDate=null,includeEscalation=false,
     useCustomSplit=false,customElementPcts=null,
     rate1Adjustment=0,rate2Adjustment=0,rate3Adjustment=0,
   } = inputs;
 
-  // Raw AECOM rates
   const rate1Raw=getRate(use1Category,use1Subtype);
   const rate2Raw=getRate(use2Category,use2Subtype);
   const rate3Raw=getRate(use3Category,use3Subtype);
-
-  // Adjusted rates (client customisation ±30%)
   const rate1=rate1Raw*(1+rate1Adjustment/100);
   const rate2=rate2Raw*(1+rate2Adjustment/100);
   const rate3=rate3Raw*(1+rate3Adjustment/100);
@@ -37,18 +34,15 @@ export function calculate(inputs) {
   const renovationMultiplier=RENOVATION_COMPLEXITY[renovationComplexityKey]?.multiplier??1;
   const complexityMultiplier=COMPLEXITY[complexityKey]?.multiplier??1;
 
-  // Element scope ratio
   const effectivePcts=(useCustomSplit&&customElementPcts)?customElementPcts:BREAKDOWN_ELEMENTS.map(e=>e.pct);
   const elementScopeRatio=BREAKDOWN_ELEMENTS.reduce((sum,el,i)=>sum+el.pct*(effectivePcts[i]??el.pct),0);
   const customPctTotal=effectivePcts.reduce((s,p)=>s+p,0);
   const customPctOk=Math.abs(customPctTotal-1)<0.005;
-
   const adjustedWeightedBaseRate=weightedBaseRate*elementScopeRatio;
 
-  // Applied construction rate (after all multipliers, before area)
-  const appliedRate=adjustedWeightedBaseRate*qualityMultiplier*siteMultiplier*complexityMultiplier;
+  const totalMultiplier=qualityMultiplier*siteMultiplier*complexityMultiplier;
+  const appliedRate=adjustedWeightedBaseRate*totalMultiplier;
 
-  // Construction cost
   let baseConstructionCostNew=0,baseConstructionCostRenovation=0;
   if(projectTypeKey==='Renovation'){
     const newArea=Math.max(0,floorArea-renovationArea);
@@ -68,7 +62,7 @@ export function calculate(inputs) {
 
   const contingencyAmount=totalConstructionCost*contingencyPct;
   const contractorProfit=(totalConstructionCost+contingencyAmount)*profitPct;
-  const preliminaries=(totalConstructionCost+contingencyAmount+contractorProfit)*0.05;
+  const preliminaries=(totalConstructionCost+contingencyAmount+contractorProfit)*preliminariesPct;
   const subtotalBeforeFees=totalConstructionCost+contingencyAmount+contractorProfit+preliminaries;
   const professionalFees=subtotalBeforeFees*feesPct;
   const subtotalExVAT=subtotalBeforeFees+professionalFees;
@@ -98,11 +92,10 @@ export function calculate(inputs) {
   }
 
   return {
-    rate1Raw,rate2Raw,rate3Raw,
-    rate1,rate2,rate3,
+    rate1Raw,rate2Raw,rate3Raw,rate1,rate2,rate3,
     rate1Adjustment,rate2Adjustment,rate3Adjustment,
     weightedBaseRate,adjustedWeightedBaseRate,appliedRate,
-    elementScopeRatio,allocationTotal,allocationCheck,
+    totalMultiplier,elementScopeRatio,allocationTotal,allocationCheck,
     qualityMultiplier,siteMultiplier,projectTypeMultiplier,
     renovationMultiplier,complexityMultiplier,
     baseConstructionCostNew,baseConstructionCostRenovation,

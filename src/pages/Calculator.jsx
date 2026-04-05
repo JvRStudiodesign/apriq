@@ -114,7 +114,7 @@ const DEFAULT={
   use3Category:null,use3Subtype:null,use3Allocation:0,
   floorArea:200,complexityKey:'Low Complexity',siteAccessKey:'Urban Setting',
   projectTypeKey:'New',renovationArea:0,renovationComplexityKey:'Low',qualityKey:'Medium',
-  contingencyPct:0.10,profitPct:0.10,feesPct:0.12,vatPct:0.15,
+  contingencyPct:0.10,profitPct:0.10,preliminariesPct:0.05,feesPct:0.12,vatPct:0.15,
   landProcurementType:'N/A',landArea:0,landSlopeKey:'Flat Land (0-5%)',
   escalationRate:7,estimatedStartDate:null,includeEscalation:false,
   useCustomSplit:false,customElementPcts:DEFAULT_PCTS,
@@ -144,7 +144,6 @@ export default function Calculator(){
 
   function upd(field,val){setInputs(p=>({...p,[field]:val}));setSaved(false);}
   function updCat(n,catKey){const cat=CATEGORIES.find(c=>c.key===catKey);setInputs(p=>({...p,['use'+n+'Category']:catKey,['use'+n+'Subtype']:cat?.subtypes[0]?.key||''}));}
-
   function resetAll(){setInputs(DEFAULT);setNumCats(1);setResult(null);setSaved(false);}
 
   function setAlloc1(pct){
@@ -247,7 +246,7 @@ export default function Calculator(){
       {[
         {label:'Contingency ('+Math.round(inputs.contingencyPct*100)+'%)',value:result.contingencyAmount},
         {label:'Contractor profit ('+Math.round(inputs.profitPct*100)+'%)',value:result.contractorProfit},
-        {label:'Preliminaries (5%)',value:result.preliminaries},
+        {label:'Preliminaries ('+Math.round(inputs.preliminariesPct*100)+'%)',value:result.preliminaries},
         {label:'Professional fees ('+Math.round(inputs.feesPct*100)+'%)',value:result.professionalFees},
         {label:'VAT ('+Math.round(inputs.vatPct*100)+'%)',value:result.vatAmount},
       ].map(r=>(<div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={rowVal}>{fmtZAR(r.value)}</span></div>))}
@@ -273,23 +272,26 @@ export default function Calculator(){
 
     <div style={card}>
       <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1rem'}}>Rate summary</span>
+      <div style={rowStyle}>
+        <span style={{...rowLbl,fontSize:'0.78rem'}}>Base rate ({inputs.use1Subtype})</span>
+        <span style={{fontWeight:'600',color:'#1a1a18',fontSize:'0.82rem'}}>{fmtZAR(result.rate1Raw)} /m2</span>
+      </div>
+      {inputs.rate1Adjustment!==0&&<div style={rowStyle}><span style={{...rowLbl,fontSize:'0.78rem'}}>Rate adjustment</span><span style={{fontWeight:'500',color:'#888',fontSize:'0.78rem'}}>{inputs.rate1Adjustment>0?'+':''}{inputs.rate1Adjustment}%</span></div>}
       {[
-        {label:'Base rate ('+inputs.use1Subtype+')',value:fmtZAR(result.rate1Raw)+' /m2'},
-        inputs.rate1Adjustment!==0?{label:'Rate adjustment',value:(inputs.rate1Adjustment>0?'+':'')+inputs.rate1Adjustment+'%'}:null,
-        {label:'Quality - '+inputs.qualityKey,value:'x'+result.qualityMultiplier},
-        {label:'Site - '+inputs.siteAccessKey.replace(' Setting',''),value:'x'+result.siteMultiplier},
-        {label:'Complexity - '+inputs.complexityKey.replace(' Complexity',''),value:'x'+result.complexityMultiplier},
-        inputs.projectTypeKey!=='New'?{label:'Project type - '+inputs.projectTypeKey,value:'x'+result.projectTypeMultiplier}:null,
+        {label:'Quality — '+inputs.qualityKey,value:'x'+result.qualityMultiplier},
+        {label:'Site — '+inputs.siteAccessKey.replace(' Setting',''),value:'x'+result.siteMultiplier},
+        {label:'Complexity — '+inputs.complexityKey.replace(' Complexity',''),value:'x'+result.complexityMultiplier},
+        inputs.projectTypeKey!=='New'?{label:'Project type — '+inputs.projectTypeKey,value:'x'+result.projectTypeMultiplier}:null,
         inputs.useCustomSplit&&result.elementScopeRatio!==1?{label:'Element scope',value:(result.elementScopeRatio*100).toFixed(1)+'%'}:null,
       ].filter(Boolean).map(r=>(
         <div key={r.label} style={rowStyle}>
           <span style={{...rowLbl,fontSize:'0.78rem'}}>{r.label}</span>
-          <span style={{fontWeight:'500',color:'#888',fontSize:'0.78rem'}}>{r.value}</span>
+          <span style={{fontWeight:'500',color:'#aaa',fontSize:'0.78rem'}}>{r.value}</span>
         </div>
       ))}
-      <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18',borderTop:'1.5px solid #e5e5e3',marginTop:'0.25rem'}}>
-        <span>Applied construction rate</span>
-        <span>{fmtZAR(result.appliedRate)} /m2</span>
+      <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',borderTop:'1.5px solid #1a1a18',marginTop:'0.25rem'}}>
+        <span style={{fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18'}}>Total applied base rate</span>
+        <span style={{fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18'}}>{fmtZAR(result.appliedRate)} /m2</span>
       </div>
       {numCats>1&&(<>
         <div style={{...divider,margin:'0.75rem 0'}}/>
@@ -328,7 +330,6 @@ export default function Calculator(){
       </div>
 
       <div className="desktop-grid" style={{maxWidth:'1140px',margin:'0 auto',padding:'1.5rem 1.25rem',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',alignItems:'start'}}>
-
         <div>
           <div style={card}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1.25rem'}}>
@@ -425,6 +426,7 @@ export default function Calculator(){
             <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1.25rem'}}>Financial inputs</span>
             <Slider label="Contingency" value={Math.round(inputs.contingencyPct*100)} min={0} max={30} step={0.5} onChange={v=>upd('contingencyPct',v/100)} fmtFn={v=>v+'%'}/>
             <Slider label="Contractor profit" value={Math.round(inputs.profitPct*100)} min={0} max={30} step={0.5} onChange={v=>upd('profitPct',v/100)} fmtFn={v=>v+'%'}/>
+            <Slider label="Preliminaries" value={Math.round(inputs.preliminariesPct*100)} min={0} max={20} step={0.5} onChange={v=>upd('preliminariesPct',v/100)} fmtFn={v=>v+'%'}/>
             <Slider label="Professional fees" value={Math.round(inputs.feesPct*100)} min={0} max={25} step={0.5} onChange={v=>upd('feesPct',v/100)} fmtFn={v=>v+'%'}/>
             <Slider label="VAT" value={Math.round(inputs.vatPct*100)} min={0} max={20} step={1} onChange={v=>upd('vatPct',v/100)} fmtFn={v=>v+'%'}/>
             <div style={divider}/>
@@ -450,7 +452,6 @@ export default function Calculator(){
 
           {!isPro&&(<button onClick={handleCalc} style={{width:'100%',padding:'0.875rem',background:'#1a1a18',color:'#fff',border:'none',borderRadius:'12px',fontSize:'0.9rem',fontWeight:'600',cursor:'pointer',marginBottom:'1rem',fontFamily:'inherit'}}>Calculate estimate</button>)}
 
-          {/* MOBILE: summary appears here, below inputs */}
           <div className="mobile-summary" style={{display:'none'}}>
             {!result?(
               <div style={{...card,textAlign:'center',padding:'2rem 1.5rem'}}>
@@ -460,7 +461,6 @@ export default function Calculator(){
           </div>
         </div>
 
-        {/* DESKTOP: summary on the right */}
         <div className="desktop-right" style={{position:'sticky',top:'4.5rem'}}>
           {!result?(
             <div style={{...card,textAlign:'center',padding:'3rem 1.5rem'}}>
