@@ -246,16 +246,17 @@ export const LAND_SLOPE = {
 // ── COST BREAKDOWN (11 elements, must total 100%) ─────────────
 // Source: Breakdown sheet. Earthworks handled separately in financial stack.
 export const BREAKDOWN_ELEMENTS = [
-  { key: 'substructure',          label: 'Substructure',                  pct: 0    },
-  { key: 'structure',             label: 'Structure',                     pct: 0    },
-  { key: 'roof',                  label: 'Roof Structure and Coverings',  pct: 0.20 },
-  { key: 'envelope',              label: 'External Envelope',             pct: 0.10 },
-  { key: 'internal_construction', label: 'Internal Construction',         pct: 0.20 },
-  { key: 'internal_finishes',     label: 'Internal Finishes',             pct: 0.20 },
-  { key: 'joinery',               label: 'Joinery',                       pct: 0.13 },
-  { key: 'landscaping',           label: 'Landscaping, Paving & Circulation', pct: 0 },
-  { key: 'services',              label: 'Services',                      pct: 0.12 },
-  { key: 'pgs',                   label: "P&G's",                         pct: 0.05 },
+  { key: 'earthworks',            label: 'Earthworks',                         pct: 0.08 },
+  { key: 'substructure',          label: 'Substructure',                        pct: 0.10 },
+  { key: 'structure',             label: 'Structure',                           pct: 0.20 },
+  { key: 'roof',                  label: 'Roof structure and coverings',        pct: 0.10 },
+  { key: 'envelope',              label: 'External envelope',                   pct: 0.10 },
+  { key: 'internal_construction', label: 'Internal construction',               pct: 0.07 },
+  { key: 'internal_finishes',     label: 'Internal finishes',                   pct: 0.12 },
+  { key: 'joinery',               label: 'Joinery',                             pct: 0.05 },
+  { key: 'landscaping',           label: 'Landscaping, paving and circulation', pct: 0.08 },
+  { key: 'services',              label: 'Services',                            pct: 0.05 },
+  { key: 'pgs',                   label: "P&G's",                              pct: 0.05 },
 ];
 
 // ── HELPERS ───────────────────────────────────────────────────
