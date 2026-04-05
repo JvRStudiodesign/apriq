@@ -73,10 +73,10 @@ function RateRow({rawRate,adjustedRate,adjustField,toggleField,adjValue,adjToggl
   return(
     <div style={{background:'#f9f9f7',borderRadius:'10px',padding:'0.65rem 0.875rem',marginTop:'0.35rem',marginBottom:'0.75rem'}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <span style={{fontSize:'0.72rem',color:'#aaa'}}>AECOM base rate</span>
+        <span style={{fontSize:'0.72rem',color:'#aaa'}}>Base rate</span>
         <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
           {adjToggle&&adjValue!==0&&<span style={{fontSize:'0.72rem',color:adjValue>0?'#27ae60':'#e74c3c',fontWeight:'600'}}>{adjValue>0?'+':''}{adjValue}%</span>}
-          <span style={{fontSize:'0.82rem',fontWeight:'600',color:'#1a1a18'}}>{fmtZAR(adjustedRate)} /m²</span>
+          <span style={{fontSize:'0.82rem',fontWeight:'600',color:'#1a1a18'}}>{fmtZAR(adjustedRate)} /m2</span>
           <label style={{display:'flex',alignItems:'center',gap:'4px',cursor:'pointer',fontSize:'0.7rem',color:'#aaa'}}>
             <input type="checkbox" checked={adjToggle} onChange={e=>upd(toggleField,e.target.checked)} style={{cursor:'pointer'}}/>
             Adjust
@@ -88,7 +88,7 @@ function RateRow({rawRate,adjustedRate,adjustField,toggleField,adjValue,adjToggl
           <Slider label="" value={adjValue} min={-30} max={30} step={1} onChange={v=>upd(adjustField,v)} fmtFn={v=>(v>0?'+':'')+v+'%'}/>
           <div style={{display:'flex',justifyContent:'space-between',fontSize:'0.72rem',color:'#aaa',marginTop:'-0.5rem'}}>
             <span>-30%</span>
-            <span style={{color:'#1a1a18',fontWeight:'600'}}>{fmtZAR(rawRate*(1+adjValue/100))} /m²</span>
+            <span style={{color:'#1a1a18',fontWeight:'600'}}>{fmtZAR(rawRate*(1+adjValue/100))} /m2</span>
             <span>+30%</span>
           </div>
         </div>
@@ -145,6 +145,8 @@ export default function Calculator(){
   function upd(field,val){setInputs(p=>({...p,[field]:val}));setSaved(false);}
   function updCat(n,catKey){const cat=CATEGORIES.find(c=>c.key===catKey);setInputs(p=>({...p,['use'+n+'Category']:catKey,['use'+n+'Subtype']:cat?.subtypes[0]?.key||''}));}
 
+  function resetAll(){setInputs(DEFAULT);setNumCats(1);setResult(null);setSaved(false);}
+
   function setAlloc1(pct){
     const v=pct/100;
     if(numCats===2)setInputs(p=>({...p,use1Allocation:v,use2Allocation:Math.round((1-v)*100)/100}));
@@ -199,8 +201,121 @@ export default function Calculator(){
   const customPctOk=Math.abs(customPctSum-1)<0.005;
   const showEscalation=inputs.includeEscalation&&result?.escalationYears?.length>0;
 
+  const Summary=()=>!result?null:(<>
+    <div style={{background:'#1a1a18',borderRadius:'14px',padding:'1.5rem',marginBottom:'1rem',color:'#fff'}}>
+      <p style={{fontSize:'0.68rem',color:'#888',marginBottom:'0.3rem',textTransform:'uppercase',letterSpacing:'0.05em'}}>Total project cost</p>
+      <p style={{fontSize:'2rem',fontWeight:'700',letterSpacing:'-1px',lineHeight:1.1,color:'#fff'}}>{fmtZAR(result.totalProjectCost)}</p>
+      {isPro&&<p style={{fontSize:'0.68rem',color:'#555',marginTop:'0.5rem'}}>Updates live as you adjust inputs</p>}
+    </div>
+
+    <div style={card}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
+        <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18'}}>Element breakdown</span>
+        <label style={{display:'flex',alignItems:'center',gap:'6px',cursor:isPro?'pointer':'not-allowed',fontSize:'0.72rem',color:'#888',opacity:isPro?1:0.5}}>
+          <input type="checkbox" checked={inputs.useCustomSplit} onChange={e=>isPro&&upd('useCustomSplit',e.target.checked)} disabled={!isPro}/>
+          Custom split{!isPro&&PRO_BADGE}
+        </label>
+      </div>
+      {result.elementBreakdown.map((el,i)=>(
+        <div key={el.key} style={{display:'flex',alignItems:'center',padding:'0.4rem 0',borderBottom:'1px solid #f5f5f3',fontSize:'0.82rem',gap:'0.5rem'}}>
+          <span style={{flex:1,color:'#555'}}>{el.label}</span>
+          {inputs.useCustomSplit&&isPro?(
+            <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
+              <input type="number" min={0} max={100} step={0.1} value={Math.round(el.effectivePct*1000)/10}
+                onChange={e=>updateCustomPct(i,parseFloat(e.target.value)/100)}
+                style={{width:'56px',padding:'2px 6px',border:'1px solid #e5e5e3',borderRadius:'6px',fontSize:'0.78rem',textAlign:'right',fontFamily:'inherit'}}/>
+              <span style={{color:'#aaa',fontSize:'0.75rem'}}>%</span>
+            </div>
+          ):(
+            <span style={{color:'#aaa',fontSize:'0.75rem',minWidth:'36px',textAlign:'right'}}>{pctFmt(el.defaultPct)}</span>
+          )}
+          <span style={{fontWeight:'600',color:'#1a1a18',minWidth:'90px',textAlign:'right'}}>{fmtZAR(el.amount)}</span>
+        </div>
+      ))}
+      {inputs.useCustomSplit&&(
+        <div style={{marginTop:'0.75rem',borderRadius:'8px',padding:'0.45rem 0.875rem',background:customPctOk?'#eaf3de':'#fdecea',fontSize:'0.78rem',color:customPctOk?'#27500a':'#c0392b'}}>
+          {customPctOk?'Element split totals 100%':'Element split totals '+(customPctSum*100).toFixed(1)+'% - must equal 100%'}
+        </div>
+      )}
+      <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18'}}>
+        <span>Construction cost</span><span>{fmtZAR(result.constructionCost)}</span>
+      </div>
+    </div>
+
+    <div style={card}>
+      <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1rem'}}>Financial additions</span>
+      {[
+        {label:'Contingency ('+Math.round(inputs.contingencyPct*100)+'%)',value:result.contingencyAmount},
+        {label:'Contractor profit ('+Math.round(inputs.profitPct*100)+'%)',value:result.contractorProfit},
+        {label:'Preliminaries (5%)',value:result.preliminaries},
+        {label:'Professional fees ('+Math.round(inputs.feesPct*100)+'%)',value:result.professionalFees},
+        {label:'VAT ('+Math.round(inputs.vatPct*100)+'%)',value:result.vatAmount},
+      ].map(r=>(<div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={rowVal}>{fmtZAR(r.value)}</span></div>))}
+    </div>
+
+    <div style={{...card,background:'#f9f9f7'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <span style={{fontSize:'0.95rem',fontWeight:'700',color:'#1a1a18'}}>Total project cost</span>
+        <span style={{fontSize:'1.1rem',fontWeight:'700',color:'#1a1a18'}}>{fmtZAR(result.totalProjectCost)}</span>
+      </div>
+    </div>
+
+    {showEscalation&&(
+      <div style={card}>
+        <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'0.25rem'}}>Escalation at {inputs.escalationRate}% p.a.</span>
+        <p style={{fontSize:'0.72rem',color:'#aaa',marginBottom:'1rem'}}>Base estimate: {new Date().toLocaleDateString('en-ZA',{year:'numeric',month:'long'})}</p>
+        {result.escalationYears.map(y=>(<div key={y.year} style={rowStyle}><span style={rowLbl}>{y.label}</span><span style={rowVal}>{fmtZAR(y.total)}</span></div>))}
+        <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',fontSize:'0.9rem',fontWeight:'700',color:'#1a1a18'}}>
+          <span>Escalated total</span><span>{fmtZAR(result.escalatedTotal)}</span>
+        </div>
+      </div>
+    )}
+
+    <div style={card}>
+      <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1rem'}}>Rate summary</span>
+      {[
+        {label:'Base rate ('+inputs.use1Subtype+')',value:fmtZAR(result.rate1Raw)+' /m2'},
+        inputs.rate1Adjustment!==0?{label:'Rate adjustment',value:(inputs.rate1Adjustment>0?'+':'')+inputs.rate1Adjustment+'%'}:null,
+        {label:'Quality - '+inputs.qualityKey,value:'x'+result.qualityMultiplier},
+        {label:'Site - '+inputs.siteAccessKey.replace(' Setting',''),value:'x'+result.siteMultiplier},
+        {label:'Complexity - '+inputs.complexityKey.replace(' Complexity',''),value:'x'+result.complexityMultiplier},
+        inputs.projectTypeKey!=='New'?{label:'Project type - '+inputs.projectTypeKey,value:'x'+result.projectTypeMultiplier}:null,
+        inputs.useCustomSplit&&result.elementScopeRatio!==1?{label:'Element scope',value:(result.elementScopeRatio*100).toFixed(1)+'%'}:null,
+      ].filter(Boolean).map(r=>(
+        <div key={r.label} style={rowStyle}>
+          <span style={{...rowLbl,fontSize:'0.78rem'}}>{r.label}</span>
+          <span style={{fontWeight:'500',color:'#888',fontSize:'0.78rem'}}>{r.value}</span>
+        </div>
+      ))}
+      <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18',borderTop:'1.5px solid #e5e5e3',marginTop:'0.25rem'}}>
+        <span>Applied construction rate</span>
+        <span>{fmtZAR(result.appliedRate)} /m2</span>
+      </div>
+      {numCats>1&&(<>
+        <div style={{...divider,margin:'0.75rem 0'}}/>
+        <p style={{fontSize:'0.72rem',color:'#aaa',marginBottom:'0.5rem'}}>Mixed-use composition</p>
+        {[
+          {sub:inputs.use1Subtype,alloc:inputs.use1Allocation,adj:result.rate1,adjPct:inputs.rate1Adjustment},
+          numCats>=2?{sub:inputs.use2Subtype,alloc:inputs.use2Allocation,adj:result.rate2,adjPct:inputs.rate2Adjustment}:null,
+          numCats>=3?{sub:inputs.use3Subtype,alloc:inputs.use3Allocation,adj:result.rate3,adjPct:inputs.rate3Adjustment}:null,
+        ].filter(Boolean).map((u,i)=>(
+          <div key={i} style={rowStyle}>
+            <span style={rowLbl}>{u.sub} ({Math.round(u.alloc*100)}%){u.adjPct!==0?<span style={{color:u.adjPct>0?'#27ae60':'#e74c3c',fontSize:'0.7rem',marginLeft:'4px'}}>{u.adjPct>0?'+':''}{u.adjPct}%</span>:null}</span>
+            <span style={rowVal}>{fmtZAR(u.adj)} /m2</span>
+          </div>
+        ))}
+      </>)}
+    </div>
+
+    <button onClick={handleSave} disabled={saving||saved}
+      style={{width:'100%',padding:'0.75rem',background:saved?'#27ae60':'#fff',color:saved?'#fff':'#1a1a18',border:'1.5px solid #e5e5e3',borderRadius:'12px',fontSize:'0.875rem',fontWeight:'500',cursor:'pointer',fontFamily:'inherit',marginBottom:'1rem'}}>
+      {saving?'Saving...':saved?'Saved':'Save estimate'}
+    </button>
+  </>);
+
   return(
     <div style={{minHeight:'100vh',background:'#f5f5f3',fontFamily:'-apple-system, BlinkMacSystemFont, sans-serif'}}>
+      <style>{`@media(max-width:700px){.desktop-grid{display:block!important;}.desktop-right{display:none!important;}.mobile-summary{display:block!important;}}`}</style>
 
       <div style={{background:'#fff',borderBottom:'1px solid #eeede8',padding:'0.875rem 1.5rem',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100}}>
         <span style={{fontWeight:'700',fontSize:'1rem',letterSpacing:'-0.02em'}}>AprIQ</span>
@@ -212,17 +327,20 @@ export default function Calculator(){
         </div>
       </div>
 
-      <div style={{maxWidth:'1140px',margin:'0 auto',padding:'1.5rem 1.25rem',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',alignItems:'start'}}>
+      <div className="desktop-grid" style={{maxWidth:'1140px',margin:'0 auto',padding:'1.5rem 1.25rem',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',alignItems:'start'}}>
 
         <div>
           <div style={card}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1.25rem'}}>
               <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18'}}>Building</span>
-              {numCats<3&&(
-                <button onClick={addCategory} style={{display:'flex',alignItems:'center',gap:'5px',padding:'4px 12px',borderRadius:'9px',border:'1.5px solid #e5e5e3',background:'#fff',color:isPro?'#1a1a18':'#ccc',fontSize:'0.78rem',fontWeight:'500',cursor:'pointer',fontFamily:'inherit'}}>
-                  <span style={{fontSize:'1.1rem',lineHeight:1,marginTop:'-1px'}}>+</span>Add category{!isPro&&PRO_BADGE}
-                </button>
-              )}
+              <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+                <button onClick={resetAll} style={{padding:'4px 10px',borderRadius:'9px',border:'1.5px solid #e5e5e3',background:'#fff',color:'#999',fontSize:'0.72rem',cursor:'pointer',fontFamily:'inherit'}}>Reset all</button>
+                {numCats<3&&(
+                  <button onClick={addCategory} style={{display:'flex',alignItems:'center',gap:'5px',padding:'4px 12px',borderRadius:'9px',border:'1.5px solid #e5e5e3',background:'#fff',color:isPro?'#1a1a18':'#ccc',fontSize:'0.78rem',fontWeight:'500',cursor:'pointer',fontFamily:'inherit'}}>
+                    <span style={{fontSize:'1.1rem',lineHeight:1,marginTop:'-1px'}}>+</span>Add category{!isPro&&PRO_BADGE}
+                  </button>
+                )}
+              </div>
             </div>
 
             <label style={lbl}>Category</label>
@@ -330,126 +448,25 @@ export default function Calculator(){
             </div>
           </div>
 
-          {!isPro&&(<button onClick={handleCalc} style={{width:'100%',padding:'0.875rem',background:'#1a1a18',color:'#fff',border:'none',borderRadius:'12px',fontSize:'0.9rem',fontWeight:'600',cursor:'pointer',marginBottom:'1.5rem',fontFamily:'inherit'}}>Calculate estimate</button>)}
+          {!isPro&&(<button onClick={handleCalc} style={{width:'100%',padding:'0.875rem',background:'#1a1a18',color:'#fff',border:'none',borderRadius:'12px',fontSize:'0.9rem',fontWeight:'600',cursor:'pointer',marginBottom:'1rem',fontFamily:'inherit'}}>Calculate estimate</button>)}
+
+          {/* MOBILE: summary appears here, below inputs */}
+          <div className="mobile-summary" style={{display:'none'}}>
+            {!result?(
+              <div style={{...card,textAlign:'center',padding:'2rem 1.5rem'}}>
+                <p style={{color:'#ccc',fontSize:'0.875rem'}}>{isPro?'Adjust any input to see a live estimate.':'Fill in inputs and click Calculate estimate.'}</p>
+              </div>
+            ):<Summary/>}
+          </div>
         </div>
 
-        <div style={{position:'sticky',top:'4.5rem'}}>
+        {/* DESKTOP: summary on the right */}
+        <div className="desktop-right" style={{position:'sticky',top:'4.5rem'}}>
           {!result?(
             <div style={{...card,textAlign:'center',padding:'3rem 1.5rem'}}>
               <p style={{color:'#ccc',fontSize:'0.875rem'}}>{isPro?'Adjust any input to see a live estimate.':'Fill in inputs and click Calculate estimate.'}</p>
             </div>
-          ):(<>
-
-            <div style={{background:'#1a1a18',borderRadius:'14px',padding:'1.5rem',marginBottom:'1rem',color:'#fff'}}>
-              <p style={{fontSize:'0.68rem',color:'#888',marginBottom:'0.3rem',textTransform:'uppercase',letterSpacing:'0.05em'}}>Total project cost</p>
-              <p style={{fontSize:'2rem',fontWeight:'700',letterSpacing:'-1px',lineHeight:1.1,color:'#fff'}}>{fmtZAR(result.totalProjectCost)}</p>
-              {isPro&&<p style={{fontSize:'0.68rem',color:'#555',marginTop:'0.5rem'}}>Updates live as you adjust inputs</p>}
-            </div>
-
-            <div style={card}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
-                <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18'}}>Element breakdown</span>
-                <label style={{display:'flex',alignItems:'center',gap:'6px',cursor:isPro?'pointer':'not-allowed',fontSize:'0.72rem',color:'#888',opacity:isPro?1:0.5}}>
-                  <input type="checkbox" checked={inputs.useCustomSplit} onChange={e=>isPro&&upd('useCustomSplit',e.target.checked)} disabled={!isPro}/>
-                  Custom split{!isPro&&PRO_BADGE}
-                </label>
-              </div>
-              {result.elementBreakdown.map((el,i)=>(
-                <div key={el.key} style={{display:'flex',alignItems:'center',padding:'0.4rem 0',borderBottom:'1px solid #f5f5f3',fontSize:'0.82rem',gap:'0.5rem'}}>
-                  <span style={{flex:1,color:'#555'}}>{el.label}</span>
-                  {inputs.useCustomSplit&&isPro?(
-                    <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
-                      <input type="number" min={0} max={100} step={0.1} value={Math.round(el.effectivePct*1000)/10}
-                        onChange={e=>updateCustomPct(i,parseFloat(e.target.value)/100)}
-                        style={{width:'56px',padding:'2px 6px',border:'1px solid #e5e5e3',borderRadius:'6px',fontSize:'0.78rem',textAlign:'right',fontFamily:'inherit'}}/>
-                      <span style={{color:'#aaa',fontSize:'0.75rem'}}>%</span>
-                    </div>
-                  ):(
-                    <span style={{color:'#aaa',fontSize:'0.75rem',minWidth:'36px',textAlign:'right'}}>{pctFmt(el.defaultPct)}</span>
-                  )}
-                  <span style={{fontWeight:'600',color:'#1a1a18',minWidth:'90px',textAlign:'right'}}>{fmtZAR(el.amount)}</span>
-                </div>
-              ))}
-              {inputs.useCustomSplit&&(
-                <div style={{marginTop:'0.75rem',borderRadius:'8px',padding:'0.45rem 0.875rem',background:customPctOk?'#eaf3de':'#fdecea',fontSize:'0.78rem',color:customPctOk?'#27500a':'#c0392b'}}>
-                  {customPctOk?'Element split totals 100%':'Element split totals '+(customPctSum*100).toFixed(1)+'% - must equal 100%'}
-                </div>
-              )}
-              <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18'}}>
-                <span>Construction cost</span><span>{fmtZAR(result.constructionCost)}</span>
-              </div>
-            </div>
-
-            <div style={card}>
-              <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1rem'}}>Financial additions</span>
-              {[
-                {label:'Contingency ('+Math.round(inputs.contingencyPct*100)+'%)',value:result.contingencyAmount},
-                {label:'Contractor profit ('+Math.round(inputs.profitPct*100)+'%)',value:result.contractorProfit},
-                {label:'Preliminaries (5%)',value:result.preliminaries},
-                {label:'Professional fees ('+Math.round(inputs.feesPct*100)+'%)',value:result.professionalFees},
-                {label:'VAT ('+Math.round(inputs.vatPct*100)+'%)',value:result.vatAmount},
-              ].map(r=>(<div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={rowVal}>{fmtZAR(r.value)}</span></div>))}
-            </div>
-
-            <div style={{...card,background:'#f9f9f7'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <span style={{fontSize:'0.95rem',fontWeight:'700',color:'#1a1a18'}}>Total project cost</span>
-                <span style={{fontSize:'1.1rem',fontWeight:'700',color:'#1a1a18'}}>{fmtZAR(result.totalProjectCost)}</span>
-              </div>
-            </div>
-
-            {showEscalation&&(
-              <div style={card}>
-                <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'0.25rem'}}>Escalation at {inputs.escalationRate}% p.a.</span>
-                <p style={{fontSize:'0.72rem',color:'#aaa',marginBottom:'1rem'}}>Base estimate: {new Date().toLocaleDateString('en-ZA',{year:'numeric',month:'long'})}</p>
-                {result.escalationYears.map(y=>(<div key={y.year} style={rowStyle}><span style={rowLbl}>{y.label}</span><span style={rowVal}>{fmtZAR(y.total)}</span></div>))}
-                <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',fontSize:'0.9rem',fontWeight:'700',color:'#1a1a18'}}>
-                  <span>Escalated total</span><span>{fmtZAR(result.escalatedTotal)}</span>
-                </div>
-              </div>
-            )}
-
-            <div style={card}>
-              <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1rem'}}>Rate summary</span>
-              {[
-                {label:'AECOM base rate ('+inputs.use1Subtype+')',value:fmtZAR(result.rate1Raw)+' /m2'},
-                inputs.rate1Adjustment!==0?{label:'Rate adjustment',value:(inputs.rate1Adjustment>0?'+':'')+inputs.rate1Adjustment+'%'}:null,
-                {label:'Quality - '+inputs.qualityKey,value:'x'+result.qualityMultiplier},
-                {label:'Site - '+inputs.siteAccessKey.replace(' Setting',''),value:'x'+result.siteMultiplier},
-                {label:'Complexity - '+inputs.complexityKey.replace(' Complexity',''),value:'x'+result.complexityMultiplier},
-                inputs.projectTypeKey!=='New'?{label:'Project type - '+inputs.projectTypeKey,value:'x'+result.projectTypeMultiplier}:null,
-                inputs.useCustomSplit&&result.elementScopeRatio!==1?{label:'Element scope',value:(result.elementScopeRatio*100).toFixed(1)+'%'}:null,
-              ].filter(Boolean).map(r=>(
-                <div key={r.label} style={rowStyle}>
-                  <span style={{...rowLbl,fontSize:'0.78rem'}}>{r.label}</span>
-                  <span style={{fontWeight:'500',color:'#888',fontSize:'0.78rem'}}>{r.value}</span>
-                </div>
-              ))}
-              <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18',borderTop:'1.5px solid #e5e5e3',marginTop:'0.25rem'}}>
-                <span>Applied construction rate</span>
-                <span>{fmtZAR(result.appliedRate)} /m2</span>
-              </div>
-              {numCats>1&&(<>
-                <div style={{...divider,margin:'0.75rem 0'}}/>
-                <p style={{fontSize:'0.72rem',color:'#aaa',marginBottom:'0.5rem'}}>Mixed-use composition</p>
-                {[
-                  {sub:inputs.use1Subtype,alloc:inputs.use1Allocation,adj:result.rate1,adjPct:inputs.rate1Adjustment},
-                  numCats>=2?{sub:inputs.use2Subtype,alloc:inputs.use2Allocation,adj:result.rate2,adjPct:inputs.rate2Adjustment}:null,
-                  numCats>=3?{sub:inputs.use3Subtype,alloc:inputs.use3Allocation,adj:result.rate3,adjPct:inputs.rate3Adjustment}:null,
-                ].filter(Boolean).map((u,i)=>(
-                  <div key={i} style={rowStyle}>
-                    <span style={rowLbl}>{u.sub} ({Math.round(u.alloc*100)}%){u.adjPct!==0?<span style={{color:u.adjPct>0?'#27ae60':'#e74c3c',fontSize:'0.7rem',marginLeft:'4px'}}>{u.adjPct>0?'+':''}{u.adjPct}%</span>:null}</span>
-                    <span style={rowVal}>{fmtZAR(u.adj)} /m2</span>
-                  </div>
-                ))}
-              </>)}
-            </div>
-
-            <button onClick={handleSave} disabled={saving||saved}
-              style={{width:'100%',padding:'0.75rem',background:saved?'#27ae60':'#fff',color:saved?'#fff':'#1a1a18',border:'1.5px solid #e5e5e3',borderRadius:'12px',fontSize:'0.875rem',fontWeight:'500',cursor:'pointer',fontFamily:'inherit'}}>
-              {saving?'Saving...':saved?'Saved':'Save estimate'}
-            </button>
-          </>)}
+          ):<Summary/>}
         </div>
       </div>
 
