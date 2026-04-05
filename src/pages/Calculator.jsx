@@ -272,11 +272,11 @@ export default function Calculator(){
 
     <div style={card}>
       <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1rem'}}>Rate summary</span>
-      <div style={rowStyle}>
-        <span style={{...rowLbl,fontSize:'0.78rem'}}>Base rate ({inputs.use1Subtype})</span>
-        <span style={{fontWeight:'600',color:'#1a1a18',fontSize:'0.82rem'}}>{fmtZAR(result.rate1Raw)} /m2</span>
+      <div style={{display:'flex',justifyContent:'space-between',padding:'0.45rem 0',borderBottom:'1px solid #f5f5f3'}}>
+        <span style={{fontSize:'0.78rem',color:'#555'}}>Base rate ({inputs.use1Subtype})</span>
+        <span style={{fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18'}}>{fmtZAR(result.rate1Raw)} /m2</span>
       </div>
-      {inputs.rate1Adjustment!==0&&<div style={rowStyle}><span style={{...rowLbl,fontSize:'0.78rem'}}>Rate adjustment</span><span style={{fontWeight:'500',color:'#888',fontSize:'0.78rem'}}>{inputs.rate1Adjustment>0?'+':''}{inputs.rate1Adjustment}%</span></div>}
+      {inputs.rate1Adjustment!==0&&<div style={{display:'flex',justifyContent:'space-between',padding:'0.45rem 0',borderBottom:'1px solid #f5f5f3'}}><span style={{fontSize:'0.78rem',color:'#555'}}>Rate adjustment</span><span style={{fontSize:'0.78rem',fontWeight:'600',color:inputs.rate1Adjustment>0?'#27ae60':'#e74c3c'}}>{inputs.rate1Adjustment>0?'+':''}{inputs.rate1Adjustment}%</span></div>}
       {[
         {label:'Quality — '+inputs.qualityKey,value:'x'+result.qualityMultiplier},
         {label:'Site — '+inputs.siteAccessKey.replace(' Setting',''),value:'x'+result.siteMultiplier},
@@ -284,14 +284,14 @@ export default function Calculator(){
         inputs.projectTypeKey!=='New'?{label:'Project type — '+inputs.projectTypeKey,value:'x'+result.projectTypeMultiplier}:null,
         inputs.useCustomSplit&&result.elementScopeRatio!==1?{label:'Element scope',value:(result.elementScopeRatio*100).toFixed(1)+'%'}:null,
       ].filter(Boolean).map(r=>(
-        <div key={r.label} style={rowStyle}>
-          <span style={{...rowLbl,fontSize:'0.78rem'}}>{r.label}</span>
-          <span style={{fontWeight:'500',color:'#aaa',fontSize:'0.78rem'}}>{r.value}</span>
+        <div key={r.label} style={{display:'flex',justifyContent:'space-between',padding:'0.45rem 0',borderBottom:'1px solid #f5f5f3'}}>
+          <span style={{fontSize:'0.78rem',color:'#aaa'}}>{r.label}</span>
+          <span style={{fontSize:'0.78rem',fontWeight:'500',color:'#aaa'}}>{r.value}</span>
         </div>
       ))}
-      <div style={{display:'flex',justifyContent:'space-between',paddingTop:'0.75rem',borderTop:'1.5px solid #1a1a18',marginTop:'0.25rem'}}>
-        <span style={{fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18'}}>Total applied base rate</span>
-        <span style={{fontSize:'0.875rem',fontWeight:'700',color:'#1a1a18'}}>{fmtZAR(result.appliedRate)} /m2</span>
+      <div style={{display:'flex',justifyContent:'space-between',padding:'0.75rem 0',background:'#f9f9f7',borderRadius:'10px',paddingLeft:'0.75rem',paddingRight:'0.75rem',marginTop:'0.75rem'}}>
+        <span style={{fontSize:'0.82rem',fontWeight:'600',color:'#1a1a18'}}>Total adjusted base rate</span>
+        <span style={{fontSize:'0.95rem',fontWeight:'700',color:'#1a1a18'}}>{fmtZAR(result.appliedRate)} /m2</span>
       </div>
       {numCats>1&&(<>
         <div style={{...divider,margin:'0.75rem 0'}}/>
