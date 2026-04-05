@@ -278,23 +278,16 @@ export default function Calculator(){
       </div>
       {inputs.rate1Adjustment!==0&&<div style={{display:'flex',justifyContent:'space-between',padding:'0.45rem 0',borderBottom:'1px solid #f5f5f3'}}><span style={{fontSize:'0.78rem',color:'#555'}}>Rate adjustment</span><span style={{fontSize:'0.78rem',fontWeight:'600',color:inputs.rate1Adjustment>0?'#27ae60':'#e74c3c'}}>{inputs.rate1Adjustment>0?'+':''}{inputs.rate1Adjustment}%</span></div>}
       {[
-        {label:'Quality — '+inputs.qualityKey,value:'x'+result.qualityMultiplier},
-        {label:'Site — '+inputs.siteAccessKey.replace(' Setting',''),value:'x'+result.siteMultiplier},
-        {label:'Complexity — '+inputs.complexityKey.replace(' Complexity',''),value:'x'+result.complexityMultiplier},
-        inputs.projectTypeKey!=='New'?{label:'Project type — '+inputs.projectTypeKey,value:'x'+result.projectTypeMultiplier}:null,
-        inputs.useCustomSplit&&result.elementScopeRatio!==1?{label:'Element scope',value:(result.elementScopeRatio*100).toFixed(1)+'%'}:null,
+        {label:'Quality — '+inputs.qualityKey, uplift: result.rate1Raw*(result.qualityMultiplier-1)},
+        {label:'Site — '+inputs.siteAccessKey.replace(' Setting',''), uplift: result.rate1Raw*result.qualityMultiplier*(result.siteMultiplier-1)},
+        {label:'Complexity — '+inputs.complexityKey.replace(' Complexity',''), uplift: result.rate1Raw*result.qualityMultiplier*result.siteMultiplier*(result.complexityMultiplier-1)},
+        inputs.projectTypeKey!=='New'?{label:'Project type — '+inputs.projectTypeKey, uplift: result.rate1Raw*result.qualityMultiplier*result.siteMultiplier*result.complexityMultiplier*(result.projectTypeMultiplier-1)}:null,
       ].filter(Boolean).map(r=>(
         <div key={r.label} style={{display:'flex',justifyContent:'space-between',padding:'0.45rem 0',borderBottom:'1px solid #f5f5f3'}}>
           <span style={{fontSize:'0.78rem',color:'#aaa'}}>{r.label}</span>
-          <span style={{fontSize:'0.78rem',fontWeight:'500',color:'#aaa'}}>{r.value}</span>
+          <span style={{fontSize:'0.78rem',fontWeight:'500',color:r.uplift>0?'#555':r.uplift<0?'#e74c3c':'#ccc'}}>{r.uplift>0?'+ ':r.uplift<0?'- ':'  '}{fmtZAR(Math.abs(r.uplift))} /m2</span>
         </div>
       ))}
-      {result.appliedRate !== result.weightedBaseRate && (
-        <div style={{display:'flex',justifyContent:'space-between',padding:'0.45rem 0',borderBottom:'1px solid #f5f5f3'}}>
-          <span style={{fontSize:'0.78rem',color:'#aaa'}}>Multiplier uplift</span>
-          <span style={{fontSize:'0.78rem',fontWeight:'600',color:'#27ae60'}}>+ {fmtZAR(result.appliedRate - result.weightedBaseRate)} /m2</span>
-        </div>
-      )}
       <div style={{display:'flex',justifyContent:'space-between',padding:'0.75rem 0.75rem',background:'#f9f9f7',borderRadius:'10px',marginTop:'0.75rem'}}>
         <span style={{fontSize:'0.82rem',fontWeight:'600',color:'#1a1a18'}}>Total adjusted base rate</span>
         <span style={{fontSize:'0.95rem',fontWeight:'700',color:'#1a1a18'}}>{fmtZAR(result.appliedRate)} /m2</span>
