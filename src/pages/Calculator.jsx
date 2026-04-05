@@ -289,7 +289,13 @@ export default function Calculator(){
           <span style={{fontSize:'0.78rem',fontWeight:'500',color:'#aaa'}}>{r.value}</span>
         </div>
       ))}
-      <div style={{display:'flex',justifyContent:'space-between',padding:'0.75rem 0',background:'#f9f9f7',borderRadius:'10px',paddingLeft:'0.75rem',paddingRight:'0.75rem',marginTop:'0.75rem'}}>
+      {result.appliedRate !== result.weightedBaseRate && (
+        <div style={{display:'flex',justifyContent:'space-between',padding:'0.45rem 0',borderBottom:'1px solid #f5f5f3'}}>
+          <span style={{fontSize:'0.78rem',color:'#aaa'}}>Multiplier uplift</span>
+          <span style={{fontSize:'0.78rem',fontWeight:'600',color:'#27ae60'}}>+ {fmtZAR(result.appliedRate - result.weightedBaseRate)} /m2</span>
+        </div>
+      )}
+      <div style={{display:'flex',justifyContent:'space-between',padding:'0.75rem 0.75rem',background:'#f9f9f7',borderRadius:'10px',marginTop:'0.75rem'}}>
         <span style={{fontSize:'0.82rem',fontWeight:'600',color:'#1a1a18'}}>Total adjusted base rate</span>
         <span style={{fontSize:'0.95rem',fontWeight:'700',color:'#1a1a18'}}>{fmtZAR(result.appliedRate)} /m2</span>
       </div>
