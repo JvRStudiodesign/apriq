@@ -86,11 +86,7 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
           <View>
             {userDetails?.logo_url
               ? <Image src={userDetails.logo_url} style={s.logoImg} />
-              : <>
-                  <Text style={s.brandText}>AprIQ</Text>
-                  <Text style={s.brandSub}>Smarter Construction Feasibility</Text>
-                  <Text style={s.brandUrl}>apriq.co.za</Text>
-                </>
+              : <Image src="/logo.png" style={{ width: 120, height: 52, objectFit: 'contain' }} />
             }
           </View>
           <View style={s.rightCol}>
