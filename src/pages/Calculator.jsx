@@ -178,15 +178,18 @@ export default function Calculator() {
   }
 
   async function loadEstimate(id) {
-    const { data } = await supabase.from('estimates').select('*, projects(*)').eq('id', id).single();
-    if (data?.inputs_json) {
-      const saved = JSON.parse(data.inputs_json);
-      setInputs({ ...DEFAULT, ...saved });
-      const nc = [saved.use1Category, saved.use2Category, saved.use3Category].filter(Boolean).length;
-      setNumCats(nc || 1);
-      if (data.project_id) setSelectedProjectId(data.project_id);
-      setEditEstimateId(id);
+    let data = null;
+    for (const tbl of ['project_estimates', 'estimates']) {
+      const res = await supabase.from(tbl).select('*').eq('id', id).single();
+      if (res.data) { data = res.data; break; }
     }
+    if (!data) return;
+    const saved = typeof data.inputs_json === 'string' ? JSON.parse(data.inputs_json) : data.inputs_json;
+    if (saved && Object.keys(saved).length > 0) {
+      setInputs({ ...DEFAULT, ...saved });
+      setNumCats([saved.use1Category, saved.use2Category, saved.use3Category].filter(Boolean).length || 1);
+    }
+    if (data.project_id) setSelectedProjectId(data.project_id);
   }
 
   function upd(field, val) { setInputs(p => ({ ...p, [field]: val })); setSaved(false); }
