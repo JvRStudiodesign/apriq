@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { calculate } from '../engine/calculator';
 import { PDFDownloadLink } from '@react-pdf/renderer';
+import { HamburgerMenu } from '../components/HamburgerMenu';
 import { EstimatePDF } from '../components/EstimatePDF';
 import {
   CATEGORIES, QUALITY, SITE_ACCESS, PROJECT_TYPE,
@@ -126,7 +127,6 @@ const DEFAULT = {
   landProcurementType: 'N/A', landArea: 0, landSlopeKey: 'Flat Land (0-5%)',
   escalationRate: 7, estimatedStartDate: null, includeEscalation: false,
   useCustomSplit: false, customElementPcts: DEFAULT_PCTS,
-  clientName: '', projectName: '',
   adjustRate1: false, rate1Adjustment: 0,
   adjustRate2: false, rate2Adjustment: 0,
   adjustRate3: false, rate3Adjustment: 0,
@@ -143,6 +143,15 @@ export default function Calculator() {
   const [fbText, setFbText]   = useState('');
   const [fbSent, setFbSent]   = useState(false);
   const [pdfRef] = useState('APR-' + Date.now().toString(36).toUpperCase());
+  const [projects, setProjects]     = useState([]);
+  const [clients, setClients]       = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [editEstimateId, setEditEstimateId]   = useState(null);
+  const [showNewProj, setShowNewProj] = useState(false);
+  const [showNewClientInCalc, setShowNewClientInCalc] = useState(false);
+  const [newProjForm, setNewProjForm] = useState({ project_name:'', reference_number:'', address:'', client_id:'' });
+  const [newClientNameCalc, setNewClientNameCalc] = useState('');
+  const [savingNewProj, setSavingNewProj] = useState(false);
 
   const tier     = profile?.tier || 'free';
   const trialEnd = profile?.trial_end_date ? new Date(profile.trial_end_date) : null;
@@ -151,6 +160,34 @@ export default function Calculator() {
   const daysLeft = trialEnd ? Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)) : 0;
 
   useEffect(() => { if (isPro) setResult(calculate(inputs)); }, [inputs, isPro]);
+
+  useEffect(() => {
+    loadProjectsAndClients();
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get('edit');
+    if (editId) loadEstimate(editId);
+  }, []);
+
+  async function loadProjectsAndClients() {
+    const [{ data: p }, { data: c }] = await Promise.all([
+      supabase.from('projects').select('*, clients(company_name,contact_name,email)').eq('user_id', user.id).order('project_name'),
+      supabase.from('clients').select('*').eq('user_id', user.id).order('company_name'),
+    ]);
+    setProjects(p || []);
+    setClients(c || []);
+  }
+
+  async function loadEstimate(id) {
+    const { data } = await supabase.from('estimates').select('*, projects(*)').eq('id', id).single();
+    if (data?.inputs_json) {
+      const saved = JSON.parse(data.inputs_json);
+      setInputs({ ...DEFAULT, ...saved });
+      const nc = [saved.use1Category, saved.use2Category, saved.use3Category].filter(Boolean).length;
+      setNumCats(nc || 1);
+      if (data.project_id) setSelectedProjectId(data.project_id);
+      setEditEstimateId(id);
+    }
+  }
 
   function upd(field, val) { setInputs(p => ({ ...p, [field]: val })); setSaved(false); }
   function updCat(n, catKey) {
@@ -201,10 +238,21 @@ export default function Calculator() {
   function handleCalc() { setResult(calculate(inputs)); setSaved(false); }
 
   async function handleSave() {
-    if (!result) return; setSaving(true);
-    const ref = 'APR-' + Date.now().toString(36).toUpperCase();
+    if (!result) return;
+    if (!selectedProjectId) { alert('Please select a project before saving.'); return; }
+    setSaving(true);
+    const selectedProject = projects.find(p => p.id === selectedProjectId);
+    const ref = selectedProject?.reference_number || pdfRef;
+    // Mark all previous estimates for this project as not latest
+    await supabase.from('estimates').update({ is_latest: false }).eq('project_id', selectedProjectId).eq('user_id', user.id);
+    // Insert new version
     await supabase.from('estimates').insert({
       user_id: user.id, reference_number: ref,
+      project_id: selectedProjectId,
+      client_id: selectedProject?.client_id || null,
+      inputs_json: JSON.stringify(inputs),
+      result_json: JSON.stringify(result),
+      is_latest: true,
       building_category: inputs.use1Category, building_subtype: inputs.use1Subtype,
       floor_area: inputs.floorArea, is_mixed_use: numCats > 1,
       quality_multiplier: result.qualityMultiplier, site_access_multiplier: result.siteMultiplier,
@@ -221,7 +269,32 @@ export default function Calculator() {
     setSaving(false); setSaved(true);
   }
 
-  async function handleLogout() { await supabase.auth.signOut(); }
+  async function handleCreateProjectInCalc() {
+    if (!newProjForm.project_name.trim()) return;
+    setSavingNewProj(true);
+    const { data } = await supabase.from('projects').insert({
+      user_id: user.id,
+      project_name: newProjForm.project_name,
+      reference_number: newProjForm.reference_number,
+      address: newProjForm.address,
+      client_id: newProjForm.client_id || null,
+    }).select('*, clients(company_name,contact_name,email)').single();
+    if (data) {
+      setProjects(prev => [...prev, data].sort((a,b)=>a.project_name.localeCompare(b.project_name)));
+      setSelectedProjectId(data.id);
+    }
+    setSavingNewProj(false); setShowNewProj(false); setNewProjForm({ project_name:'', reference_number:'', address:'', client_id:'' }); setSaved(false);
+  }
+
+  async function handleCreateClientInCalc() {
+    if (!newClientNameCalc.trim()) return;
+    const { data } = await supabase.from('clients').insert({ user_id: user.id, company_name: newClientNameCalc.trim() }).select().single();
+    if (data) {
+      setClients(prev => [...prev, data].sort((a,b)=>a.company_name.localeCompare(b.company_name)));
+      setNewProjForm(f => ({...f, client_id: data.id}));
+    }
+    setNewClientNameCalc(''); setShowNewClientInCalc(false);
+  }
 
   const subtypes1  = CATEGORIES.find(c => c.key === inputs.use1Category)?.subtypes || [];
   const subtypes2  = CATEGORIES.find(c => c.key === inputs.use2Category)?.subtypes || [];
@@ -231,6 +304,14 @@ export default function Calculator() {
   const customPctSum = inputs.customElementPcts?.reduce((s, p) => s + p, 0) || 0;
   const customPctOk  = Math.abs(customPctSum - 1) < 0.005;
   const showEscalation = inputs.includeEscalation && result?.escalationYears?.length > 0;
+  const selectedProject = projects.find(p => p.id === selectedProjectId) || null;
+  const selectedClient  = selectedProject?.clients || null;
+  const userDetails     = { ...profile, email: user?.email };
+  const now             = new Date();
+  const _ds             = now.toISOString().slice(0,10);
+  const _ts             = now.toTimeString().slice(0,5).replace(':','-');
+  const pdfRef_display  = selectedProject?.reference_number || pdfRef;
+  const pdfFilename     = `APRIQ-${pdfRef_display}-${_ds}-${_ts}.pdf`;
   const isRenovation   = inputs.projectTypeKey === 'Renovation';
 
   const Summary = () => !result ? null : (<>
@@ -253,7 +334,7 @@ export default function Calculator() {
 
       {result.elementBreakdown.map((el, i) => (
         <div key={el.key} style={{ display: 'flex', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #f5f5f3', fontSize: '0.82rem', gap: '0.5rem' }}>
-          <span style={{ flex: 1, color: '#555' }}>{el.label}</span>
+          <span style={{ flex: 1, color: '#555', textAlign: 'left' }}>{el.label}</span>
           {inputs.useCustomSplit && isPro ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <input type="number" min={0} max={100} step={0.1} value={Math.round(el.effectivePct * 1000) / 10}
@@ -429,20 +510,79 @@ export default function Calculator() {
     </div>
 
     {/* ── Save estimate ── */}
-    <button onClick={handleSave} disabled={saving || saved}
-      style={{ width: '100%', padding: '0.75rem', background: saved ? '#27ae60' : '#fff', color: saved ? '#fff' : '#1a1a18', border: '1.5px solid #e5e5e3', borderRadius: '12px', fontSize: '0.875rem', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '0.75rem' }}>
-      {saving ? 'Saving…' : saved ? 'Saved' : 'Save estimate'}
-    </button>
-    <PDFDownloadLink
-      document={<EstimatePDF inputs={inputs} result={result} profile={profile} reference={pdfRef} numCats={numCats} isRenovation={isRenovation} />}
-      fileName={'AprIQ-' + pdfRef + '.pdf'}
-      style={{ display: 'block', textDecoration: 'none', marginBottom: '1rem' }}>
-      {({ loading }) => (
-        <button style={{ width: '100%', padding: '0.75rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '0.875rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
-          {loading ? 'Preparing PDF…' : 'Download PDF'}
-        </button>
+    {/* Project selector */}
+    <div style={{ background:'#fff', borderRadius:'14px', padding:'1.25rem 1.5rem', border:'1px solid #eeede8', marginBottom:'0.75rem' }}>
+      <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#1a1a18', display:'block', marginBottom:'0.875rem' }}>Save to project</span>
+      <label style={{ display:'block', fontSize:'0.7rem', fontWeight:'600', color:'#999', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'0.5rem' }}>Project</label>
+      <select value={selectedProjectId} onChange={e=>{ if(e.target.value==='__new__'){setShowNewProj(true);}else{setSelectedProjectId(e.target.value);setSaved(false);} }}
+        style={{ width:'100%', padding:'0.6rem 0.875rem', border:'1.5px solid #e5e5e3', borderRadius:'10px', fontSize:'0.875rem', fontFamily:'inherit', outline:'none', color:'#1a1a18', background:'#fff', cursor:'pointer', boxSizing:'border-box', marginBottom: selectedProject?'0.625rem':0 }}>
+        <option value="">Select project...</option>
+        {projects.map(p=><option key={p.id} value={p.id}>{p.project_name}{p.reference_number?' · '+p.reference_number:''}</option>)}
+        <option value="__new__">+ Add new project</option>
+      </select>
+      {selectedProject && (
+        <div style={{ fontSize:'0.75rem', color:'#aaa', lineHeight:1.6 }}>
+          {selectedProject.reference_number && <span style={{ marginRight:'12px' }}>Ref: {selectedProject.reference_number}</span>}
+          {selectedClient?.company_name && <span>Client: {selectedClient.company_name}</span>}
+        </div>
       )}
-    </PDFDownloadLink>
+      {showNewProj && (
+        <div style={{ marginTop:'1rem', padding:'1rem', background:'#f9f9f7', borderRadius:'10px', border:'1px solid #eeede8' }}>
+          <p style={{ fontSize:'0.78rem', fontWeight:'600', color:'#1a1a18', marginBottom:'0.75rem' }}>New project</p>
+          {[
+            { label:'Project name *', field:'project_name', placeholder:'e.g. Sandton Residential' },
+            { label:'Reference number', field:'reference_number', placeholder:'e.g. PRJ-2026-001' },
+            { label:'Address', field:'address', placeholder:'123 Main Street, Sandton' },
+          ].map(f=>(
+            <div key={f.field} style={{ marginBottom:'0.625rem' }}>
+              <label style={{ display:'block', fontSize:'0.65rem', fontWeight:'600', color:'#999', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'3px' }}>{f.label}</label>
+              <input value={newProjForm[f.field]} onChange={e=>setNewProjForm(p=>({...p,[f.field]:e.target.value}))} placeholder={f.placeholder}
+                style={{ width:'100%', padding:'0.5rem 0.75rem', border:'1.5px solid #e5e5e3', borderRadius:'9px', fontSize:'0.82rem', fontFamily:'inherit', outline:'none', boxSizing:'border-box', color:'#1a1a18' }}/>
+            </div>
+          ))}
+          <div style={{ marginBottom:'0.625rem' }}>
+            <label style={{ display:'block', fontSize:'0.65rem', fontWeight:'600', color:'#999', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'3px' }}>Client</label>
+            <select value={newProjForm.client_id} onChange={e=>setNewProjForm(p=>({...p,client_id:e.target.value}))}
+              style={{ width:'100%', padding:'0.5rem 0.75rem', border:'1.5px solid #e5e5e3', borderRadius:'9px', fontSize:'0.82rem', fontFamily:'inherit', outline:'none', color:'#1a1a18', background:'#fff', cursor:'pointer', boxSizing:'border-box' }}>
+              <option value="">No client</option>
+              {clients.map(c=><option key={c.id} value={c.id}>{c.company_name}</option>)}
+            </select>
+            <button onClick={()=>setShowNewClientInCalc(v=>!v)} style={{ fontSize:'0.68rem', color:'#888', background:'none', border:'none', cursor:'pointer', padding:'3px 0' }}>
+              {showNewClientInCalc?'Cancel':'+ Add new client'}
+            </button>
+            {showNewClientInCalc && (
+              <div style={{ display:'flex', gap:'6px', marginTop:'4px' }}>
+                <input value={newClientNameCalc} onChange={e=>setNewClientNameCalc(e.target.value)} placeholder="Client company name"
+                  style={{ flex:1, padding:'0.4rem 0.625rem', border:'1.5px solid #e5e5e3', borderRadius:'8px', fontSize:'0.78rem', fontFamily:'inherit', outline:'none' }}/>
+                <button onClick={handleCreateClientInCalc} style={{ padding:'0.4rem 10px', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'8px', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Add</button>
+              </div>
+            )}
+          </div>
+          <div style={{ display:'flex', gap:'6px', marginTop:'0.5rem' }}>
+            <button onClick={handleCreateProjectInCalc} disabled={savingNewProj||!newProjForm.project_name.trim()} style={{ flex:1, padding:'0.5rem', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'9px', fontSize:'0.78rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>{savingNewProj?'Saving...':'Create project'}</button>
+            <button onClick={()=>setShowNewProj(false)} style={{ padding:'0.5rem 10px', background:'#fff', color:'#aaa', border:'1.5px solid #e5e5e3', borderRadius:'9px', fontSize:'0.78rem', cursor:'pointer', fontFamily:'inherit' }}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+
+    <button onClick={handleSave} disabled={saving || saved || !selectedProjectId}
+      style={{ width:'100%', padding:'0.75rem', background:saved?'#27ae60':selectedProjectId?'#fff':'#f5f5f3', color:saved?'#fff':selectedProjectId?'#1a1a18':'#ccc', border:'1.5px solid #e5e5e3', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', cursor:selectedProjectId?'pointer':'not-allowed', fontFamily:'inherit', marginBottom:'0.75rem' }}>
+      {saving?'Saving…':saved?'Saved':'Save estimate'}
+    </button>
+    {isPro && result ? (
+      <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'1rem' }}>
+        {({loading})=>(
+          <button style={{ width:'100%', padding:'0.75rem', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
+            {loading?'Preparing PDF…':'Download PDF'}
+          </button>
+        )}
+      </PDFDownloadLink>
+    ) : !isPro ? (
+      <div style={{ width:'100%', padding:'0.75rem', background:'#f0f0ee', color:'#aaa', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', textAlign:'center', marginBottom:'1rem', boxSizing:'border-box' }}>
+        PDF export · Pro only
+      </div>
+    ) : null}
   </>);
 
   return (
@@ -451,12 +591,14 @@ export default function Calculator() {
 
       {/* ── Nav ── */}
       <div style={{ background: '#fff', borderBottom: '1px solid #eeede8', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
-        <span style={{ fontWeight: '700', fontSize: '1rem', letterSpacing: '-0.02em' }}>AprIQ</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <HamburgerMenu />
+          <span style={{ fontWeight: '700', fontSize: '1rem', letterSpacing: '-0.02em' }}>AprIQ</span>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
           {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#fff3cd', color: '#856404', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}
           <span style={{ fontSize: '0.72rem', background: isPro ? '#eaf3de' : '#f0f0ee', color: isPro ? '#27500a' : '#aaa', padding: '2px 8px', borderRadius: '8px', fontWeight: '600' }}>{tier === 'pro' ? 'Pro' : trialOk ? 'Trial' : 'Free'}</span>
           <span style={{ fontSize: '0.78rem', color: '#bbb' }}>{profile?.full_name || user?.email}</span>
-          <button onClick={handleLogout} style={{ fontSize: '0.78rem', color: '#bbb', background: 'none', border: 'none', cursor: 'pointer' }}>Sign out</button>
         </div>
       </div>
 
@@ -487,7 +629,7 @@ export default function Calculator() {
               {subtypes1.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
             <RateRow rawRate={result?.rate1Raw} adjustedRate={result?.rate1} adjustField="rate1Adjustment" toggleField="adjustRate1" adjValue={inputs.rate1Adjustment} adjToggle={inputs.adjustRate1} isPro={isPro} upd={upd} />
-            {numCats > 1 && <Slider label="Allocation — Use 1" value={Math.round(inputs.use1Allocation * 100)} min={0} max={100} step={1} onChange={setAlloc1} fmtFn={v => v + '%'} />}
+            {numCats > 1 && <Slider label="Allocation — Use 1" value={Math.round(inputs.use1Allocation * 100)} min={0} max={100} step={1} onChange={setAlloc1} fmtFn={v => v + '% · ' + Math.round(v/100 * inputs.floorArea) + ' m²'} />}
 
             {/* Use 2 */}
             {numCats >= 2 && (<>
@@ -507,7 +649,7 @@ export default function Calculator() {
               <RateRow rawRate={result?.rate2Raw} adjustedRate={result?.rate2} adjustField="rate2Adjustment" toggleField="adjustRate2" adjValue={inputs.rate2Adjustment} adjToggle={inputs.adjustRate2} isPro={isPro} upd={upd} />
               {numCats === 2
                 ? <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}><span style={lbl}>Allocation — Use 2</span><span style={{ fontSize: '0.875rem', fontWeight: '600' }}>{Math.round(inputs.use2Allocation * 100)}%</span></div>
-                : <Slider label="Allocation — Use 2" value={Math.round(inputs.use2Allocation * 100)} min={0} max={Math.round((1 - inputs.use1Allocation) * 100)} step={1} onChange={setAlloc2} fmtFn={v => v + '%'} />}
+                : <Slider label="Allocation — Use 2" value={Math.round(inputs.use2Allocation * 100)} min={0} max={Math.round((1 - inputs.use1Allocation) * 100)} step={1} onChange={setAlloc2} fmtFn={v => v + '% · ' + Math.round(v/100 * inputs.floorArea) + ' m²'} />}
             </>)}
 
             {/* Use 3 */}
