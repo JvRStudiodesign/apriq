@@ -145,14 +145,14 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
               </View>
             ))}
             {inputs.projectTypeKey && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Project type</Text><Text style={s.rowVal}>{inputs.projectTypeKey}</Text></View></View>}
-            {inputs.floorArea > 0 && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Floor area</Text><Text style={s.rowVal}>{inputs.floorArea} m\u00b2</Text></View></View>}
-            {isRenovation && inputs.renovationArea > 0 && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Renovation area</Text><Text style={s.rowVal}>{inputs.renovationArea} m\u00b2</Text></View></View>}
+            {inputs.floorArea > 0 && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Floor area</Text><Text style={s.rowVal}>{inputs.floorArea} m²</Text></View></View>}
+            {isRenovation && inputs.renovationArea > 0 && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Renovation area</Text><Text style={s.rowVal}>{inputs.renovationArea} m²</Text></View></View>}
             {inputs.qualityKey && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Quality</Text><Text style={s.rowVal}>{inputs.qualityKey}</Text></View></View>}
             {inputs.siteAccessKey && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Site access</Text><Text style={s.rowVal}>{inputs.siteAccessKey.replace(' Setting', '')}</Text></View></View>}
             {inputs.complexityKey && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Complexity</Text><Text style={s.rowVal}>{inputs.complexityKey.replace(' Complexity', '')}</Text></View></View>}
             {inputs.landProcurementType && inputs.landProcurementType !== 'N/A' && <>
               <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Land type</Text><Text style={s.rowVal}>{inputs.landProcurementType}</Text></View></View>
-              {inputs.landArea > 0 && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Land area</Text><Text style={s.rowVal}>{inputs.landArea} m\u00b2</Text></View></View>}
+              {inputs.landArea > 0 && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Land area</Text><Text style={s.rowVal}>{inputs.landArea} m²</Text></View></View>}
             </>}
           </View>
         </View>
@@ -162,27 +162,27 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
           <Text style={s.sectionTitle}>Rate Summary</Text>
           <View style={s.row}>
             <Text style={s.rowLabel}>{numCats === 1 ? `Base rate (${inputs.use1Subtype || ''})${inputs.rate1Adjustment ? ' \u2014 ' + (inputs.rate1Adjustment > 0 ? '+' : '') + inputs.rate1Adjustment + '% adjusted' : ''}` : 'Weighted base rate'}</Text>
-            <Text style={s.rowVal}>{fmt(result?.weightedBaseRate)} /m\u00b2</Text>
+            <Text style={s.rowVal}>{fmt(result?.weightedBaseRate)} /m²</Text>
           </View>
           {multiplierRows.map(r => (
             <View key={r.label} style={s.row}>
               <Text style={s.rowLabel}>{r.label}</Text>
-              <Text style={s.rowUplift}>{r.uplift > 0 ? '+ ' : r.uplift < 0 ? '\u2212 ' : '  '}{fmt(Math.abs(r.uplift))} /m\u00b2</Text>
+              <Text style={s.rowUplift}>{r.uplift > 0 ? '+ ' : r.uplift < 0 ? '\u2212 ' : '  '}{fmt(Math.abs(r.uplift))} /m²</Text>
             </View>
           ))}
           <View style={s.divLine} />
           <View style={s.totalRow}>
             <Text style={s.totalLabel}>{isRenovation ? 'Construction rate \u2014 new work' : 'Total adjusted base rate'}</Text>
-            <Text style={s.totalVal}>{fmt(result?.totalAdjustedBaseRate)} /m\u00b2</Text>
+            <Text style={s.totalVal}>{fmt(result?.totalAdjustedBaseRate)} /m²</Text>
           </View>
           {isRenovation && result?.renovArea > 0 && <>
             <View style={[s.row, { marginTop: 4 }]}>
               <Text style={s.rowLabel}>Renovation \u2014 {inputs.renovationComplexityKey} (x{result?.renovationMultiplier})</Text>
-              <Text style={s.rowUplift}>+ {fmt((result?.totalAdjustedBaseRate || 0) * ((result?.renovationMultiplier || 1) - 1))} /m\u00b2</Text>
+              <Text style={s.rowUplift}>+ {fmt((result?.totalAdjustedBaseRate || 0) * ((result?.renovationMultiplier || 1) - 1))} /m²</Text>
             </View>
             <View style={s.totalRow}>
               <Text style={s.totalLabel}>Construction rate \u2014 renovation</Text>
-              <Text style={s.totalVal}>{fmt((result?.totalAdjustedBaseRate || 0) * (result?.renovationMultiplier || 1))} /m\u00b2</Text>
+              <Text style={s.totalVal}>{fmt((result?.totalAdjustedBaseRate || 0) * (result?.renovationMultiplier || 1))} /m²</Text>
             </View>
           </>}
         </View>
@@ -198,11 +198,11 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
             </View>
           ))}
           {isRenovation ? <>
-            {result?.newArea > 0 && <View style={s.row}><Text style={s.rowLabelBold}>Construction cost \u2014 New ({result?.newArea} m\u00b2)</Text><Text style={s.rowVal}>{fmt(result?.baseConstructionCostNew)}</Text></View>}
-            {result?.renovArea > 0 && <View style={s.row}><Text style={s.rowLabelBold}>Construction cost \u2014 Renovation ({result?.renovArea} m\u00b2)</Text><Text style={s.rowVal}>{fmt(result?.baseConstructionCostRenovation)}</Text></View>}
+            {result?.newArea > 0 && <View style={s.row}><Text style={s.rowLabelBold}>Construction cost \u2014 New ({result?.newArea} m²)</Text><Text style={s.rowVal}>{fmt(result?.baseConstructionCostNew)}</Text></View>}
+            {result?.renovArea > 0 && <View style={s.row}><Text style={s.rowLabelBold}>Construction cost \u2014 Renovation ({result?.renovArea} m²)</Text><Text style={s.rowVal}>{fmt(result?.baseConstructionCostRenovation)}</Text></View>}
           </> : null}
           <View style={s.totalRow}>
-            <Text style={s.totalLabel}>Construction cost ({result?.newArea} m\u00b2)</Text>
+            <Text style={s.totalLabel}>Construction cost ({result?.newArea} m²)</Text>
             <Text style={s.totalVal}>{fmt(result?.constructionCost)}</Text>
           </View>
         </View>

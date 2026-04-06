@@ -59,12 +59,19 @@ export default function Clients() {
   function cancelForm() { setShowForm(false); setEditId(null); setForm(EMPTY); }
 
   async function handleSave() {
-    if (!form.company_name.trim()) return;
+    const coName = fieldRefs.current.company_name?.value || form.company_name;
+    if (!coName.trim()) return;
     setSaving(true);
+    const payload = {
+      company_name: coName,
+      contact_name: fieldRefs.current.contact_name?.value || form.contact_name,
+      email: fieldRefs.current.email?.value || form.email,
+      address: fieldRefs.current.address?.value || form.address,
+    };
     if (editId) {
-      await supabase.from('clients').update({ ...form, updated_at: new Date().toISOString() }).eq('id', editId);
+      await supabase.from('clients').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', editId);
     } else {
-      await supabase.from('clients').insert({ user_id: user.id, ...form });
+      await supabase.from('clients').insert({ user_id: user.id, ...payload });
     }
     setSaving(false);
     cancelForm();
@@ -77,12 +84,30 @@ export default function Clients() {
     load();
   }
 
+  const fieldRefs = useRef({});
+  
+  useEffect(() => {
+    if (!showForm) return;
+    Object.keys(form).forEach(k => {
+      if (fieldRefs.current[k]) fieldRefs.current[k].value = form[k] || '';
+    });
+  }, [showForm, editId]);
+
   const Field = ({ label, field, placeholder, multiline }) => (
     <div style={{ marginBottom: '1rem' }}>
       <label style={lbl}>{label}</label>
       {multiline
-        ? <textarea value={form[field]} onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))} placeholder={placeholder} rows={2} style={{ ...inp, resize: 'vertical' }} />
-        : <input value={form[field]} onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))} placeholder={placeholder} style={inp} />}
+        ? <textarea
+            ref={el => { fieldRefs.current[field] = el; }}
+            defaultValue={form[field] || ''}
+            key={field + '-' + (editId || 'new')}
+            placeholder={placeholder} rows={2}
+            style={{ ...inp, resize: 'vertical' }} />
+        : <input
+            ref={el => { fieldRefs.current[field] = el; }}
+            defaultValue={form[field] || ''}
+            key={field + '-' + (editId || 'new')}
+            placeholder={placeholder} style={inp} />}
     </div>
   );
 
