@@ -144,7 +144,7 @@ export default function Projects() {
       <div style={{ background: '#fff', borderBottom: '1px solid #eeede8', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
           <HamburgerMenu />
-          <span style={{ fontWeight: '700', fontSize: '1.5rem', letterSpacing: '-0.04em', cursor: 'pointer' }} onClick={() => navigate('/')}><img src="/logo.png" alt="AprIQ" style={{ height: '32px', objectFit: 'contain' }} /></span>
+          <span style={{ fontWeight: '700', fontSize: '1.5rem', letterSpacing: '-0.04em', cursor: 'pointer' }} onClick={() => navigate('/')}><img src="/logo.png" alt="AprIQ" style={{ height: '36px', maxWidth: '120px', objectFit: 'contain' }} /></span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '0.72rem', color: '#aaa' }}>{projects.length}/{limit} projects</span>
