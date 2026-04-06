@@ -141,9 +141,7 @@ export default function Calculator() {
   const [saved, setSaved]     = useState(false);
   const [feedback, setFeedback] = useState(false);
   const [fbText, setFbText]   = useState('');
-  const [fbSent, setFbSent]   = useState(false);
-  const [pdfRef] = useState('APR-' + Date.now().toString(36).toUpperCase());
-  const [projects, setProjects]     = useState([]);
+  const [fbSent, setFbSent]   = useState(false);  const [projects, setProjects]     = useState([]);
   const [clients, setClients]       = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [editEstimateId, setEditEstimateId]   = useState(null);
@@ -343,7 +341,7 @@ export default function Calculator() {
               <span style={{ color: '#aaa', fontSize: '0.75rem' }}>%</span>
             </div>
           ) : (
-            <span style={{ color: '#aaa', fontSize: '0.75rem', minWidth: '36px', textAlign: 'right' }}>{pctFmt(el.defaultPct)}</span>
+            <span style={{ color: '#aaa', fontSize: '0.75rem', minWidth: '36px', textAlign: 'left' }}>{pctFmt(el.defaultPct)}</span>
           )}
           <span style={{ fontWeight: '600', color: '#1a1a18', minWidth: '90px', textAlign: 'right' }}>{fmtZAR(el.amount)}</span>
         </div>
@@ -593,7 +591,7 @@ export default function Calculator() {
       <div style={{ background: '#fff', borderBottom: '1px solid #eeede8', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <HamburgerMenu />
-          <span style={{ fontWeight: '700', fontSize: '1rem', letterSpacing: '-0.02em' }}>AprIQ</span>
+          <span style={{ fontWeight: '700', fontSize: '1.5rem', letterSpacing: '-0.04em' }}>AprIQ</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
           {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#fff3cd', color: '#856404', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}
