@@ -48,7 +48,7 @@ export default function ComingSoon() {
             </form>
           )}
           <div style={{ display:'flex', gap:'10px', flexWrap:'wrap', justifyContent:'center', marginTop: submitted ? '2rem' : '0' }}>
-            {[['⚡','Instant estimates'],['🏗️','100 building types'],['📄','PDF export'],['📊','AECOM-calibrated rates'],['🇿🇦','South African market']].map(([icon,label]) => (
+            {[['⚡','Instant estimates'],['🏗️','100 building types'],['📄','PDF export'],['🇿🇦','South African market']].map(([icon,label]) => (
               <div key={label} style={{ background:'#fff', border:'1px solid #eeede8', borderRadius:'20px', padding:'6px 14px', fontSize:'0.8rem', color:'#555', display:'flex', alignItems:'center', gap:'6px' }}>
                 <span>{icon}</span><span>{label}</span>
               </div>
