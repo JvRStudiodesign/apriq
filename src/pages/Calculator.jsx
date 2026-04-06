@@ -144,6 +144,7 @@ export default function Calculator() {
   const [fbSent, setFbSent]   = useState(false);  const [projects, setProjects]     = useState([]);
   const [clients, setClients]       = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [pdfRef] = useState('APR-' + Date.now().toString(36).toUpperCase());
   const [editEstimateId, setEditEstimateId]   = useState(null);
   const [showNewProj, setShowNewProj] = useState(false);
   const [showNewClientInCalc, setShowNewClientInCalc] = useState(false);
