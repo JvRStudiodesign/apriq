@@ -265,7 +265,7 @@ export default function Calculator() {
       vat_amount: result.vatAmount, total_project_cost: result.totalProjectCost,
       escalated_total: result.escalatedTotal, cost_breakdown: result.elementBreakdown,
     });
-    await supabase.from('project_estimates').delete().eq('project_id', selectedProjectId).eq('user_id', user.id).eq('is_latest', True);
+    await supabase.from('project_estimates').delete().eq('project_id', selectedProjectId).eq('user_id', user.id);
     await supabase.from('project_estimates').insert({
       user_id: user.id, project_id: selectedProjectId,
       client_id: projects.find(p => p.id === selectedProjectId)?.client_id || null,
