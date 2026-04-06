@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { calculate } from '../engine/calculator';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { EstimatePDF } from '../components/EstimatePDF';
 import {
   CATEGORIES, QUALITY, SITE_ACCESS, PROJECT_TYPE,
   RENOVATION_COMPLEXITY, COMPLEXITY, LAND_PROCUREMENT, LAND_SLOPE, BREAKDOWN_ELEMENTS,
@@ -124,6 +126,7 @@ const DEFAULT = {
   landProcurementType: 'N/A', landArea: 0, landSlopeKey: 'Flat Land (0-5%)',
   escalationRate: 7, estimatedStartDate: null, includeEscalation: false,
   useCustomSplit: false, customElementPcts: DEFAULT_PCTS,
+  clientName: '', projectName: '',
   adjustRate1: false, rate1Adjustment: 0,
   adjustRate2: false, rate2Adjustment: 0,
   adjustRate3: false, rate3Adjustment: 0,
@@ -139,6 +142,7 @@ export default function Calculator() {
   const [feedback, setFeedback] = useState(false);
   const [fbText, setFbText]   = useState('');
   const [fbSent, setFbSent]   = useState(false);
+  const [pdfRef] = useState('APR-' + Date.now().toString(36).toUpperCase());
 
   const tier     = profile?.tier || 'free';
   const trialEnd = profile?.trial_end_date ? new Date(profile.trial_end_date) : null;
@@ -230,12 +234,14 @@ export default function Calculator() {
   const isRenovation   = inputs.projectTypeKey === 'Renovation';
 
   const Summary = () => !result ? null : (<>
+    {/* ── Total project cost hero ── */}
     <div style={{ background: '#1a1a18', borderRadius: '14px', padding: '1.5rem', marginBottom: '1rem', color: '#fff' }}>
       <p style={{ fontSize: '0.68rem', color: '#888', marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total project cost</p>
       <p style={{ fontSize: '2rem', fontWeight: '700', letterSpacing: '-1px', lineHeight: 1.1, color: '#fff' }}>{fmtZAR(result.totalProjectCost)}</p>
       {isPro && <p style={{ fontSize: '0.68rem', color: '#555', marginTop: '0.5rem' }}>Updates live as you adjust inputs</p>}
     </div>
 
+    {/* ── Element breakdown ── */}
     <div style={card}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18' }}>Element breakdown</span>
@@ -244,6 +250,7 @@ export default function Calculator() {
           Custom split{!isPro && PRO_BADGE}
         </label>
       </div>
+
       {result.elementBreakdown.map((el, i) => (
         <div key={el.key} style={{ display: 'flex', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #f5f5f3', fontSize: '0.82rem', gap: '0.5rem' }}>
           <span style={{ flex: 1, color: '#555' }}>{el.label}</span>
@@ -260,11 +267,14 @@ export default function Calculator() {
           <span style={{ fontWeight: '600', color: '#1a1a18', minWidth: '90px', textAlign: 'right' }}>{fmtZAR(el.amount)}</span>
         </div>
       ))}
+
       {inputs.useCustomSplit && (
         <div style={{ marginTop: '0.75rem', borderRadius: '8px', padding: '0.45rem 0.875rem', background: customPctOk ? '#eaf3de' : '#fdecea', fontSize: '0.78rem', color: customPctOk ? '#27500a' : '#c0392b' }}>
           {customPctOk ? 'Element split totals 100%' : `Element split totals ${(customPctSum * 100).toFixed(1)}% — must equal 100%`}
         </div>
       )}
+
+      {/* Construction cost footer — split for renovation */}
       {isRenovation ? (
         <div style={{ marginTop: '0.75rem', borderTop: '1.5px solid #eee', paddingTop: '0.5rem' }}>
           {result.newArea > 0 && (
@@ -280,16 +290,19 @@ export default function Calculator() {
             </div>
           )}
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.4rem', marginTop: '0.25rem', borderTop: '1px solid #eee', fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>
-            <span>Construction cost total</span><span>{fmtZAR(result.constructionCost)}</span>
+            <span>Construction cost total</span>
+            <span>{fmtZAR(result.constructionCost)}</span>
           </div>
         </div>
       ) : (
         <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>
-          <span>Construction cost ({result.newArea} m²)</span><span>{fmtZAR(result.constructionCost)}</span>
+          <span>Construction cost ({result.newArea} m²)</span>
+          <span>{fmtZAR(result.constructionCost)}</span>
         </div>
       )}
     </div>
 
+    {/* ── Financial additions ── */}
     <div style={card}>
       <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1rem' }}>Financial additions</span>
       {[
@@ -303,6 +316,7 @@ export default function Calculator() {
       ))}
     </div>
 
+    {/* ── Total project cost ── */}
     <div style={{ ...card, background: '#f9f9f7' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: '0.95rem', fontWeight: '700', color: '#1a1a18' }}>Total project cost</span>
@@ -310,6 +324,7 @@ export default function Calculator() {
       </div>
     </div>
 
+    {/* ── Escalation ── */}
     {showEscalation && (
       <div style={card}>
         <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '0.25rem' }}>Escalation at {inputs.escalationRate}% p.a.</span>
@@ -323,9 +338,11 @@ export default function Calculator() {
       </div>
     )}
 
+    {/* ── Rate summary ── */}
     <div style={card}>
       <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1rem' }}>Rate summary</span>
 
+      {/* Base rate — single or weighted */}
       {numCats === 1 ? (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '0.45rem 0', borderBottom: '1px solid #f5f5f3' }}>
           <div>
@@ -336,6 +353,7 @@ export default function Calculator() {
               </span>
             )}
           </div>
+          {/* Show the user-adjusted rate, not the raw rate */}
           <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.weightedBaseRate)} /m²</span>
         </div>
       ) : (
@@ -344,25 +362,30 @@ export default function Calculator() {
             <span style={{ fontSize: '0.78rem', color: '#555' }}>Weighted base rate</span>
             <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.weightedBaseRate)} /m²</span>
           </div>
+          {/* Composition */}
           {[
             { sub: inputs.use1Subtype, alloc: inputs.use1Allocation, rate: result.rate1, adj: inputs.rate1Adjustment },
             numCats >= 2 ? { sub: inputs.use2Subtype, alloc: inputs.use2Allocation, rate: result.rate2, adj: inputs.rate2Adjustment } : null,
             numCats >= 3 ? { sub: inputs.use3Subtype, alloc: inputs.use3Allocation, rate: result.rate3, adj: inputs.rate3Adjustment } : null,
           ].filter(Boolean).map((u, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0 0.3rem 0.875rem', fontSize: '0.75rem', borderBottom: '1px solid #f5f5f3', color: '#aaa' }}>
-              <span>{u.sub} ({Math.round(u.alloc * 100)}%){u.adj !== 0 && <span style={{ color: u.adj > 0 ? '#27ae60' : '#e74c3c', marginLeft: '4px' }}>{u.adj > 0 ? '+' : ''}{u.adj}%</span>}</span>
+              <span>
+                {u.sub} ({Math.round(u.alloc * 100)}%)
+                {u.adj !== 0 && <span style={{ color: u.adj > 0 ? '#27ae60' : '#e74c3c', marginLeft: '4px' }}>{u.adj > 0 ? '+' : ''}{u.adj}%</span>}
+              </span>
               <span>{fmtZAR(u.rate)} /m²</span>
             </div>
           ))}
         </>
       )}
 
+      {/* Multiplier uplifts — each shown as rand value added */}
       {(() => {
         const base = result.weightedBaseRate;
         const rows = [
-          { label: `Quality — ${inputs.qualityKey}`, uplift: base * (result.qualityMultiplier - 1) },
-          { label: `Site — ${inputs.siteAccessKey.replace(' Setting', '')}`, uplift: base * result.qualityMultiplier * (result.siteMultiplier - 1) },
-          { label: `Complexity — ${inputs.complexityKey.replace(' Complexity', '')}`, uplift: base * result.qualityMultiplier * result.siteMultiplier * (result.complexityMultiplier - 1) },
+          { label: `Quality — ${inputs.qualityKey}`,              uplift: base * (result.qualityMultiplier - 1),     cumBase: base },
+          { label: `Site — ${inputs.siteAccessKey.replace(' Setting', '')}`, uplift: base * result.qualityMultiplier * (result.siteMultiplier - 1), cumBase: base * result.qualityMultiplier },
+          { label: `Complexity — ${inputs.complexityKey.replace(' Complexity', '')}`, uplift: base * result.qualityMultiplier * result.siteMultiplier * (result.complexityMultiplier - 1), cumBase: base * result.qualityMultiplier * result.siteMultiplier },
           inputs.projectTypeKey === 'Addition' ? { label: 'Addition factor (×1.15)', uplift: base * result.qualityMultiplier * result.siteMultiplier * result.complexityMultiplier * (result.projectTypeMultiplier - 1) } : null,
         ].filter(Boolean);
         return rows.map(r => (
@@ -375,8 +398,10 @@ export default function Calculator() {
         ));
       })()}
 
+      {/* Separator */}
       <div style={{ borderTop: '1.5px solid #1a1a18', margin: '0.5rem 0' }} />
 
+      {/* Total adjusted base rate (new construction) */}
       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: '#f9f9f7', borderRadius: '10px' }}>
         <span style={{ fontSize: '0.82rem', fontWeight: '600', color: '#1a1a18' }}>
           {isRenovation ? 'Construction rate — new work' : 'Total adjusted base rate'}
@@ -384,11 +409,16 @@ export default function Calculator() {
         <span style={{ fontSize: '0.95rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.totalAdjustedBaseRate)} /m²</span>
       </div>
 
+      {/* Renovation rate block */}
       {isRenovation && result.renovArea > 0 && (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', marginTop: '0.5rem', borderBottom: '1px solid #f5f5f3' }}>
-            <span style={{ fontSize: '0.78rem', color: '#aaa' }}>Renovation — {inputs.renovationComplexityKey} (×{result.renovationMultiplier})</span>
-            <span style={{ fontSize: '0.78rem', fontWeight: '500', color: '#555' }}>+ {fmtZAR(result.totalAdjustedBaseRate * (result.renovationMultiplier - 1))} /m²</span>
+            <span style={{ fontSize: '0.78rem', color: '#aaa' }}>
+              Renovation — {inputs.renovationComplexityKey} (×{result.renovationMultiplier})
+            </span>
+            <span style={{ fontSize: '0.78rem', fontWeight: '500', color: '#555' }}>
+              + {fmtZAR(result.totalAdjustedBaseRate * (result.renovationMultiplier - 1))} /m²
+            </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: '#f9f9f7', borderRadius: '10px', marginTop: '0.5rem' }}>
             <span style={{ fontSize: '0.82rem', fontWeight: '600', color: '#1a1a18' }}>Construction rate — renovation</span>
@@ -398,15 +428,28 @@ export default function Calculator() {
       )}
     </div>
 
+    {/* ── Save estimate ── */}
     <button onClick={handleSave} disabled={saving || saved}
-      style={{ width: '100%', padding: '0.75rem', background: saved ? '#27ae60' : '#fff', color: saved ? '#fff' : '#1a1a18', border: '1.5px solid #e5e5e3', borderRadius: '12px', fontSize: '0.875rem', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '1rem' }}>
+      style={{ width: '100%', padding: '0.75rem', background: saved ? '#27ae60' : '#fff', color: saved ? '#fff' : '#1a1a18', border: '1.5px solid #e5e5e3', borderRadius: '12px', fontSize: '0.875rem', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '0.75rem' }}>
       {saving ? 'Saving…' : saved ? 'Saved' : 'Save estimate'}
     </button>
+    <PDFDownloadLink
+      document={<EstimatePDF inputs={inputs} result={result} profile={profile} reference={pdfRef} numCats={numCats} isRenovation={isRenovation} />}
+      fileName={'AprIQ-' + pdfRef + '.pdf'}
+      style={{ display: 'block', textDecoration: 'none', marginBottom: '1rem' }}>
+      {({ loading }) => (
+        <button style={{ width: '100%', padding: '0.75rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '0.875rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
+          {loading ? 'Preparing PDF…' : 'Download PDF'}
+        </button>
+      )}
+    </PDFDownloadLink>
   </>);
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f3', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
       <style>{`@media(max-width:700px){.desktop-grid{display:block!important;}.desktop-right{display:none!important;}.mobile-summary{display:block!important;}}`}</style>
+
+      {/* ── Nav ── */}
       <div style={{ background: '#fff', borderBottom: '1px solid #eeede8', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <span style={{ fontWeight: '700', fontSize: '1rem', letterSpacing: '-0.02em' }}>AprIQ</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
@@ -416,8 +459,11 @@ export default function Calculator() {
           <button onClick={handleLogout} style={{ fontSize: '0.78rem', color: '#bbb', background: 'none', border: 'none', cursor: 'pointer' }}>Sign out</button>
         </div>
       </div>
+
+      {/* ── Main grid ── */}
       <div className="desktop-grid" style={{ maxWidth: '1140px', margin: '0 auto', padding: '1.5rem 1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
         <div>
+          {/* ── Building card ── */}
           <div style={card}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18' }}>Building</span>
@@ -430,6 +476,8 @@ export default function Calculator() {
                 )}
               </div>
             </div>
+
+            {/* Use 1 */}
             <label style={lbl}>Category</label>
             <select value={inputs.use1Category} onChange={e => updCat(1, e.target.value)} style={{ ...sel, marginBottom: '0.85rem' }}>
               {categoryOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -440,6 +488,8 @@ export default function Calculator() {
             </select>
             <RateRow rawRate={result?.rate1Raw} adjustedRate={result?.rate1} adjustField="rate1Adjustment" toggleField="adjustRate1" adjValue={inputs.rate1Adjustment} adjToggle={inputs.adjustRate1} isPro={isPro} upd={upd} />
             {numCats > 1 && <Slider label="Allocation — Use 1" value={Math.round(inputs.use1Allocation * 100)} min={0} max={100} step={1} onChange={setAlloc1} fmtFn={v => v + '%'} />}
+
+            {/* Use 2 */}
             {numCats >= 2 && (<>
               <div style={divider} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
@@ -455,9 +505,12 @@ export default function Calculator() {
                 {subtypes2.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
               </select>
               <RateRow rawRate={result?.rate2Raw} adjustedRate={result?.rate2} adjustField="rate2Adjustment" toggleField="adjustRate2" adjValue={inputs.rate2Adjustment} adjToggle={inputs.adjustRate2} isPro={isPro} upd={upd} />
-              {numCats === 2 ? <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}><span style={lbl}>Allocation — Use 2</span><span style={{ fontSize: '0.875rem', fontWeight: '600' }}>{Math.round(inputs.use2Allocation * 100)}%</span></div>
+              {numCats === 2
+                ? <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}><span style={lbl}>Allocation — Use 2</span><span style={{ fontSize: '0.875rem', fontWeight: '600' }}>{Math.round(inputs.use2Allocation * 100)}%</span></div>
                 : <Slider label="Allocation — Use 2" value={Math.round(inputs.use2Allocation * 100)} min={0} max={Math.round((1 - inputs.use1Allocation) * 100)} step={1} onChange={setAlloc2} fmtFn={v => v + '%'} />}
             </>)}
+
+            {/* Use 3 */}
             {numCats >= 3 && (<>
               <div style={divider} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
@@ -475,12 +528,16 @@ export default function Calculator() {
               <RateRow rawRate={result?.rate3Raw} adjustedRate={result?.rate3} adjustField="rate3Adjustment" toggleField="adjustRate3" adjValue={inputs.rate3Adjustment} adjToggle={inputs.adjustRate3} isPro={isPro} upd={upd} />
               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={lbl}>Allocation — Use 3</span><span style={{ fontSize: '0.875rem', fontWeight: '600' }}>{Math.round(inputs.use3Allocation * 100)}%</span></div>
             </>)}
+
             {numCats > 1 && (
               <div style={{ marginTop: '0.75rem', borderRadius: '8px', padding: '0.45rem 0.875rem', background: allocOk ? '#eaf3de' : '#fdecea', fontSize: '0.78rem', color: allocOk ? '#27500a' : '#c0392b' }}>
                 {allocOk ? 'Allocations total 100%' : `Allocations total ${Math.round(allocTotal * 100)}%`}
               </div>
             )}
+
             <div style={divider} />
+
+            {/* Project type */}
             <BtnGroup label="Project type" value={inputs.projectTypeKey} onChange={v => upd('projectTypeKey', v)} options={projectOpts} getDesc={v => projectOpts.find(o => o.value === v)?.desc} />
             {inputs.projectTypeKey === 'Renovation' ? (<>
               <NumBox label="Total floor area" value={inputs.floorArea} onChange={v => upd('floorArea', v)} suffix="m²" />
@@ -495,12 +552,16 @@ export default function Calculator() {
               <NumBox label="Floor area" value={inputs.floorArea} onChange={v => upd('floorArea', v)} suffix="m²" />
             )}
           </div>
+
+          {/* ── Project factors ── */}
           <div style={card}>
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Project factors</span>
             <BtnGroup label="Quality" value={inputs.qualityKey} onChange={v => upd('qualityKey', v)} options={qualityOpts} getDesc={v => qualityDesc[v]} />
             <BtnGroup label="Site access" value={inputs.siteAccessKey} onChange={v => upd('siteAccessKey', v)} options={siteOpts} cols={3} getDesc={v => siteOpts.find(o => o.value === v)?.desc} />
             <BtnGroup label="Building complexity" value={inputs.complexityKey} onChange={v => upd('complexityKey', v)} options={complexityOpts} getDesc={v => complexityOpts.find(o => o.value === v)?.desc} />
           </div>
+
+          {/* ── Land ── */}
           <div style={card}>
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Land</span>
             <label style={lbl}>Procurement type</label>
@@ -512,13 +573,30 @@ export default function Calculator() {
               <BtnGroup label="Land type / slope" value={inputs.landSlopeKey} onChange={v => upd('landSlopeKey', v)} options={slopeOpts} cols={2} getDesc={v => slopeOpts.find(o => o.value === v)?.desc} />
             </>)}
           </div>
+
+          {/* ── Report details ── */}
+          <div style={card}>
+            <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1.25rem'}}>Report details</span>
+            <div style={{marginBottom:'1.1rem'}}>
+              <label style={lbl}>Client name (optional)</label>
+              <input type="text" value={inputs.clientName} onChange={e=>upd('clientName',e.target.value)} placeholder="e.g. ABC Developers"
+                style={{width:'100%',padding:'0.6rem 0.875rem',border:'1.5px solid #e5e5e3',borderRadius:'10px',fontSize:'0.875rem',fontFamily:'inherit',outline:'none',boxSizing:'border-box',color:'#1a1a18'}}/>
+            </div>
+            <div>
+              <label style={lbl}>Project name (optional)</label>
+              <input type="text" value={inputs.projectName} onChange={e=>upd('projectName',e.target.value)} placeholder="e.g. Sandton Residential Phase 1"
+                style={{width:'100%',padding:'0.6rem 0.875rem',border:'1.5px solid #e5e5e3',borderRadius:'10px',fontSize:'0.875rem',fontFamily:'inherit',outline:'none',boxSizing:'border-box',color:'#1a1a18'}}/>
+            </div>
+          </div>
+
+          {/* ── Financial inputs ── */}
           <div style={card}>
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Financial inputs</span>
-            <Slider label="Contingency" value={Math.round(inputs.contingencyPct * 100)} min={0} max={30} step={0.5} onChange={v => upd('contingencyPct', v / 100)} fmtFn={v => v + '%'} />
-            <Slider label="Contractor profit" value={Math.round(inputs.profitPct * 100)} min={0} max={30} step={0.5} onChange={v => upd('profitPct', v / 100)} fmtFn={v => v + '%'} />
-            <Slider label="Preliminaries" value={Math.round(inputs.preliminariesPct * 100)} min={0} max={20} step={0.5} onChange={v => upd('preliminariesPct', v / 100)} fmtFn={v => v + '%'} />
-            <Slider label="Professional fees" value={Math.round(inputs.feesPct * 100)} min={0} max={25} step={0.5} onChange={v => upd('feesPct', v / 100)} fmtFn={v => v + '%'} />
-            <Slider label="VAT" value={Math.round(inputs.vatPct * 100)} min={0} max={20} step={1} onChange={v => upd('vatPct', v / 100)} fmtFn={v => v + '%'} />
+            <Slider label="Contingency"       value={Math.round(inputs.contingencyPct * 100)} min={0} max={30} step={0.5} onChange={v => upd('contingencyPct', v / 100)} fmtFn={v => v + '%'} />
+            <Slider label="Contractor profit" value={Math.round(inputs.profitPct * 100)}      min={0} max={30} step={0.5} onChange={v => upd('profitPct', v / 100)}      fmtFn={v => v + '%'} />
+            <Slider label="Preliminaries"     value={Math.round(inputs.preliminariesPct * 100)} min={0} max={20} step={0.5} onChange={v => upd('preliminariesPct', v / 100)} fmtFn={v => v + '%'} />
+            <Slider label="Professional fees" value={Math.round(inputs.feesPct * 100)}        min={0} max={25} step={0.5} onChange={v => upd('feesPct', v / 100)}        fmtFn={v => v + '%'} />
+            <Slider label="VAT"               value={Math.round(inputs.vatPct * 100)}         min={0} max={20} step={1}   onChange={v => upd('vatPct', v / 100)}          fmtFn={v => v + '%'} />
             <div style={divider} />
             <div style={{ opacity: isPro ? 1 : 0.45 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
@@ -539,11 +617,13 @@ export default function Calculator() {
               )}
             </div>
           </div>
+
           {!isPro && (
             <button onClick={handleCalc} style={{ width: '100%', padding: '0.875rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', marginBottom: '1rem', fontFamily: 'inherit' }}>
               Calculate estimate
             </button>
           )}
+
           <div className="mobile-summary" style={{ display: 'none' }}>
             {!result ? (
               <div style={{ ...card, textAlign: 'center', padding: '2rem 1.5rem' }}>
@@ -552,6 +632,8 @@ export default function Calculator() {
             ) : <Summary />}
           </div>
         </div>
+
+        {/* ── Right column ── */}
         <div className="desktop-right" style={{ position: 'sticky', top: '4.5rem' }}>
           {!result ? (
             <div style={{ ...card, textAlign: 'center', padding: '3rem 1.5rem' }}>
@@ -560,6 +642,8 @@ export default function Calculator() {
           ) : <Summary />}
         </div>
       </div>
+
+      {/* ── Feedback ── */}
       <button onClick={() => setFeedback(true)} style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '20px', padding: '0.5rem 1rem', fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.15)', zIndex: 50, fontFamily: 'inherit' }}>Feedback</button>
       {feedback && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
