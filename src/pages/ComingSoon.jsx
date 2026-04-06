@@ -12,7 +12,8 @@ export default function ComingSoon() {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    await supabase.from('waitlist').insert({ email }).catch(() => {});
+    const { error } = await supabase.from('waitlist').insert({ email });
+    if (error) { console.error('Waitlist error:', error); }
     setLoading(false);
     setSubmitted(true);
   }
