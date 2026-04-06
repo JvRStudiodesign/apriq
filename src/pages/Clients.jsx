@@ -100,7 +100,7 @@ export default function Clients() {
       <div style={{ background:'#fff', borderBottom:'1px solid #eeede8', padding:'0.875rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'2px' }}>
           <HamburgerMenu />
-          <img src="/logo.jpg" alt="AprIQ" onClick={() => navigate('/')} style={{ height:'28px', width:'auto', objectFit:'contain', cursor:'pointer' }} />
+          <img src="/logo.jpg" alt="AprIQ" onClick={() => navigate('/')} style={{ height:'36px', width:'auto', objectFit:'contain', cursor:'pointer' }} />
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
           <span style={{ fontSize:'0.72rem', color:'#aaa' }}>{clients.length}/{limit}</span>
@@ -109,7 +109,7 @@ export default function Clients() {
       </div>
 
       <div style={{ maxWidth:'560px', margin:'0 auto', padding:'2rem 1.25rem' }}>
-        <h1 style={{ fontSize:'1.2rem', fontWeight:'700', color:'#1a1a18', marginBottom:'0.25rem' }}>Clients</h1>
+        <h1 style={{ fontSize:'1.44rem', fontWeight:'700', color:'#1a1a18', marginBottom:'0.25rem' }}>Clients</h1>
         <p style={{ fontSize:'0.78rem', color:'#aaa', marginBottom:'1.5rem' }}>Client details appear on PDF exports when linked to a project.</p>
 
         {showForm && (

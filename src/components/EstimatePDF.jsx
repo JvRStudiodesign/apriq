@@ -73,7 +73,7 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
     numCats >= 3 && inputs.use3Category && inputs.use3Subtype ? { label: `Use 3: ${inputs.use3Category} \u2014 ${inputs.use3Subtype}`, alloc: inputs.use3Allocation, rate: result?.rate3 } : null,
   ].filter(Boolean);
 
-  const hasUserInfo = userDetails && (userDetails.full_name || userDetails.company_name || userDetails.phone || userDetails.email);
+  const hasUserInfo = true;
   const hasClientInfo = client && (client.company_name || client.contact_name);
   const hasProjectInfo = project && (project.project_name || project.reference_number);
 

@@ -69,7 +69,7 @@ function NumBox({ label, value, onChange, suffix }) {
     <div style={{ marginBottom: '1.1rem' }}>
       {label && <label style={lbl}>{label}</label>}
       <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e5e5e3', borderRadius: '10px', overflow: 'hidden' }}>
-        <input type="number" value={value} onChange={e => onChange(parseFloat(e.target.value) || 0)}
+        <input type="number" value={value} onChange={e => onChange(parseFloat(e.target.value) || 0)} onFocus={e => e.target.select()}
           style={{ flex: 1, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#1a1a18', background: '#fff' }} />
         {suffix && <span style={{ padding: '0.6rem 0.875rem', background: '#f5f5f3', fontSize: '0.8rem', color: '#aaa', borderLeft: '1px solid #e5e5e3' }}>{suffix}</span>}
       </div>
@@ -141,7 +141,8 @@ export default function Calculator() {
   const [saved, setSaved]     = useState(false);
   const [feedback, setFeedback] = useState(false);
   const [fbText, setFbText]   = useState('');
-  const [fbSent, setFbSent]   = useState(false);  const [projects, setProjects]     = useState([]);
+  const [fbSent, setFbSent]   = useState(false);
+  const [fbTopic, setFbTopic] = useState('UI');  const [projects, setProjects]     = useState([]);
   const [clients, setClients]       = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [pdfRef] = useState('APR-' + Date.now().toString(36).toUpperCase());
@@ -343,7 +344,7 @@ export default function Calculator() {
           <span style={{ flex: 1, color: '#555', textAlign: 'left' }}>{el.label}</span>
           {inputs.useCustomSplit && isPro ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <input type="number" min={0} max={100} step={0.1} value={Math.round(el.effectivePct * 1000) / 10}
+              <input type="number" min={0} max={100} step={1} value={Math.round(el.effectivePct * 1000) / 10}
                 onChange={e => updateCustomPct(i, parseFloat(e.target.value) / 100)}
                 style={{ width: '56px', padding: '2px 6px', border: '1px solid #e5e5e3', borderRadius: '6px', fontSize: '0.78rem', textAlign: 'right', fontFamily: 'inherit' }} />
               <span style={{ color: '#aaa', fontSize: '0.75rem' }}>%</span>
@@ -740,10 +741,10 @@ export default function Calculator() {
           {/* ── Financial inputs ── */}
           <div style={card}>
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Financial inputs</span>
-            <Slider label="Contingency"       value={Math.round(inputs.contingencyPct * 100)} min={0} max={30} step={0.5} onChange={v => upd('contingencyPct', v / 100)} fmtFn={v => v + '%'} />
-            <Slider label="Contractor profit" value={Math.round(inputs.profitPct * 100)}      min={0} max={30} step={0.5} onChange={v => upd('profitPct', v / 100)}      fmtFn={v => v + '%'} />
-            <Slider label="Preliminaries"     value={Math.round(inputs.preliminariesPct * 100)} min={0} max={20} step={0.5} onChange={v => upd('preliminariesPct', v / 100)} fmtFn={v => v + '%'} />
-            <Slider label="Professional fees" value={Math.round(inputs.feesPct * 100)}        min={0} max={25} step={0.5} onChange={v => upd('feesPct', v / 100)}        fmtFn={v => v + '%'} />
+            <Slider label="Contingency"       value={Math.round(inputs.contingencyPct * 100)} min={0} max={30} step={1} onChange={v => upd('contingencyPct', v / 100)} fmtFn={v => v + '%'} />
+            <Slider label="Contractor profit" value={Math.round(inputs.profitPct * 100)}      min={0} max={30} step={1} onChange={v => upd('profitPct', v / 100)}      fmtFn={v => v + '%'} />
+            <Slider label="Preliminaries"     value={Math.round(inputs.preliminariesPct * 100)} min={0} max={20} step={1} onChange={v => upd('preliminariesPct', v / 100)} fmtFn={v => v + '%'} />
+            <Slider label="Professional fees" value={Math.round(inputs.feesPct * 100)}        min={0} max={25} step={1} onChange={v => upd('feesPct', v / 100)}        fmtFn={v => v + '%'} />
             <Slider label="VAT"               value={Math.round(inputs.vatPct * 100)}         min={0} max={20} step={1}   onChange={v => upd('vatPct', v / 100)}          fmtFn={v => v + '%'} />
             <div style={divider} />
             <div style={{ opacity: isPro ? 1 : 0.45 }}>
@@ -754,7 +755,7 @@ export default function Calculator() {
                   Include in estimate
                 </label>
               </div>
-              <Slider label="Escalation rate" value={inputs.escalationRate} min={0} max={20} step={0.5} onChange={v => isPro && upd('escalationRate', v)} fmtFn={v => v + '% p.a.'} locked={!isPro} />
+              <Slider label="Escalation rate" value={inputs.escalationRate} min={0} max={20} step={1} onChange={v => isPro && upd('escalationRate', v)} fmtFn={v => v + '% p.a.'} locked={!isPro} />
               <div style={{ opacity: isPro ? 1 : 0.5 }}>
                 <label style={lbl}>Estimated start date</label>
                 <input type="date" value={inputs.estimatedStartDate || ''} onChange={e => isPro && upd('estimatedStartDate', e.target.value || null)} disabled={!isPro}
@@ -801,7 +802,7 @@ export default function Calculator() {
               <button onClick={() => setFeedback(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', fontSize: '1.25rem', lineHeight: 1 }}>×</button>
             </div>
             {fbSent ? <p style={{ color: '#27ae60', textAlign: 'center', padding: '1rem 0' }}>Thanks — noted.</p> : (
-              <form onSubmit={e => { e.preventDefault(); setFbSent(true); setTimeout(() => { setFeedback(false); setFbSent(false); setFbText(''); }, 2000); }}>
+              <form onSubmit={e => { e.preventDefault(); supabase.from('feedback').insert({ user_id: user?.id, email: user?.email, topic: fbTopic, message: fbText }).then(()=>{}); setFbSent(true); setTimeout(() => { setFeedback(false); setFbSent(false); setFbText(''); setFbTopic('UI'); }, 2000); }}>
                 <textarea value={fbText} onChange={e => setFbText(e.target.value)} required rows={4} placeholder="What is working? What is missing?"
                   style={{ width: '100%', padding: '0.75rem', border: '1.5px solid #e5e5e3', borderRadius: '10px', fontSize: '0.875rem', resize: 'vertical', boxSizing: 'border-box', marginBottom: '0.75rem', fontFamily: 'inherit' }} />
                 <button type="submit" style={{ width: '100%', padding: '0.625rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit' }}>Send</button>
