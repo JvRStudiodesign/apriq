@@ -82,7 +82,7 @@ export default function UserProfile() {
       <div style={{ background: '#fff', borderBottom: '1px solid #eeede8', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
           <HamburgerMenu />
-          <span style={{ fontWeight: '700', fontSize: '1.5rem', letterSpacing: '-0.04em', cursor: 'pointer' }} onClick={() => navigate('/')}><img src="/logo.png" alt="AprIQ" style={{ height: '36px', width: '120px', objectFit: 'contain' }} /></span>
+          <span style={{ fontWeight: '700', fontSize: '1.5rem', letterSpacing: '-0.04em', cursor: 'pointer' }} onClick={() => navigate('/')}><img src="/logo.png" alt="AprIQ" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} /></span>
         </div>
         <span style={{ fontSize: '0.78rem', color: '#aaa' }}>User Profile</span>
       </div>
@@ -100,7 +100,7 @@ export default function UserProfile() {
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
                 {logoPreview
-                  ? <img src={logoPreview} alt="Logo" style={{ width: '160px', height: '70px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #eee', background: '#fafafa', padding: '8px' }} />
+                  ? <img src={logoPreview} alt="Logo" style={{ width: '160px', height: '28px', width: 'auto', objectFit: 'contain', borderRadius: '8px', border: '1px solid #eee', background: '#fafafa', padding: '8px' }} />
                   : <div style={{ width: '160px', height: '70px', borderRadius: '8px', border: '1.5px dashed #e5e5e3', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fafafa' }}>
                       <span style={{ fontSize: '0.65rem', color: '#ccc' }}>No logo</span>
                     </div>}

@@ -265,6 +265,13 @@ export default function Calculator() {
       vat_amount: result.vatAmount, total_project_cost: result.totalProjectCost,
       escalated_total: result.escalatedTotal, cost_breakdown: result.elementBreakdown,
     });
+    await supabase.from('project_estimates').delete().eq('project_id', selectedProjectId).eq('user_id', user.id).eq('is_latest', True);
+    await supabase.from('project_estimates').insert({
+      user_id: user.id, project_id: selectedProjectId,
+      client_id: projects.find(p => p.id === selectedProjectId)?.client_id || null,
+      inputs_json: JSON.stringify(inputs), result_json: JSON.stringify(result),
+      is_latest: true, total_project_cost: result.totalProjectCost,
+    });
     setSaving(false); setSaved(true);
   }
 
@@ -592,7 +599,7 @@ export default function Calculator() {
       <div style={{ background: '#fff', borderBottom: '1px solid #eeede8', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <HamburgerMenu />
-          <img src="/logo.png" alt="AprIQ" style={{ height: '36px', width: '120px', objectFit: 'contain' }} />
+          <img src="/logo.png" alt="AprIQ" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
           {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#fff3cd', color: '#856404', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}
