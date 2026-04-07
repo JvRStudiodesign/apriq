@@ -20,12 +20,13 @@ export default function ComingSoon() {
 
   return (
     <div style={{ minHeight:'100vh', background:'#f5f5f3', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', display:'flex', flexDirection:'column' }}>
-      <div style={{ padding:'1.25rem 2rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-        <img src="/logo.jpg" alt="AprIQ" style={{ height:'36px', width:'auto', objectFit:'contain' }} />
+      <div style={{ padding:'0.5rem 2rem' }}>
+        <img src="/logo-launch.png" alt="AprIQ" style={{ height:'108px', width:'auto', objectFit:'contain', display:'block', margin:'0 auto' }} />
         
       </div>
       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'3rem 1.5rem', textAlign:'center' }}>
         <div style={{ maxWidth:'600px', width:'100%' }}>
+          <div style={{ marginBottom:'2rem' }}><img src="/logo-launch.png" alt="AprIQ" style={{ height:'108px', width:'auto', objectFit:'contain', display:'block', margin:'0 auto' }} /></div>
           <div style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'#1a1a18', color:'#fff', fontSize:'0.72rem', fontWeight:'600', padding:'5px 14px', borderRadius:'20px', letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:'2rem' }}>
             <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#4ade80', display:'inline-block' }} />
             Launching soon
