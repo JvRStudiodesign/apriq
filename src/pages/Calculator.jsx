@@ -69,7 +69,7 @@ function NumBox({ label, value, onChange, suffix }) {
     <div style={{ marginBottom: '1.1rem' }}>
       {label && <label style={lbl}>{label}</label>}
       <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e5e5e3', borderRadius: '10px', overflow: 'hidden' }}>
-        <input type="number" value={value} onChange={e => onChange(parseFloat(e.target.value) || 0)} onFocus={e => e.target.select()}
+        <input type="number" value={value} onChange={e => onChange(parseFloat(e.target.value) || 0)} onFocus={e => e.target.select()} style={{ textAlign:'right', paddingRight:'8px' }}
           style={{ flex: 1, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#1a1a18', background: '#fff' }} />
         {suffix && <span style={{ padding: '0.6rem 0.875rem', background: '#f5f5f3', fontSize: '0.8rem', color: '#aaa', borderLeft: '1px solid #e5e5e3' }}>{suffix}</span>}
       </div>
