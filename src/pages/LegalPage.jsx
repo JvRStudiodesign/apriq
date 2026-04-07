@@ -31,7 +31,7 @@ const PP = () => (
     <p style={{ fontSize:'0.8rem', color:'#999', marginBottom:'1.5rem' }}>Effective Date: 7 April 2026 · Compliant with POPIA (Protection of Personal Information Act, 2013)</p>
     {[
       ['1. Introduction', 'AprIQ is committed to protecting your personal information in accordance with the Protection of Personal Information Act 4 of 2013 (POPIA). This policy explains how we collect, use, store, and protect your data.'],
-      ['2. Information Officer', 'AprIQ's designated Information Officer is the founder of JvRStudio (Pty) Ltd. Contact: apriq@apriq.co.za'],
+      ['2. Information Officer', 'AprIQ is the designated Information Officer is the founder of JvRStudio (Pty) Ltd. Contact: apriq@apriq.co.za'],
       ['3. Information We Collect', 'We collect your name, email address, professional details (company, profession), and project input data you submit to the platform. We also collect usage data to improve the service.'],
       ['4. Purpose of Collection', 'Data is used exclusively to provide the AprIQ platform service, improve functionality, and communicate with you about your account or the platform.'],
       ['5. No Sale or Distribution', 'Your personal information is never sold, shared with third parties for marketing, or made publicly available.'],
