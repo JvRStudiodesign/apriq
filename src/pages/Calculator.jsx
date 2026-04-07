@@ -348,8 +348,9 @@ export default function Calculator() {
           {inputs.useCustomSplit && isPro ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <input type="number" min={0} max={100} step={1} value={Math.round(el.effectivePct * 1000) / 10}
-                onChange={e => updateCustomPct(i, parseFloat(e.target.value) / 100)}
-                style={{ width: '56px', padding: '2px 6px', border: '1px solid #e5e5e3', borderRadius: '6px', fontSize: '0.78rem', textAlign: 'right', fontFamily: 'inherit' }} />
+                onFocus={e => e.target.select()}
+                onBlur={e => updateCustomPct(i, parseFloat(e.target.value) / 100)}
+                style={{ width: '70px', padding: '2px 2px 2px 2px', border: '1px solid #e5e5e3', borderRadius: '6px', fontSize: '0.78rem', textAlign: 'right', paddingRight: '6px', fontFamily: 'inherit', MozAppearance: 'textfield' }} />
               <span style={{ color: '#aaa', fontSize: '0.75rem' }}>%</span>
             </div>
           ) : (
