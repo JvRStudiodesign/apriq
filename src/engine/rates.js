@@ -1,4 +1,4 @@
-// AprIQ Base Rates — Source: AprIQ_Cost_engine_V6.xlsx (AECOM 2025/26)
+// AprIQ Base Rates — AprIQ Cost Intelligence Platform 2025/26
 // All rates in ZAR per m² (GFA)
 // To add/edit/remove: update the BUILDING_RATES object below.
 // Keys use snake_case versions of the labels for code consistency.
