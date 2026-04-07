@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '', full_name: '', company: '', profession: '' });
+  const [form, setForm] = useState({ email: '', password: '', full_name: '', company: '', profession: '', referral_source: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -32,6 +32,7 @@ export default function Signup() {
         full_name: form.full_name,
         company: form.company,
         profession: form.profession,
+        referral_source: form.referral_source || null,
       });
     }
     navigate('/');
@@ -74,7 +75,18 @@ export default function Signup() {
           <input type="email" value={form.email} onChange={e => update('email', e.target.value)} required style={inputStyle} />
 
           <label style={labelStyle}>Password</label>
-          <input type="password" value={form.password} onChange={e => update('password', e.target.value)} required minLength={6} style={{ ...inputStyle, marginBottom: '1.5rem' }} />
+          <input type="password" value={form.password} onChange={e => update('password', e.target.value)} required minLength={6} style={{ ...inputStyle, marginBottom: '1rem' }} />
+
+          <label style={labelStyle}>How did you hear about us?</label>
+          <select value={form.referral_source} onChange={e => update('referral_source', e.target.value)} style={{ ...inputStyle, marginBottom: '1.5rem' }}>
+            <option value="">Select an option</option>
+            <option value="shared_estimate">Someone shared an estimate with me</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="google">Google search</option>
+            <option value="word_of_mouth">Word of mouth</option>
+            <option value="other">Other</option>
+          </select>
 
           <button type="submit" disabled={loading}
             style={{ width: '100%', padding: '0.75rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', marginBottom: '0.75rem' }}>

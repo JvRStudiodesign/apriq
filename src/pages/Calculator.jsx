@@ -138,7 +138,9 @@ export default function Calculator() {
   const [numCats, setNumCats] = useState(1);
   const [result, setResult]   = useState(null);
   const [saving, setSaving]   = useState(false);
-  const [saved, setSaved]     = useState(false);
+  const [saved, setSaved]         = useState(false);
+  const [sharing, setSharing]       = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const [feedback, setFeedback] = useState(false);
   const [fbText, setFbText]   = useState('');
   const [fbSent, setFbSent]   = useState(false);
@@ -236,6 +238,37 @@ export default function Calculator() {
     const arr = [...inputs.customElementPcts];
     arr[i] = Math.max(0, Math.min(1, parseFloat(val) || 0));
     upd('customElementPcts', arr);
+  }
+
+  async function handleShare() {
+    if (!result) return;
+    setSharing(true);
+    setShareCopied(false);
+    try {
+      const snapshotData = {
+        inputs, result,
+        userDetails: userDetails || null,
+        project: selectedProject || null,
+        client: selectedClient || null,
+        reference: pdfRef_display || null,
+        numCats, isRenovation,
+        _sharedAt: new Date().toISOString(),
+      };
+      const { data: snap, error } = await supabase
+        .from('estimate_snapshots')
+        .insert({ user_id: user.id, snapshot_data: snapshotData })
+        .select('share_token')
+        .single();
+      if (error) throw error;
+      const url = `${window.location.origin}/estimate/${snap.share_token}`;
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 4000);
+    } catch (e) {
+      console.error('Share error:', e);
+    } finally {
+      setSharing(false);
+    }
   }
 
   function handleCalc() { setResult(calculate(inputs)); setSaved(false); }
@@ -589,6 +622,10 @@ export default function Calculator() {
           </button>
         )}
       </PDFDownloadLink>
+    <button onClick={handleShare} disabled={!result || sharing}
+      style={{ width:'100%', padding:'0.75rem', background:shareCopied?'#27ae60':result?'#fff':'#f5f5f3', color:shareCopied?'#fff':result?'#1a1a18':'#ccc', border:'1.5px solid #e5e5e3', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit', marginBottom:'0.75rem' }}>
+      {sharing?'Generating link…':shareCopied?'✓ Link copied to clipboard':'Share estimate'}
+    </button>
     ) : !isPro ? (
       <div style={{ width:'100%', padding:'0.75rem', background:'#f0f0ee', color:'#aaa', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', textAlign:'center', marginBottom:'1rem', boxSizing:'border-box' }}>
         PDF export · Pro only
