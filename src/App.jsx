@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Calculator from './pages/Calculator';
 import ComingSoon from './pages/ComingSoon';
+import LegalPage from './pages/LegalPage';
 import UserProfile from './pages/UserProfile';
 import Clients from './pages/Clients';
 import Projects from './pages/Projects';

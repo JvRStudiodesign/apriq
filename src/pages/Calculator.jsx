@@ -802,5 +802,10 @@ export default function Calculator() {
         </div>
       )}
     </div>
+
+      {/* Legal footer */}
+      <div style={{ textAlign:"center", paddingTop:"0.75rem", paddingBottom:"0.25rem" }}>
+        <a href="/legal" style={{ fontSize:"0.7rem", color:"#ccc", textDecoration:"none" }}>Terms of Service &amp; Privacy Policy</a>
+      </div>
   );
 }
