@@ -22,7 +22,7 @@ export default function ComingSoon() {
     <div style={{ minHeight:'100vh', background:'#f5f5f3', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', display:'flex', flexDirection:'column' }}>
       <div style={{ padding:'1.25rem 2rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
         <img src="/logo.jpg" alt="AprIQ" style={{ height:'36px', width:'auto', objectFit:'contain' }} />
-        <button onClick={() => navigate('/login')} style={{ padding:'8px 20px', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'10px', fontSize:'0.82rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>Sign in</button>
+        
       </div>
       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'3rem 1.5rem', textAlign:'center' }}>
         <div style={{ maxWidth:'600px', width:'100%' }}>
