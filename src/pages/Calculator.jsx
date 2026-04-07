@@ -726,20 +726,6 @@ export default function Calculator() {
             </>)}
           </div>
 
-          {/* ── Report details ── */}
-          <div style={card}>
-            <span style={{fontSize:'0.85rem',fontWeight:'600',color:'#1a1a18',display:'block',marginBottom:'1.25rem'}}>Report details</span>
-            <div style={{marginBottom:'1.1rem'}}>
-              <label style={lbl}>Client name (optional)</label>
-              <input type="text" value={inputs.clientName} onChange={e=>upd('clientName',e.target.value)} placeholder="e.g. ABC Developers"
-                style={{width:'100%',padding:'0.6rem 0.875rem',border:'1.5px solid #e5e5e3',borderRadius:'10px',fontSize:'0.875rem',fontFamily:'inherit',outline:'none',boxSizing:'border-box',color:'#1a1a18'}}/>
-            </div>
-            <div>
-              <label style={lbl}>Project name (optional)</label>
-              <input type="text" value={inputs.projectName} onChange={e=>upd('projectName',e.target.value)} placeholder="e.g. Sandton Residential Phase 1"
-                style={{width:'100%',padding:'0.6rem 0.875rem',border:'1.5px solid #e5e5e3',borderRadius:'10px',fontSize:'0.875rem',fontFamily:'inherit',outline:'none',boxSizing:'border-box',color:'#1a1a18'}}/>
-            </div>
-          </div>
 
           {/* ── Financial inputs ── */}
           <div style={card}>
