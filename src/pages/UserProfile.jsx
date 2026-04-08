@@ -17,7 +17,7 @@ export default function UserProfile() {
   const trialEnd = profile?.trial_end_date ? new Date(profile.trial_end_date) : null;
   const isPro = tier === 'pro' || (tier === 'trial' && trialEnd && trialEnd > new Date());
 
-  const [form, setForm] = useState({ full_name: '', company_name: '', phone: '' });
+  const [form, setForm] = useState({ full_name: '', company_name: '', phone: '', profession: '', address: '', newPassword: '', confirmPassword: '' });
   const [logoPreview, setLogoPreview] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -32,6 +32,8 @@ export default function UserProfile() {
       full_name: profile.full_name || '',
       company_name: profile.company_name || '',
       phone: profile.phone || '',
+      profession: profile.profession || '',
+      address: profile.address || '',
     });
     if (profile.logo_url) setLogoPreview(profile.logo_url);
   }, [profile?.id]); // only run when profile ID changes, not on every profile update
@@ -67,12 +69,23 @@ export default function UserProfile() {
       setLogoFile(null);
     }
 
-    const updates = { full_name: form.full_name, company_name: form.company_name, phone: form.phone, updated_at: new Date().toISOString() };
+    const updates = { full_name: form.full_name, company_name: form.company_name, phone: form.phone, profession: form.profession, address: form.address, updated_at: new Date().toISOString() };
     if (isPro) updates.logo_url = logo_url;
 
     const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
     if (error) console.error('Profile save error:', error);
     setSaving(false);
+    // Change password if filled
+    if (form.newPassword) {
+      if (form.newPassword !== form.confirmPassword) {
+        alert('Passwords do not match'); setSaving(false); return;
+      }
+      if (form.newPassword.length < 6) {
+        alert('Password must be at least 6 characters'); setSaving(false); return;
+      }
+      await supabase.auth.updateUser({ password: form.newPassword });
+      upd('newPassword', ''); upd('confirmPassword', '');
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   }
@@ -133,6 +146,7 @@ export default function UserProfile() {
             { label: 'Full name', field: 'full_name', placeholder: 'Name Surname' },
             { label: 'Company / firm name', field: 'company_name', placeholder: 'Your practice or company' },
             { label: 'Phone', field: 'phone', placeholder: '+27 82 000 0000' },
+            { label: 'Address', field: 'address', placeholder: '123 Street, City, Province' },
           ].map(f => (
             <div key={f.field} style={{ marginBottom: '1rem' }}>
               <label style={lbl}>{f.label}</label>
@@ -145,6 +159,31 @@ export default function UserProfile() {
           </div>
         </div>
 
+        {/* Profession */}
+        <div style={card}>
+          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Profession</span>
+          <select style={inp} value={form.profession} onChange={e => upd('profession', e.target.value)}>
+            <option value="">Select your profession</option>
+            <option value="Architect">Architect</option>
+            <option value="Quantity Surveyor">Quantity Surveyor</option>
+            <option value="Property Developer">Property Developer</option>
+            <option value="Engineer">Engineer</option>
+            <option value="Project Manager">Project Manager</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        {/* Change password */}
+        <div style={card}>
+          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Change password</span>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={lbl}>New password</label>
+            <input type="password" style={inp} value={form.newPassword} onChange={e => upd('newPassword', e.target.value)} placeholder="Min. 6 characters" />
+          </div>
+          <div style={{ marginBottom: '0.25rem' }}>
+            <label style={lbl}>Confirm new password</label>
+            <input type="password" style={inp} value={form.confirmPassword} onChange={e => upd('confirmPassword', e.target.value)} placeholder="Repeat new password" />
+          </div>
+        </div>
         <button onClick={handleSave} disabled={saving || uploading}
           style={{ width: '100%', padding: '0.875rem', background: saved ? '#27ae60' : '#1a1a18', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
           {uploading ? 'Uploading logo...' : saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save profile'}
