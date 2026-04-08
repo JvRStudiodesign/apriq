@@ -35,6 +35,14 @@ export default function Signup() {
         referral_source: form.referral_source || null,
       });
     }
+    // Send welcome email
+    try {
+      await fetch('/api/send-welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: form.email, name: form.full_name }),
+      });
+    } catch (e) { console.error('Welcome email error:', e); }
     navigate('/');
   }
 

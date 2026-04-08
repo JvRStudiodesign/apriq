@@ -12,6 +12,29 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile(session.user.id);
+      // Trial email triggers (fire-and-forget, once per session)
+      if (profileData) {
+        const trialEnd = profileData.trial_end_date ? new Date(profileData.trial_end_date) : null;
+        const tier     = profileData.tier || 'free';
+        const email    = session?.user?.email;
+        const name     = profileData.full_name || '';
+        if (email && tier === 'trial' && trialEnd) {
+          const daysLeft = Math.ceil((trialEnd - new Date()) / 86400000);
+          if (daysLeft <= 2 && daysLeft > 0) {
+            fetch('/api/send-trial-warning', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ to: email, name }),
+            }).catch(() => {});
+          } else if (daysLeft <= 0) {
+            fetch('/api/send-trial-expired', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ to: email, name }),
+            }).catch(() => {});
+          }
+        }
+      }
       setLoading(false);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {

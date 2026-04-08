@@ -43,6 +43,23 @@ export default async function handler(req, res) {
     }
 
     console.log(`User ${userId} tier updated to ${tier} (${paymentStatus}, plan: ${plan})`);
+
+    // Send payment email (fire-and-forget)
+    const userRes = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=full_name,email`, {
+      headers: { 'apikey': serviceKey, 'Authorization': `Bearer ${serviceKey}` },
+    });
+    const users = await userRes.json();
+    const u = users?.[0];
+    if (u?.email) {
+      const emailEndpoint = paymentStatus === 'COMPLETE'   ? '/api/send-payment-confirmed'
+                          : paymentStatus === 'CANCELLED'  ? '/api/send-cancelled'
+                          : '/api/send-payment-failed';
+      fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : '${APP_URL}'}${emailEndpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: u.email, name: u.full_name, amount: body.amount_gross }),
+      }).catch(() => {});
+    }
     return res.status(200).end('OK');
   } catch (err) {
     console.error('ITN error:', err);
