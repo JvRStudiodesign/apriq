@@ -12,6 +12,7 @@ import Projects from './pages/Projects';
 import SharedEstimate from './pages/SharedEstimate';
 import Upgrade from './pages/Upgrade';
 import Billing from './pages/Billing';
+import Admin from './pages/Admin';
 
 function RootRoute() {
   const { user, loading } = useAuth();
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/estimate/:token" element={<SharedEstimate />} />
           <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
           <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
