@@ -10,6 +10,8 @@ import UserProfile from './pages/UserProfile';
 import Clients from './pages/Clients';
 import Projects from './pages/Projects';
 import SharedEstimate from './pages/SharedEstimate';
+import Upgrade from './pages/Upgrade';
+import Billing from './pages/Billing';
 
 function RootRoute() {
   const { user, loading } = useAuth();
@@ -38,6 +40,8 @@ export default function App() {
           <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
           <Route path="/legal" element={<LegalPage />} />
           <Route path="/estimate/:token" element={<SharedEstimate />} />
+          <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
+          <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
