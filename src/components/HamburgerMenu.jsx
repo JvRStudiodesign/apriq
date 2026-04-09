@@ -55,6 +55,8 @@ export function HamburgerMenu() {
           {item('Projects', '/projects')}
           {item('Clients', '/clients')}
           {item('User Profile', '/profile')}
+          {item('Upgrade to Pro', '/upgrade')}
+          {item('Billing', '/billing')}
           <div style={{ borderTop: '1px solid #f0f0ee', margin: '4px 0' }} />
           <button onClick={handleLogout} style={{ display: 'block', width: '100%', padding: '0.625rem 1rem', background: 'transparent', border: 'none', textAlign: 'left', fontSize: '0.875rem', color: '#e74c3c', cursor: 'pointer', fontFamily: 'inherit', borderRadius: '8px' }}>
             Sign out
