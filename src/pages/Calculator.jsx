@@ -648,7 +648,7 @@ export default function Calculator() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
           {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#fff3cd', color: '#856404', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}
-          <span style={{ fontSize: '0.72rem', background: isPro ? '#eaf3de' : '#f0f0ee', color: isPro ? '#27500a' : '#aaa', padding: '2px 8px', borderRadius: '8px', fontWeight: '600' }}>{tier === 'pro' ? 'Pro' : trialOk ? 'Trial' : 'Free'}</span>
+          <span onClick={!isPro ? ()=>navigate('/upgrade') : undefined} style={{ fontSize: '0.72rem', background: isPro ? '#eaf3de' : '#f0f0ee', color: isPro ? '#27500a' : '#aaa', padding: '2px 8px', borderRadius: '8px', fontWeight: '600', cursor: !isPro ? 'pointer' : 'default' }}>{tier === 'pro' ? 'Pro' : trialOk ? 'Trial' : 'Free ↑'}</span>
           <span style={{ fontSize: '0.78rem', color: '#bbb' }}>{profile?.full_name || user?.email}</span>
         </div>
       </div>
@@ -663,7 +663,7 @@ export default function Calculator() {
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button onClick={resetAll} style={{ padding: '4px 10px', borderRadius: '9px', border: '1.5px solid #e5e5e3', background: '#fff', color: '#999', fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'inherit' }}>Reset all</button>
                 {numCats < 3 && (
-                  <button onClick={addCategory} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 12px', borderRadius: '9px', border: '1.5px solid #e5e5e3', background: '#fff', color: isPro ? '#1a1a18' : '#ccc', fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <button onClick={isPro ? addCategory : ()=>navigate('/upgrade')} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 12px', borderRadius: '9px', border: '1.5px solid #e5e5e3', background: '#fff', color: isPro ? '#1a1a18' : '#ccc', fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' }}>
                     <span style={{ fontSize: '1.1rem', lineHeight: 1, marginTop: '-1px' }}>+</span>Add category{!isPro && PRO_BADGE}
                   </button>
                 )}
@@ -797,6 +797,15 @@ export default function Calculator() {
             </div>
           </div>
 
+          {!isPro && (
+            <div style={{ background:'#1a1a18', borderRadius:'12px', padding:'1rem 1.25rem', marginBottom:'0.75rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div>
+                <div style={{ color:'#fff', fontSize:'0.8rem', fontWeight:'600' }}>Free tier</div>
+                <div style={{ color:'#aaa', fontSize:'0.72rem' }}>PDF export, mixed-use & more on Pro</div>
+              </div>
+              <button onClick={()=>navigate('/upgrade')} style={{ padding:'0.5rem 1rem', background:'#fff', color:'#1a1a18', border:'none', borderRadius:'8px', fontSize:'0.75rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>Upgrade →</button>
+            </div>
+          )}
           {!isPro && (
             <button onClick={handleCalc} style={{ width: '100%', padding: '0.875rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', marginBottom: '1rem', fontFamily: 'inherit' }}>
               Calculate estimate
