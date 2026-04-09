@@ -617,6 +617,7 @@ export default function Calculator() {
       {saving?'Saving…':saved?'Saved':'Save estimate'}
     </button>
     {isPro && result ? (
+      <>
       <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'1rem' }}>
         {({loading})=>(
           <button style={{ width:'100%', padding:'0.75rem', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
@@ -624,10 +625,11 @@ export default function Calculator() {
           </button>
         )}
       </PDFDownloadLink>
-    <button onClick={handleShare} disabled={!result || sharing}
-      style={{ width:'100%', padding:'0.75rem', background:shareCopied?'#27ae60':result?'#fff':'#f5f5f3', color:shareCopied?'#fff':result?'#1a1a18':'#ccc', border:'1.5px solid #e5e5e3', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit', marginBottom:'0.75rem' }}>
-      {sharing?'Generating link…':shareCopied?'✓ Link copied to clipboard':'Share estimate'}
-    </button>
+      <button onClick={handleShare} disabled={!result || sharing}
+        style={{ width:'100%', padding:'0.75rem', background:shareCopied?'#27ae60':result?'#fff':'#f5f5f3', color:shareCopied?'#fff':result?'#1a1a18':'#ccc', border:'1.5px solid #e5e5e3', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit', marginBottom:'0.75rem' }}>
+        {sharing?'Generating link…':shareCopied?'✓ Link copied to clipboard':'Share estimate'}
+      </button>
+      </>
     ) : !isPro ? (
       <button onClick={()=>navigate('/upgrade')}
         style={{ width:'100%', padding:'0.75rem', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', marginBottom:'1rem' }}>
