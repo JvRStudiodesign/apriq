@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { calculate } from '../engine/calculator';
@@ -133,6 +134,7 @@ const DEFAULT = {
 };
 
 export default function Calculator() {
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [inputs, setInputs]   = useState(DEFAULT);
   const [numCats, setNumCats] = useState(1);
@@ -218,7 +220,7 @@ export default function Calculator() {
   }
 
   function addCategory() {
-    if (!isPro) { alert('Upgrade to Pro to use mixed-use projects.'); return; }
+    if (!isPro) { navigate('/upgrade'); return; }
     if (numCats >= 3) return;
     const next = numCats + 1; setNumCats(next);
     if (next === 2) {
@@ -627,9 +629,10 @@ export default function Calculator() {
       {sharing?'Generating link…':shareCopied?'✓ Link copied to clipboard':'Share estimate'}
     </button>
     ) : !isPro ? (
-      <div style={{ width:'100%', padding:'0.75rem', background:'#f0f0ee', color:'#aaa', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', textAlign:'center', marginBottom:'1rem', boxSizing:'border-box' }}>
-        PDF export · Pro only
-      </div>
+      <button onClick={()=>navigate('/upgrade')}
+        style={{ width:'100%', padding:'0.75rem', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', marginBottom:'1rem' }}>
+        Upgrade to Pro — unlock PDF export
+      </button>
     ) : null}
   </>);
 
