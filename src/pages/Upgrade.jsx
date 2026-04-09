@@ -8,7 +8,6 @@ const SANDBOX      = true; // flip to false when PayFast approves account
 const PF_URL       = SANDBOX
   ? 'https://sandbox.payfast.co.za/eng/process'
   : 'https://www.payfast.co.za/eng/process';
-const BASE_URL     = window?.location?.origin || 'https://apriq.vercel.app';
 
 export default function Upgrade() {
   const { user, profile } = useAuth();
@@ -20,6 +19,7 @@ export default function Upgrade() {
   const badge = { position:'absolute', top:'-12px', left:'50%', transform:'translateX(-50%)', background:'#1a1a18', color:'#fff', fontSize:'0.7rem', fontWeight:'600', padding:'3px 12px', borderRadius:'20px', whiteSpace:'nowrap' };
 
   function buildForm(plan) {
+    const BASE_URL = window.location.origin;
     const isAnnual = plan === 'annual';
     const amount   = isAnnual ? '1490.00' : '149.00';
     const name     = isAnnual ? 'AprIQ Pro Annual' : 'AprIQ Pro Monthly';
