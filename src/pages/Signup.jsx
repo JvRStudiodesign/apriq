@@ -50,13 +50,13 @@ export default function Signup() {
     await supabase.auth.signInWithOAuth({ provider: 'google' });
   }
 
-  const inputStyle = { width: '100%', padding: '0.625rem 0.75rem', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', boxSizing: 'border-box' };
+  const inputStyle = { width: '100%', padding: '0.625rem 0.75rem', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', boxSizing: 'border-box', background: '#fff', color: '#1a1a18', colorScheme: 'light' };
   const labelStyle = { display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem', fontWeight: '500' };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f3' }}>
       <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '12px', width: '100%', maxWidth: '420px', boxShadow: '0 2px 16px rgba(0,0,0,0.08)' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem' }}>Create your account</h1>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem', color: '#1a1a18' }}>Create your account</h1>
         <p style={{ color: '#888', marginBottom: '2rem', fontSize: '0.9rem' }}>7-day Pro trial — no card required</p>
 
         {error && <p style={{ color: '#c0392b', marginBottom: '1rem', fontSize: '0.875rem' }}>{error}</p>}

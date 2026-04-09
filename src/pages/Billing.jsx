@@ -52,9 +52,9 @@ export default function Billing() {
           <div style={card}>
             <div style={{ fontSize:'0.85rem', fontWeight:'600', color:'#1a1a18', marginBottom:'0.75rem' }}>Manage subscription</div>
             <p style={{ fontSize:'0.82rem', color:'#888', marginBottom:'1rem', lineHeight:'1.5' }}>
-              To cancel or update your subscription, contact us at hello@apriq.co.za and we'll action it within 1 business day.
+              To cancel or update your subscription, contact us at apriq@apriq.co.za and we'll action it within 1 business day.
             </p>
-            <a href="mailto:hello@apriq.co.za?subject=Cancel AprIQ Pro subscription"
+            <a href="mailto:apriq@apriq.co.za?subject=Cancel AprIQ Pro subscription"
               style={{ display:'block', textAlign:'center', padding:'0.625rem', background:'#fff', color:'#c0392b', border:'1.5px solid #e5e5e3', borderRadius:'10px', fontSize:'0.82rem', fontWeight:'500', textDecoration:'none', cursor:'pointer' }}>
               Request cancellation
             </a>
@@ -64,7 +64,7 @@ export default function Billing() {
         <div style={card}>
           <div style={{ fontSize:'0.85rem', fontWeight:'600', color:'#1a1a18', marginBottom:'0.5rem' }}>Questions?</div>
           <p style={{ fontSize:'0.82rem', color:'#888', lineHeight:'1.5' }}>
-            Email <a href="mailto:hello@apriq.co.za" style={{ color:'#1a1a18' }}>hello@apriq.co.za</a> for any billing queries.
+            Email <a href="mailto:apriq@apriq.co.za" style={{ color:'#1a1a18' }}>apriq@apriq.co.za</a> for any billing queries.
           </p>
         </div>
 

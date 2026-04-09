@@ -32,7 +32,7 @@ export default function Login() {
     else setResetSent(true);
   }
 
-  const inp = { width: '100%', padding: '0.65rem 0.875rem', border: '1.5px solid #e5e5e3', borderRadius: '10px', fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit', color: '#1a1a18' };
+  const inp = { width: '100%', padding: '0.65rem 0.875rem', border: '1.5px solid #e5e5e3', borderRadius: '10px', fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit', color: '#1a1a18', background: '#fff', colorScheme: 'light' };
   const lbl = { display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#888', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.35rem' };
   const btnP = { width: '100%', padding: '0.75rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' };
   const btnS = { width: '100%', padding: '0.75rem', background: '#fff', color: '#1a1a18', border: '1.5px solid #e5e5e3', borderRadius: '10px', fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' };
@@ -40,8 +40,8 @@ export default function Login() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f3', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
       <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '16px', width: '100%', maxWidth: '400px', boxShadow: '0 2px 24px rgba(0,0,0,0.06)' }}>
-        <h1 style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '0.2rem', letterSpacing: '-0.02em' }}>AprIQ</h1>
-        <p style={{ color: '#aaa', marginBottom: '2rem', fontSize: '0.85rem' }}>Construction Cost Intelligence</p>
+        <img src="/logo.jpg" alt="AprIQ" style={{ height:'36px', objectFit:'contain', marginBottom:'0.5rem', display:'block' }} />
+        <p style={{ color: '#555', marginBottom: '2rem', fontSize: '0.85rem' }}>Construction Cost Intelligence</p>
         {error && <p style={{ color: '#c0392b', background: '#fdecea', borderRadius: '8px', padding: '0.5rem 0.75rem', fontSize: '0.8rem', marginBottom: '1rem' }}>{error}</p>}
         {!showReset ? (
           <>

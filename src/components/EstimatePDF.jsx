@@ -172,16 +172,16 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
           ))}
           <View style={s.divLine} />
           <View style={s.totalRow}>
-            <Text style={s.totalLabel}>{isRenovation ? 'Construction rate \u2014 new work' : 'Total adjusted base rate'}</Text>
+            <Text style={s.totalLabel}>{isRenovation ? 'Construction rate — new work' : 'Total adjusted base rate'}</Text>
             <Text style={s.totalVal}>{fmt(result?.totalAdjustedBaseRate)} /m²</Text>
           </View>
           {isRenovation && result?.renovArea > 0 && <>
             <View style={[s.row, { marginTop: 4 }]}>
-              <Text style={s.rowLabel}>Renovation \u2014 {inputs.renovationComplexityKey} (x{result?.renovationMultiplier})</Text>
+              <Text style={s.rowLabel}>{'Renovation — ' + (inputs.renovationComplexityKey||'') + ' (x' + (result?.renovationMultiplier||'') + ')'}</Text>
               <Text style={s.rowUplift}>+ {fmt((result?.totalAdjustedBaseRate || 0) * ((result?.renovationMultiplier || 1) - 1))} /m²</Text>
             </View>
             <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Construction rate \u2014 renovation</Text>
+              <Text style={s.totalLabel}>Construction rate — renovation</Text>
               <Text style={s.totalVal}>{fmt((result?.totalAdjustedBaseRate || 0) * (result?.renovationMultiplier || 1))} /m²</Text>
             </View>
           </>}

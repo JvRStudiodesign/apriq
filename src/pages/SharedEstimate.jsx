@@ -22,14 +22,14 @@ export default function SharedEstimate() {
         .eq('share_token', token)
         .single();
       if (error || !data)                         { setErr('This estimate link is invalid or has expired.'); setLoad(false); return; }
-      if (new Date(data.expires_at) < new Date()) { setErr('This estimate link expired 7 days after it was shared.'); setLoad(false); return; }
+      if (new Date(data.expires_at) < new Date()) { setErr('This estimate link has expired.'); setLoad(false); return; }
       setSnap(data.snapshot_data);
       setLoad(false);
     }
     load();
   }, [token]);
 
-  const pg     = { maxWidth:'720px', margin:'0 auto', padding:'2rem 1.25rem 4rem', fontFamily:'-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', fontSize:'0.875rem', color:'#1a1a18' };
+  const pg     = { maxWidth:'720px', margin:'0 auto', padding:'2rem 1.25rem 4rem', fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', fontSize:'0.875rem', color:'#1a1a18' };
   const card   = { background:'#fff', borderRadius:'12px', padding:'1.25rem 1.5rem', border:'1px solid #eee', marginBottom:'1rem' };
   const stitle = { fontSize:'0.72rem', fontWeight:'600', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'0.75rem' };
   const row    = { display:'flex', justifyContent:'space-between', padding:'0.35rem 0', borderBottom:'1px solid #f5f5f3' };
@@ -39,7 +39,7 @@ export default function SharedEstimate() {
 
   if (loading) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f5f5f3' }}>
-      <p style={{ color:'#aaa', fontSize:'0.875rem' }}>Loading estimate\u2026</p>
+      <p style={{ color:'#aaa', fontSize:'0.875rem' }}>Loading estimate...</p>
     </div>
   );
 
@@ -53,23 +53,46 @@ export default function SharedEstimate() {
   const { inputs, result, userDetails, project, client, reference, numCats, isRenovation, _sharedAt } = snap;
   const issueDate = _sharedAt ? new Date(_sharedAt).toLocaleDateString('en-ZA', { day:'numeric', month:'long', year:'numeric' }) : '';
 
+  // Compute rate uplifts from multipliers (same approach as PDF)
+  const baseRate = numCats === 1 ? (result?.rate1Raw || result?.rate1 || 0) : (result?.weightedBaseRate || 0);
+  const qMult    = result?.qualityMultiplier || 1;
+  const sMult    = result?.siteMultiplier || 1;
+  const cMult    = result?.complexityMultiplier || 1;
+  const ptMult   = result?.projectTypeMultiplier || 1;
+  const qualityUplift      = baseRate * (qMult - 1);
+  const siteUplift         = baseRate * qMult * (sMult - 1);
+  const complexityUplift   = baseRate * qMult * sMult * (cMult - 1);
+  const projectTypeUplift  = baseRate * qMult * sMult * cMult * (ptMult - 1);
+  const adjustedRate       = result?.totalAdjustedBaseRate || result?.appliedRate || 0;
+  const breakdown          = result?.elementBreakdown || [];
+  const logoUrl            = userDetails?.logo_url || userDetails?.company_logo_url || null;
+  const companyName        = userDetails?.company_name || userDetails?.company || '';
+
   return (
     <div style={{ background:'#f5f5f3', minHeight:'100vh', paddingTop:'1.5rem' }}>
       <div style={pg}>
 
+        {/* Header — matches PDF layout */}
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'1.5rem', flexWrap:'wrap', gap:'0.75rem' }}>
           <div>
-            {userDetails?.company_logo_url && <img src={userDetails.company_logo_url} alt="logo" style={{ height:'36px', marginBottom:'0.5rem', display:'block' }} />}
-            <div style={{ fontWeight:'700', fontSize:'1.05rem' }}>{userDetails?.company || 'AprIQ Estimate'}</div>
-            {userDetails?.full_name && <div style={{ color:'#888', fontSize:'0.8rem' }}>{userDetails.full_name}</div>}
+            {logoUrl
+              ? <img src={logoUrl} alt="logo" style={{ height:'44px', marginBottom:'0.5rem', display:'block', objectFit:'contain' }} />
+              : <img src="/logo.jpg" alt="AprIQ" style={{ height:'44px', marginBottom:'0.5rem', display:'block', objectFit:'contain' }} />
+            }
+            {userDetails?.full_name && <div style={{ fontWeight:'600', fontSize:'0.9rem' }}>{userDetails.full_name}</div>}
+            {companyName && <div style={{ color:'#888', fontSize:'0.8rem' }}>{companyName}</div>}
+            {userDetails?.email && <div style={{ color:'#888', fontSize:'0.78rem' }}>{userDetails.email}</div>}
+            {userDetails?.phone && <div style={{ color:'#888', fontSize:'0.78rem' }}>{userDetails.phone}</div>}
           </div>
           <div style={{ textAlign:'right' }}>
-            <div style={{ fontWeight:'600', fontSize:'0.85rem' }}>Ref: {reference || '\u2014'}</div>
-            {issueDate && <div style={{ color:'#888', fontSize:'0.75rem', marginTop:'2px' }}>Issued: {issueDate}</div>}
-            <div style={{ color:'#c0392b', fontSize:'0.7rem', marginTop:'3px' }}>Valid for 7 days</div>
+            <div style={{ fontSize:'0.7rem', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.05em' }}>Reference</div>
+            <div style={{ fontWeight:'700', fontSize:'1rem' }}>{reference || '—'}</div>
+            {issueDate && <div style={{ color:'#888', fontSize:'0.75rem', marginTop:'2px' }}>{issueDate}</div>}
+            <div style={{ color:'#888', fontSize:'0.72rem', marginTop:'2px' }}>ROM Cost Estimate</div>
           </div>
         </div>
 
+        {/* Project details */}
         {(project?.project_name || client?.name || inputs?.projectName || inputs?.clientName) && (
           <div style={card}>
             <div style={stitle}>Project details</div>
@@ -79,51 +102,70 @@ export default function SharedEstimate() {
           </div>
         )}
 
+        {/* Project parameters */}
         <div style={card}>
           <div style={stitle}>Project parameters</div>
           {numCats > 1
             ? [1,2,3].slice(0,numCats).map(i => inputs[`use${i}Category`]
-                ? <div key={i} style={row}><span style={lbl}>Use {i}</span><span style={bold}>{inputs[`use${i}Category`]} \u2014 {inputs[`use${i}Subtype`]} ({inputs[`use${i}Pct`]}%)</span></div>
+                ? <div key={i} style={row}><span style={lbl}>Use {i}</span><span style={bold}>{inputs[`use${i}Category`]} — {inputs[`use${i}Subtype`]} ({inputs[`use${i}Pct`]}%)</span></div>
                 : null)
-            : <div style={row}><span style={lbl}>Building type</span><span style={bold}>{inputs?.buildingCategory} \u2014 {inputs?.buildingSubtype}</span></div>
+            : <div style={row}><span style={lbl}>Building type</span><span style={bold}>{inputs?.use1Category || inputs?.buildingCategory} — {inputs?.use1Subtype || inputs?.buildingSubtype}</span></div>
           }
-          <div style={row}><span style={lbl}>Floor area</span><span style={bold}>{inputs?.floorArea?.toLocaleString('en-ZA')} m\u00b2</span></div>
-          {isRenovation && inputs?.renovationPct != null && (
-            <div style={row}><span style={lbl}>Renovation split</span><span style={bold}>{inputs.renovationPct}% renovation / {100 - inputs.renovationPct}% new build</span></div>
-          )}
+          <div style={row}><span style={lbl}>Floor area</span><span style={bold}>{inputs?.floorArea?.toLocaleString('en-ZA')} m²</span></div>
+          {inputs?.projectTypeKey && <div style={row}><span style={lbl}>Project type</span><span style={bold}>{inputs.projectTypeKey}</span></div>}
+          {isRenovation && inputs?.renovationPct != null && <div style={row}><span style={lbl}>Renovation split</span><span style={bold}>{inputs.renovationPct}% renovation / {100 - inputs.renovationPct}% new build</span></div>}
+          {inputs?.qualityKey && <div style={row}><span style={lbl}>Quality</span><span style={bold}>{inputs.qualityKey}</span></div>}
+          {inputs?.siteAccessKey && <div style={row}><span style={lbl}>Site access</span><span style={bold}>{inputs.siteAccessKey}</span></div>}
+          {inputs?.complexityKey && <div style={row}><span style={lbl}>Complexity</span><span style={bold}>{inputs.complexityKey}</span></div>}
         </div>
 
+        {/* Rate summary */}
         {result && (
           <div style={card}>
             <div style={stitle}>Rate summary</div>
-            <div style={row}><span style={lbl}>Base rate</span><span style={bold}>{fmtZAR(result.baseRate)} /m\u00b2</span></div>
-            {result.qualityUplift > 0     && <div style={row}><span style={lbl}>Quality adjustment</span><span style={bold}>+ {fmtZAR(result.qualityUplift)} /m\u00b2</span></div>}
-            {result.siteUplift > 0        && <div style={row}><span style={lbl}>Site access</span><span style={bold}>+ {fmtZAR(result.siteUplift)} /m\u00b2</span></div>}
-            {result.complexityUplift > 0  && <div style={row}><span style={lbl}>Complexity</span><span style={bold}>+ {fmtZAR(result.complexityUplift)} /m\u00b2</span></div>}
-            {result.projectTypeUplift > 0 && <div style={row}><span style={lbl}>Project type</span><span style={bold}>+ {fmtZAR(result.projectTypeUplift)} /m\u00b2</span></div>}
+            <div style={row}><span style={lbl}>Base rate{inputs?.use1Subtype ? ` (${inputs.use1Subtype})` : ''}</span><span style={bold}>{fmtZAR(baseRate)} /m²</span></div>
+            {qualityUplift > 0    && <div style={row}><span style={lbl}>Quality — {inputs?.qualityKey}</span><span style={bold}>+ {fmtZAR(qualityUplift)} /m²</span></div>}
+            {siteUplift > 0       && <div style={row}><span style={lbl}>Site — {inputs?.siteAccessKey}</span><span style={bold}>+ {fmtZAR(siteUplift)} /m²</span></div>}
+            {complexityUplift > 0 && <div style={row}><span style={lbl}>Complexity — {inputs?.complexityKey}</span><span style={bold}>+ {fmtZAR(complexityUplift)} /m²</span></div>}
             <div style={divdr} />
-            <div style={row}><span style={{ ...lbl, fontWeight:'600' }}>Adjusted base rate</span><span style={bold}>{fmtZAR(result.adjustedRate)} /m\u00b2</span></div>
+            {isRenovation && result?.renovationMultiplier > 1 && <>
+              <div style={row}><span style={{ ...lbl, fontWeight:'600' }}>{isRenovation ? 'Construction rate — new work' : 'Total adjusted base rate'}</span><span style={bold}>{fmtZAR(adjustedRate)} /m²</span></div>
+              <div style={row}><span style={lbl}>Renovation — {inputs?.renovationComplexityKey} (x{result?.renovationMultiplier})</span><span style={bold}>+ {fmtZAR(adjustedRate * ((result?.renovationMultiplier||1) - 1))} /m²</span></div>
+              <div style={divdr} />
+              <div style={row}><span style={{ ...lbl, fontWeight:'600' }}>Construction rate — renovation</span><span style={bold}>{fmtZAR(adjustedRate * (result?.renovationMultiplier||1))} /m²</span></div>
+            </>}
+            {!isRenovation && <div style={row}><span style={{ ...lbl, fontWeight:'600' }}>Total adjusted base rate</span><span style={bold}>{fmtZAR(adjustedRate)} /m²</span></div>}
           </div>
         )}
 
-        {result?.breakdown && (
+        {/* 11-element breakdown */}
+        {breakdown.length > 0 && (
           <div style={card}>
-            <div style={stitle}>11-element cost breakdown</div>
-            {result.breakdown.map((el, i) => (
-              <div key={i} style={row}><span style={lbl}>{el.name}</span><span style={bold}>{fmtZAR(el.amount)}</span></div>
+            <div style={stitle}>Element breakdown</div>
+            {breakdown.map((el, i) => (
+              <div key={i} style={row}>
+                <span style={lbl}>{el.name}</span>
+                <span style={{ color:'#888', fontSize:'0.8rem' }}>{el.pct != null ? (el.pct*100).toFixed(1)+'%' : ''}</span>
+                <span style={bold}>{fmtZAR(el.amount)}</span>
+              </div>
             ))}
+            {isRenovation && result?.newArea > 0 && <div style={{ ...row, marginTop:'0.5rem' }}><span style={{ ...lbl, fontWeight:'600' }}>Construction cost — New ({result.newArea} m²)</span><span style={bold}>{fmtZAR(result.baseConstructionCostNew)}</span></div>}
+            {isRenovation && result?.renovArea > 0 && <div style={row}><span style={{ ...lbl, fontWeight:'600' }}>Construction cost — Renovation ({result.renovArea} m²)</span><span style={bold}>{fmtZAR(result.baseConstructionCostRenovation)}</span></div>}
+            {!isRenovation && <div style={{ ...row, marginTop:'0.5rem' }}><span style={{ ...lbl, fontWeight:'600' }}>Construction cost ({inputs?.floorArea} m²)</span><span style={bold}>{fmtZAR(result?.constructionCost)}</span></div>}
           </div>
         )}
 
+        {/* Financial stack */}
         {result && (
           <div style={card}>
-            <div style={stitle}>Financial summary</div>
+            <div style={stitle}>Financial stack</div>
             <div style={row}><span style={lbl}>Construction cost</span><span style={bold}>{fmtZAR(result.constructionCost)}</span></div>
-            {result.landCost > 0 && <div style={row}><span style={lbl}>Land cost</span><span style={bold}>{fmtZAR(result.landCost)}</span></div>}
-            <div style={row}><span style={lbl}>Contingency ({pct(inputs?.contingencyPct / 100)})</span><span style={bold}>{fmtZAR(result.contingencyAmount)}</span></div>
-            <div style={row}><span style={lbl}>Professional fees ({pct(inputs?.feesPct / 100)})</span><span style={bold}>{fmtZAR(result.feesAmount)}</span></div>
-            <div style={row}><span style={lbl}>Developer profit ({pct(inputs?.profitPct / 100)})</span><span style={bold}>{fmtZAR(result.profitAmount)}</span></div>
-            <div style={row}><span style={lbl}>VAT ({pct(inputs?.vatPct / 100)})</span><span style={bold}>{fmtZAR(result.vatAmount)}</span></div>
+            {(result.landProcurementCost > 0) && <div style={row}><span style={lbl}>Land cost</span><span style={bold}>{fmtZAR(result.landProcurementCost)}</span></div>}
+            {result.contingencyAmount > 0 && <div style={row}><span style={lbl}>Contingency ({pct(inputs?.contingencyPct / 100)})</span><span style={bold}>{fmtZAR(result.contingencyAmount)}</span></div>}
+            {result.contractorProfit > 0 && <div style={row}><span style={lbl}>Contractor profit ({pct(inputs?.profitPct / 100)})</span><span style={bold}>{fmtZAR(result.contractorProfit)}</span></div>}
+            {result.preliminaries > 0 && <div style={row}><span style={lbl}>Preliminaries ({pct(inputs?.prelimPct / 100)})</span><span style={bold}>{fmtZAR(result.preliminaries)}</span></div>}
+            {result.professionalFees > 0 && <div style={row}><span style={lbl}>Professional fees ({pct(inputs?.feesPct / 100)})</span><span style={bold}>{fmtZAR(result.professionalFees)}</span></div>}
+            {result.vatAmount > 0 && <div style={row}><span style={lbl}>VAT ({pct(inputs?.vatPct / 100)})</span><span style={bold}>{fmtZAR(result.vatAmount)}</span></div>}
             <div style={divdr} />
             <div style={{ ...row, paddingTop:'0.5rem' }}>
               <span style={{ fontWeight:'700', fontSize:'1rem' }}>Total project cost</span>
@@ -138,20 +180,27 @@ export default function SharedEstimate() {
           </div>
         )}
 
-        <div style={{ background:'#fffbe6', border:'1px solid #f0e5b0', borderRadius:'10px', padding:'0.875rem 1rem', marginBottom:'1.5rem', fontSize:'0.78rem', color:'#7a6500', lineHeight:'1.55' }}>
-          <strong>ROM Disclaimer:</strong> This estimate is a Rough Order of Magnitude (ROM) for budgeting purposes only. It is not a formal bill of quantities or a binding cost commitment. Actual costs may vary based on site conditions, material specifications, market conditions, and contractor pricing. A detailed cost plan by a registered Quantity Surveyor is recommended before committing to any project.
+        {/* ROM Disclaimer */}
+        <div style={{ background:'#fffbe6', border:'1px solid #f0e5b0', borderRadius:'10px', padding:'0.875rem 1rem', marginBottom:'0.75rem', fontSize:'0.78rem', color:'#7a6500', lineHeight:'1.55' }}>
+          <strong>ROM Disclaimer:</strong> This estimate is a Rough Order of Magnitude (ROM) for early-stage planning and feasibility purposes only. Figures are based on average market rates from AprIQ's internal cost database and are subject to variation depending on site conditions, specification, contractor pricing, and market conditions at time of tender. This does not constitute a formal quantity survey, bill of quantities, or professional cost advice. AprIQ accepts no liability for decisions made on the basis of this estimate. A registered professional quantity surveyor should be appointed for detailed cost planning.
         </div>
 
+        {/* Link expiry notice — below ROM disclaimer */}
+        <div style={{ textAlign:'center', color:'#aaa', fontSize:'0.75rem', marginBottom:'1.5rem' }}>
+          Link will expire in 7 days
+        </div>
+
+        {/* CTA */}
         <div style={{ background:'#1a1a18', borderRadius:'14px', padding:'1.75rem 1.5rem', textAlign:'center', marginBottom:'1.5rem' }}>
           <div style={{ color:'#fff', fontWeight:'700', fontSize:'1.05rem', marginBottom:'0.375rem' }}>Generate your own estimates</div>
-          <div style={{ color:'#aaa', fontSize:'0.82rem', marginBottom:'1.25rem' }}>AprIQ \u2014 construction cost intelligence for South African professionals. 7-day Pro trial, no card required.</div>
+          <div style={{ color:'#aaa', fontSize:'0.82rem', marginBottom:'1.25rem' }}>AprIQ — construction cost intelligence for South African professionals. 7-day Pro trial, no card required.</div>
           <Link to="/signup" style={{ display:'inline-block', padding:'0.75rem 2rem', background:'#fff', color:'#1a1a18', borderRadius:'10px', textDecoration:'none', fontWeight:'600', fontSize:'0.875rem' }}>
-            Try AprIQ free \u2014 get unlimited estimates
+            Try AprIQ free — get unlimited estimates
           </Link>
         </div>
 
         <div style={{ textAlign:'center', color:'#ccc', fontSize:'0.75rem' }}>
-          Report generated by AprIQ \u2014 apriq.co.za
+          Report generated by AprIQ — apriq.co.za
         </div>
 
       </div>
