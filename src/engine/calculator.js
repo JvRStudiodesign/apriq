@@ -39,7 +39,13 @@ export function calculate(inputs) {
 
   // Core fix: totalAdjustedBaseRate = weightedBaseRate x multipliers ONLY
   // elementScopeRatio removed — element pcts apply to cost display only, not the rate
-  const totalAdjustedBaseRate = weightedBaseRate * qualityMultiplier * siteMultiplier * complexityMultiplier;
+  // Blended multiplier — weighted additive stack (replaces compounded multiplication)
+  // Quality influence: 1.00 | Complexity influence: 0.75 | Site influence: 0.50
+  const blendedMultiplier = 1
+    + (qualityMultiplier - 1) * 1.00
+    + (complexityMultiplier - 1) * 0.75
+    + (siteMultiplier - 1) * 0.50;
+  const totalAdjustedBaseRate = weightedBaseRate * blendedMultiplier;
 
   const effectivePcts = (useCustomSplit && customElementPcts) ? customElementPcts : BREAKDOWN_ELEMENTS.map(e => e.pct);
   const customPctTotal = effectivePcts.reduce((s, p) => s + p, 0);
