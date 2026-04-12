@@ -14,10 +14,10 @@ function fmtZAR(n) {
   return 'R ' + Math.round(n).toLocaleString('en-ZA');
 }
 
-const inp = { width:'100%', padding:'0.6rem 0.875rem', border:'1.5px solid #e5e5e3', borderRadius:'10px', fontSize:'0.875rem', fontFamily:'inherit', outline:'none', color:'#1a1a18', background:'#fff', boxSizing:'border-box' };
-const lbl = { display:'block', fontSize:'0.7rem', fontWeight:'600', color:'#999', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'0.4rem' };
+const inp = { width:'100%', padding:'0.6rem 0.875rem', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.875rem', fontFamily:'inherit', outline:'none', color:'#111111', background:'#F9FAFA', boxSizing:'border-box' };
+const lbl = { display:'block', fontSize:'0.7rem', fontWeight:'600', color:'#979899', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'0.4rem' };
 const sel = { ...inp, cursor:'pointer' };
-const card = { background:'#fff', borderRadius:'14px', padding:'1.5rem', border:'1px solid #eeede8', marginBottom:'1rem' };
+const card = { background:'#F9FAFA', borderRadius:'16px', padding:'1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem' };
 
 // Isolated form component — own state, never causes parent re-render while typing
 function ProjectForm({ initial, clients, onSave, onCancel, saving }) {
@@ -52,10 +52,10 @@ function ProjectForm({ initial, clients, onSave, onCancel, saving }) {
       </div>
       <div style={{ display:'flex', gap:'8px' }}>
         <button onClick={() => onSave(form)} disabled={saving || !form.project_name.trim()}
-          style={{ flex:1, padding:'0.625rem', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'10px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>
+          style={{ flex:1, padding:'0.625rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>
           {saving ? 'Saving...' : 'Save project'}
         </button>
-        <button onClick={onCancel} style={{ padding:'0.625rem 1rem', background:'#fff', color:'#aaa', border:'1.5px solid #e5e5e3', borderRadius:'10px', fontSize:'0.875rem', cursor:'pointer', fontFamily:'inherit' }}>Cancel</button>
+        <button onClick={onCancel} style={{ padding:'0.625rem 1rem', background:'#fff', color:'#aaa', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.875rem', cursor:'pointer', fontFamily:'inherit' }}>Cancel</button>
       </div>
     </div>
   );
@@ -74,7 +74,7 @@ function PDFBtn({ estimate, project, profile, userEmail }) {
       document={<EstimatePDF inputs={inputs} result={result} userDetails={{ ...profile, email: userEmail }} project={project} client={project.clients || null} reference={ref} numCats={numCats} isRenovation={inputs.projectTypeKey === 'Renovation'} />}
       fileName={filename} style={{ textDecoration:'none' }}>
       {({ loading }) => (
-        <button style={{ padding:'6px 12px', borderRadius:'9px', border:'none', background:'#1a1a18', color:'#fff', fontSize:'0.78rem', fontWeight:'500', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
+        <button style={{ padding:'6px 12px', borderRadius:'9px', border:'none', background:'#111111', color:'#F9FAFA', fontSize:'0.78rem', fontWeight:'500', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
           {loading ? 'Preparing...' : 'Export PDF'}
         </button>
       )}
@@ -143,15 +143,15 @@ export default function Projects() {
   }
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f5f5f3', fontFamily:'-apple-system, BlinkMacSystemFont, sans-serif' }}>
-      <div style={{ background:'#fff', borderBottom:'1px solid #eeede8', padding:'0.875rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
+    <div style={{ minHeight:'100vh', background:'#F9FAFA', fontFamily:"'Roboto', system-ui, sans-serif" }}>
+      <div style={{ background:'#F9FAFA', borderBottom:'1px solid #E4E5E5', padding:'0.875rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'2px' }}>
           <HamburgerMenu />
           <img src="/logo.jpg" alt="AprIQ" onClick={() => navigate('/')} style={{ height:'36px', width:'auto', objectFit:'contain', cursor:'pointer' }} />
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <span style={{ fontSize:'0.72rem', color:'#aaa' }}>{projects.length}/{limit}</span>
-          <button onClick={startNew} style={{ padding:'6px 14px', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'9px', fontSize:'0.78rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>+ New project</button>
+          <span style={{ fontSize:'0.72rem', color:'#979899' }}>{projects.length}/{limit}</span>
+          <button onClick={startNew} style={{ padding:'6px 14px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'10px', fontSize:'0.78rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>+ New project</button>
         </div>
       </div>
 
@@ -171,25 +171,25 @@ export default function Projects() {
         )}
 
         {loading ? (
-          <p style={{ color:'#aaa', textAlign:'center', padding:'2rem' }}>Loading...</p>
+          <p style={{ color:'#979899', textAlign:'center', padding:'2rem' }}>Loading...</p>
         ) : projects.length === 0 && !showForm ? (
           <div style={{ ...card, textAlign:'center', padding:'3rem 1.5rem' }}>
-            <p style={{ color:'#bbb', fontSize:'0.875rem', marginBottom:'1rem' }}>No projects yet.</p>
-            <button onClick={startNew} style={{ padding:'8px 16px', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'10px', fontSize:'0.82rem', cursor:'pointer', fontFamily:'inherit' }}>Create first project</button>
+            <p style={{ color:'#979899', fontSize:'0.875rem', marginBottom:'1rem' }}>No projects yet.</p>
+            <button onClick={startNew} style={{ padding:'8px 16px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.82rem', cursor:'pointer', fontFamily:'inherit' }}>Create first project</button>
           </div>
         ) : projects.map(proj => (
-          <div key={proj.id} style={{ background:'#fff', borderRadius:'14px', padding:'1.25rem 1.5rem', border:'1px solid #eeede8', marginBottom:'10px' }}>
+          <div key={proj.id} style={{ background:'#F9FAFA', borderRadius:'16px', padding:'1.25rem 1.5rem', border:'1px solid #E4E5E5', marginBottom:'10px' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom: proj.latestEstimate ? '0.875rem' : 0 }}>
               <div>
                 <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'2px' }}>
-                  <span style={{ fontWeight:'600', fontSize:'0.92rem', color:'#1a1a18' }}>{proj.project_name}</span>
-                  {proj.reference_number && <span style={{ fontSize:'0.68rem', background:'#f0f0ee', color:'#888', padding:'1px 6px', borderRadius:'6px' }}>{proj.reference_number}</span>}
+                  <span style={{ fontWeight:'600', fontSize:'0.92rem', color:'#111111' }}>{proj.project_name}</span>
+                  {proj.reference_number && <span style={{ fontSize:'0.68rem', background:'#E4E5E5', color:'#979899', padding:'1px 6px', borderRadius:'6px' }}>{proj.reference_number}</span>}
                 </div>
-                {proj.clients?.company_name && <p style={{ fontSize:'0.78rem', color:'#888', marginTop:'1px' }}>{proj.clients.company_name}</p>}
+                {proj.clients?.company_name && <p style={{ fontSize:'0.78rem', color:'#979899', marginTop:'1px' }}>{proj.clients.company_name}</p>}
                 {proj.address && <p style={{ fontSize:'0.75rem', color:'#aaa', marginTop:'1px' }}>{proj.address}</p>}
               </div>
               <div style={{ display:'flex', gap:'6px', flexShrink:0 }}>
-                <button onClick={() => startEdit(proj)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #e5e5e3', background:'#fff', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Edit</button>
+                <button onClick={() => startEdit(proj)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #E4E5E5', background:'#F9FAFA', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Edit</button>
                 <button onClick={() => handleDelete(proj.id)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #fdecea', background:'#fdecea', color:'#c0392b', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Delete</button>
               </div>
             </div>
@@ -197,11 +197,11 @@ export default function Projects() {
               <div style={{ borderTop:'1px solid #f5f5f3', paddingTop:'0.875rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <div>
                   <p style={{ fontSize:'0.7rem', color:'#aaa', marginBottom:'2px' }}>Latest estimate</p>
-                  <p style={{ fontSize:'1rem', fontWeight:'700', color:'#1a1a18' }}>{fmtZAR(proj.latestEstimate.total_project_cost)}</p>
+                  <p style={{ fontSize:'1rem', fontWeight:'700', color:'#111111' }}>{fmtZAR(proj.latestEstimate.total_project_cost)}</p>
                   <p style={{ fontSize:'0.68rem', color:'#bbb', marginTop:'1px' }}>{new Date(proj.latestEstimate.saved_at).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' })}</p>
                 </div>
                 <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
-                  <button onClick={() => navigate(`/?edit=${proj.latestEstimate.id}`)} style={{ padding:'6px 12px', borderRadius:'9px', border:'1.5px solid #1a1a18', background:'#fff', fontSize:'0.78rem', fontWeight:'500', cursor:'pointer', fontFamily:'inherit', color:'#1a1a18' }}>
+                  <button onClick={() => navigate(`/?edit=${proj.latestEstimate.id}`)} style={{ padding:'6px 12px', borderRadius:'9px', border:'1.5px solid #111111', background:'#F9FAFA', fontSize:'0.78rem', fontWeight:'500', cursor:'pointer', fontFamily:'inherit', color:'#111111' }}>
                     Edit estimate
                   </button>
                   {isPro ? <PDFBtn estimate={proj.latestEstimate} project={proj} profile={profile} userEmail={user?.email} /> : (

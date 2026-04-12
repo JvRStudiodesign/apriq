@@ -4,11 +4,11 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { HamburgerMenu } from '../components/HamburgerMenu';
 
-const card = { background: '#fff', borderRadius: '14px', padding: '1.5rem', border: '1px solid #eeede8', marginBottom: '1rem' };
-const lbl = { display: 'block', fontSize: '0.7rem', fontWeight: '600', color: '#999', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' };
-const inp = { width: '100%', padding: '0.6rem 0.875rem', border: '1.5px solid #e5e5e3', borderRadius: '10px', fontSize: '0.875rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', color: '#1a1a18', background: '#fff' };
+const card = { background: '#F9FAFA', borderRadius: '16px', padding: '1.5rem', border: '1px solid #E4E5E5', marginBottom: '1rem' };
+const lbl = { display: 'block', fontSize: '0.7rem', fontWeight: '600', color: '#979899', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' };
+const inp = { width: '100%', padding: '0.6rem 0.875rem', border: '1.5px solid #E4E5E5', borderRadius: '12px', fontSize: '0.875rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', color: '#111111', background: '#F9FAFA' };
 
-const PRO_BADGE = <span style={{ marginLeft: '6px', fontSize: '0.6rem', background: '#f0f0ee', color: '#aaa', padding: '1px 6px', borderRadius: '6px', fontWeight: '600', verticalAlign: 'middle' }}>PRO</span>;
+const PRO_BADGE = <span style={{ marginLeft: '6px', fontSize: '0.6rem', background: '#E4E5E5', color: '#979899', padding: '1px 6px', borderRadius: '6px', fontWeight: '600', verticalAlign: 'middle' }}>PRO</span>;
 
 export default function UserProfile() {
   const { user, profile } = useAuth();
@@ -91,34 +91,34 @@ export default function UserProfile() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f3', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-      <div style={{ background: '#fff', borderBottom: '1px solid #eeede8', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
+    <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
+      <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
           <HamburgerMenu />
           <span style={{ fontWeight: '700', fontSize: '1.5rem', letterSpacing: '-0.04em', cursor: 'pointer' }} onClick={() => navigate('/')}><img src="/logo.jpg" alt="AprIQ" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} /></span>
         </div>
-        <span style={{ fontSize: '0.78rem', color: '#aaa' }}>User Profile</span>
+        <span style={{ fontSize: '0.78rem', color: '#979899' }}>User Profile</span>
       </div>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '2rem 1.25rem' }}>
-        <h1 style={{ fontSize: '1.2rem', fontWeight: '700', color: '#1a1a18', marginBottom: '0.25rem' }}>Profile</h1>
-        <p style={{ fontSize: '0.78rem', color: '#aaa', marginBottom: '1.5rem' }}>Your details auto-populate on every PDF export.</p>
+        <h1 style={{ fontSize: '1.2rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem' }}>Profile</h1>
+        <p style={{ fontSize: '0.78rem', color: '#979899', marginBottom: '1.5rem' }}>Your details auto-populate on every PDF export.</p>
 
         {/* Logo */}
         <div style={card}>
-          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1rem' }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1rem' }}>
             Company logo {!isPro && PRO_BADGE}
           </span>
           {isPro ? (
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
                 {logoPreview
-                  ? <img src={logoPreview} alt="Logo" style={{ width: '160px', height: '28px', width: 'auto', objectFit: 'contain', borderRadius: '8px', border: '1px solid #eee', background: '#fafafa', padding: '8px' }} />
-                  : <div style={{ width: '160px', height: '70px', borderRadius: '8px', border: '1.5px dashed #e5e5e3', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fafafa' }}>
-                      <span style={{ fontSize: '0.65rem', color: '#ccc' }}>No logo</span>
+                  ? <img src={logoPreview} alt="Logo" style={{ width: '160px', height: '28px', width: 'auto', objectFit: 'contain', borderRadius: '8px', border: '1px solid #eee', background: '#F9FAFA', padding: '8px' }} />
+                  : <div style={{ width: '160px', height: '70px', borderRadius: '8px', border: '1.5px dashed #E4E5E5', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA' }}>
+                      <span style={{ fontSize: '0.65rem', color: '#979899' }}>No logo</span>
                     </div>}
                 <div>
-                  <button onClick={() => fileRef.current.click()} style={{ padding: '6px 14px', borderRadius: '9px', border: '1.5px solid #e5e5e3', background: '#fff', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', display: 'block', marginBottom: '4px' }}>
+                  <button onClick={() => fileRef.current.click()} style={{ padding: '6px 14px', borderRadius: '9px', border: '1.5px solid #E4E5E5', background: '#F9FAFA', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', display: 'block', marginBottom: '4px' }}>
                     {uploading ? 'Uploading...' : logoPreview ? 'Change logo' : 'Upload logo'}
                   </button>
                   <span style={{ fontSize: '0.68rem', color: '#bbb' }}>PNG, SVG or JPEG · max 3MB</span>
@@ -127,13 +127,13 @@ export default function UserProfile() {
               <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/svg+xml" onChange={handleLogoChange} style={{ display: 'none' }} />
               {logoPreview && (
                 <button onClick={() => { setLogoPreview(null); setLogoFile(null); setSaved(false); }}
-                  style={{ fontSize: '0.72rem', color: '#e74c3c', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  style={{ fontSize: '0.72rem', color: '#0F4C5C', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                   Remove logo
                 </button>
               )}
             </>
           ) : (
-            <p style={{ fontSize: '0.78rem', color: '#aaa', padding: '0.75rem', background: '#f9f9f7', borderRadius: '8px' }}>
+            <p style={{ fontSize: '0.78rem', color: '#979899', padding: '0.75rem', background: '#F9FAFA', borderRadius: '10px' }}>
               Upgrade to Pro to upload your company logo.
             </p>
           )}
@@ -141,7 +141,7 @@ export default function UserProfile() {
 
         {/* Details */}
         <div style={card}>
-          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Your details</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Your details</span>
           {[
             { label: 'Full name', field: 'full_name', placeholder: 'Name Surname' },
             { label: 'Company / firm name', field: 'company_name', placeholder: 'Your practice or company' },
@@ -155,13 +155,13 @@ export default function UserProfile() {
           ))}
           <div style={{ marginBottom: '1rem' }}>
             <label style={lbl}>Email</label>
-            <input style={{ ...inp, background: '#f9f9f7', color: '#aaa' }} value={user?.email || ''} disabled />
+            <input style={{ ...inp, background: '#E4E5E5', color: '#979899' }} value={user?.email || ''} disabled />
           </div>
         </div>
 
         {/* Profession */}
         <div style={card}>
-          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Profession</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Profession</span>
           <select style={inp} value={form.profession} onChange={e => upd('profession', e.target.value)}>
             <option value="">Select your profession</option>
             <option value="Architect">Architect</option>
@@ -174,7 +174,7 @@ export default function UserProfile() {
         </div>
         {/* Change password */}
         <div style={card}>
-          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Change password</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Change password</span>
           <div style={{ marginBottom: '1rem' }}>
             <label style={lbl}>New password</label>
             <input type="password" style={inp} value={form.newPassword} onChange={e => upd('newPassword', e.target.value)} placeholder="Min. 6 characters" />
@@ -185,7 +185,7 @@ export default function UserProfile() {
           </div>
         </div>
         <button onClick={handleSave} disabled={saving || uploading}
-          style={{ width: '100%', padding: '0.875rem', background: saved ? '#27ae60' : '#1a1a18', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
+          style={{ width: '100%', padding: '0.875rem', background: saved ? '#0F4C5C' : '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
           {uploading ? 'Uploading logo...' : saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save profile'}
         </button>
       </div>

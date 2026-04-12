@@ -29,23 +29,23 @@ export default function SharedEstimate() {
     load();
   }, [token]);
 
-  const pg     = { maxWidth:'720px', margin:'0 auto', padding:'2rem 1.25rem 4rem', fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', fontSize:'0.875rem', color:'#1a1a18' };
-  const card   = { background:'#fff', borderRadius:'12px', padding:'1.25rem 1.5rem', border:'1px solid #eee', marginBottom:'1rem' };
+  const pg     = { maxWidth:'720px', margin:'0 auto', padding:'2rem 1.25rem 4rem', fontFamily:"'Roboto', system-ui, sans-serif", fontSize:'0.875rem', color:'#1a1a18' };
+  const card   = { background:'#F9FAFA', borderRadius:'16px', padding:'1.25rem 1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem' };
   const stitle = { fontSize:'0.72rem', fontWeight:'600', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'0.75rem' };
-  const row    = { display:'flex', justifyContent:'space-between', padding:'0.35rem 0', borderBottom:'1px solid #f5f5f3' };
-  const lbl    = { color:'#666' };
-  const bold   = { fontWeight:'600', color:'#1a1a18' };
-  const divdr  = { borderTop:'1px solid #f0f0ee', margin:'0.625rem 0' };
+  const row    = { display:'flex', justifyContent:'space-between', padding:'0.35rem 0', borderBottom:'1px solid #E4E5E5' };
+  const lbl    = { color:'#979899' };
+  const bold   = { fontWeight:'600', color:'#111111' };
+  const divdr  = { borderTop:'1px solid #E4E5E5', margin:'0.625rem 0' };
 
   if (loading) return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f5f5f3' }}>
-      <p style={{ color:'#aaa', fontSize:'0.875rem' }}>Loading estimate...</p>
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#F9FAFA' }}>
+      <p style={{ color:'#979899', fontSize:'0.875rem' }}>Loading estimate...</p>
     </div>
   );
 
   if (err) return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'1rem', background:'#f5f5f3' }}>
-      <p style={{ color:'#888', fontSize:'0.875rem', textAlign:'center', maxWidth:'300px' }}>{err}</p>
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'1rem', background:'#F9FAFA' }}>
+      <p style={{ color:'#979899', fontSize:'0.875rem', textAlign:'center', maxWidth:'300px' }}>{err}</p>
       <Link to="/signup" style={{ padding:'0.625rem 1.25rem', background:'#1a1a18', color:'#fff', borderRadius:'8px', textDecoration:'none', fontSize:'0.875rem', fontWeight:'500' }}>Try AprIQ free</Link>
     </div>
   );
@@ -69,7 +69,7 @@ export default function SharedEstimate() {
   const companyName        = userDetails?.company_name || userDetails?.company || '';
 
   return (
-    <div style={{ background:'#f5f5f3', minHeight:'100vh', paddingTop:'1.5rem' }}>
+    <div style={{ background:'#F9FAFA', minHeight:'100vh', paddingTop:'1.5rem' }}>
       <div style={pg}>
 
         {/* Header — matches PDF layout */}
@@ -80,15 +80,15 @@ export default function SharedEstimate() {
               : <img src="/logo.jpg" alt="AprIQ" style={{ height:'44px', marginBottom:'0.5rem', display:'block', objectFit:'contain' }} />
             }
             {userDetails?.full_name && <div style={{ fontWeight:'600', fontSize:'0.9rem' }}>{userDetails.full_name}</div>}
-            {companyName && <div style={{ color:'#888', fontSize:'0.8rem' }}>{companyName}</div>}
-            {userDetails?.email && <div style={{ color:'#888', fontSize:'0.78rem' }}>{userDetails.email}</div>}
-            {userDetails?.phone && <div style={{ color:'#888', fontSize:'0.78rem' }}>{userDetails.phone}</div>}
+            {companyName && <div style={{ color:'#979899', fontSize:'0.8rem' }}>{companyName}</div>}
+            {userDetails?.email && <div style={{ color:'#979899', fontSize:'0.78rem' }}>{userDetails.email}</div>}
+            {userDetails?.phone && <div style={{ color:'#979899', fontSize:'0.78rem' }}>{userDetails.phone}</div>}
           </div>
           <div style={{ textAlign:'right' }}>
             <div style={{ fontSize:'0.7rem', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.05em' }}>Reference</div>
             <div style={{ fontWeight:'700', fontSize:'1rem' }}>{reference || '—'}</div>
-            {issueDate && <div style={{ color:'#888', fontSize:'0.75rem', marginTop:'2px' }}>{issueDate}</div>}
-            <div style={{ color:'#888', fontSize:'0.72rem', marginTop:'2px' }}>ROM Cost Estimate</div>
+            {issueDate && <div style={{ color:'#979899', fontSize:'0.75rem', marginTop:'2px' }}>{issueDate}</div>}
+            <div style={{ color:'#979899', fontSize:'0.72rem', marginTop:'2px' }}>ROM Cost Estimate</div>
           </div>
         </div>
 
@@ -145,7 +145,7 @@ export default function SharedEstimate() {
             {breakdown.map((el, i) => (
               <div key={i} style={row}>
                 <span style={lbl}>{el.name}</span>
-                <span style={{ color:'#888', fontSize:'0.8rem' }}>{el.pct != null ? (el.pct*100).toFixed(1)+'%' : ''}</span>
+                <span style={{ color:'#979899', fontSize:'0.8rem' }}>{el.pct != null ? (el.pct*100).toFixed(1)+'%' : ''}</span>
                 <span style={bold}>{fmtZAR(el.amount)}</span>
               </div>
             ))}
@@ -181,7 +181,7 @@ export default function SharedEstimate() {
         )}
 
         {/* ROM Disclaimer */}
-        <div style={{ background:'#fffbe6', border:'1px solid #f0e5b0', borderRadius:'10px', padding:'0.875rem 1rem', marginBottom:'0.75rem', fontSize:'0.78rem', color:'#7a6500', lineHeight:'1.55' }}>
+        <div style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:'10px', padding:'0.875rem 1rem', marginBottom:'0.75rem', fontSize:'0.78rem', color:'#0F4C5C', lineHeight:'1.55' }}>
           <strong>ROM Disclaimer:</strong> This estimate is a Rough Order of Magnitude (ROM) for early-stage planning and feasibility purposes only. Figures are based on average market rates from AprIQ's internal cost database and are subject to variation depending on site conditions, specification, contractor pricing, and market conditions at time of tender. This does not constitute a formal quantity survey, bill of quantities, or professional cost advice. AprIQ accepts no liability for decisions made on the basis of this estimate. A registered professional quantity surveyor should be appointed for detailed cost planning.
         </div>
 
@@ -191,15 +191,15 @@ export default function SharedEstimate() {
         </div>
 
         {/* CTA */}
-        <div style={{ background:'#1a1a18', borderRadius:'14px', padding:'1.75rem 1.5rem', textAlign:'center', marginBottom:'1.5rem' }}>
-          <div style={{ color:'#fff', fontWeight:'700', fontSize:'1.05rem', marginBottom:'0.375rem' }}>Generate your own estimates</div>
-          <div style={{ color:'#aaa', fontSize:'0.82rem', marginBottom:'1.25rem' }}>AprIQ — construction cost intelligence for South African professionals. 7-day Pro trial, no card required.</div>
-          <Link to="/signup" style={{ display:'inline-block', padding:'0.75rem 2rem', background:'#fff', color:'#1a1a18', borderRadius:'10px', textDecoration:'none', fontWeight:'600', fontSize:'0.875rem' }}>
+        <div style={{ background:'#111111', borderRadius:'20px', padding:'1.75rem 1.5rem', textAlign:'center', marginBottom:'1.5rem' }}>
+          <div style={{ color:'#F9FAFA', fontWeight:'700', fontSize:'1.05rem', marginBottom:'0.375rem' }}>Generate your own estimates</div>
+          <div style={{ color:'#BFD1D6', fontSize:'0.82rem', marginBottom:'1.25rem' }}>AprIQ — construction cost intelligence for South African professionals. 7-day Pro trial, no card required.</div>
+          <Link to="/signup" style={{ display:'inline-block', padding:'0.75rem 2rem', background:'#F9FAFA', color:'#111111', borderRadius:'12px', textDecoration:'none', fontWeight:'600', fontSize:'0.875rem' }}>
             Try AprIQ free — get unlimited estimates
           </Link>
         </div>
 
-        <div style={{ textAlign:'center', color:'#ccc', fontSize:'0.75rem' }}>
+        <div style={{ textAlign:'center', color:'#979899', fontSize:'0.75rem' }}>
           Report generated by AprIQ — apriq.co.za
         </div>
 

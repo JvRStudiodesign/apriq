@@ -50,14 +50,14 @@ export default function Signup() {
     await supabase.auth.signInWithOAuth({ provider: 'google' });
   }
 
-  const inputStyle = { width: '100%', padding: '0.625rem 0.75rem', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', boxSizing: 'border-box', background: '#fff', color: '#1a1a18', colorScheme: 'light' };
-  const labelStyle = { display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem', fontWeight: '500' };
+  const inputStyle = { width: '100%', padding: '0.625rem 0.75rem', border: '1.5px solid #E4E5E5', borderRadius: '12px', marginBottom: '1rem', fontSize: '0.9rem', boxSizing: 'border-box', background: '#F9FAFA', color: '#111111', colorScheme: 'light' };
+  const labelStyle = { display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600', color: '#979899', textTransform: 'uppercase', letterSpacing: '0.04em' };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f3' }}>
-      <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '12px', width: '100%', maxWidth: '420px', boxShadow: '0 2px 16px rgba(0,0,0,0.08)' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem', color: '#1a1a18' }}>Create your account</h1>
-        <p style={{ color: '#888', marginBottom: '2rem', fontSize: '0.9rem' }}>7-day Pro trial — no card required</p>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA' }}>
+      <div style={{ background: '#F9FAFA', padding: '2.5rem', borderRadius: '20px', width: '100%', maxWidth: '420px', boxShadow: '0 1px 12px rgba(0,0,0,0.04)' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem', color: '#111111' }}>Create your account</h1>
+        <p style={{ color: '#979899', marginBottom: '2rem', fontSize: '0.9rem' }}>7-day Pro trial — no card required</p>
 
         {error && <p style={{ color: '#c0392b', marginBottom: '1rem', fontSize: '0.875rem' }}>{error}</p>}
 
@@ -97,18 +97,18 @@ export default function Signup() {
           </select>
 
           <button type="submit" disabled={loading}
-            style={{ width: '100%', padding: '0.75rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', marginBottom: '0.75rem' }}>
+            style={{ width: '100%', padding: '0.75rem', background: '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', marginBottom: '0.75rem' }}>
             {loading ? 'Creating account...' : 'Start free trial'}
           </button>
         </form>
 
         <button onClick={handleGoogle}
-          style={{ width: '100%', padding: '0.75rem', background: '#fff', color: '#1a1a18', border: '1px solid #ddd', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', marginBottom: '1.5rem' }}>
+          style={{ width: '100%', padding: '0.75rem', background: '#fff', color: '#1a1a18', border: '1.5px solid #E4E5E5', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', marginBottom: '1.5rem' }}>
           Continue with Google
         </button>
 
         <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#888' }}>
-          Already have an account? <Link to="/login" style={{ color: '#1a1a18', fontWeight: '500' }}>Sign in</Link>
+          Already have an account? <Link to="/login" style={{ color: '#0F4C5C', fontWeight: '500' }}>Sign in</Link>
         </p>
       </div>
     </div>

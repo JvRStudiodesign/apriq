@@ -7,9 +7,9 @@ import { HamburgerMenu } from '../components/HamburgerMenu';
 const FREE_LIMIT = 3;
 const PRO_LIMIT = 15;
 
-const inp = { width:'100%', padding:'0.6rem 0.875rem', border:'1.5px solid #e5e5e3', borderRadius:'10px', fontSize:'0.875rem', fontFamily:'inherit', outline:'none', color:'#1a1a18', background:'#fff', boxSizing:'border-box' };
-const lbl = { display:'block', fontSize:'0.7rem', fontWeight:'600', color:'#999', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'0.4rem' };
-const card = { background:'#fff', borderRadius:'14px', padding:'1.5rem', border:'1px solid #eeede8', marginBottom:'1rem' };
+const inp = { width:'100%', padding:'0.6rem 0.875rem', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.875rem', fontFamily:'inherit', outline:'none', color:'#111111', background:'#F9FAFA', boxSizing:'border-box' };
+const lbl = { display:'block', fontSize:'0.7rem', fontWeight:'600', color:'#979899', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'0.4rem' };
+const card = { background:'#F9FAFA', borderRadius:'16px', padding:'1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem' };
 
 // Isolated form component — own state, no parent re-render while typing
 function ClientForm({ initial, onSave, onCancel, saving }) {
@@ -18,7 +18,7 @@ function ClientForm({ initial, onSave, onCancel, saving }) {
 
   return (
     <div style={card}>
-      <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#1a1a18', display:'block', marginBottom:'1.25rem' }}>
+      <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#111111', display:'block', marginBottom:'1.25rem' }}>
         {initial?.id ? 'Edit client' : 'New client'}
       </span>
       {[
@@ -37,10 +37,10 @@ function ClientForm({ initial, onSave, onCancel, saving }) {
       </div>
       <div style={{ display:'flex', gap:'8px' }}>
         <button onClick={() => onSave(form)} disabled={saving || !form.company_name.trim()}
-          style={{ flex:1, padding:'0.625rem', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'10px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>
+          style={{ flex:1, padding:'0.625rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>
           {saving ? 'Saving...' : 'Save client'}
         </button>
-        <button onClick={onCancel} style={{ padding:'0.625rem 1rem', background:'#fff', color:'#aaa', border:'1.5px solid #e5e5e3', borderRadius:'10px', fontSize:'0.875rem', cursor:'pointer', fontFamily:'inherit' }}>Cancel</button>
+        <button onClick={onCancel} style={{ padding:'0.625rem 1rem', background:'#fff', color:'#aaa', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.875rem', cursor:'pointer', fontFamily:'inherit' }}>Cancel</button>
       </div>
     </div>
   );
@@ -96,15 +96,15 @@ export default function Clients() {
   }
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f5f5f3', fontFamily:'-apple-system, BlinkMacSystemFont, sans-serif' }}>
-      <div style={{ background:'#fff', borderBottom:'1px solid #eeede8', padding:'0.875rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
+    <div style={{ minHeight:'100vh', background:'#F9FAFA', fontFamily:"'Roboto', system-ui, sans-serif" }}>
+      <div style={{ background:'#F9FAFA', borderBottom:'1px solid #E4E5E5', padding:'0.875rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'2px' }}>
           <HamburgerMenu />
           <img src="/logo.jpg" alt="AprIQ" onClick={() => navigate('/')} style={{ height:'36px', width:'auto', objectFit:'contain', cursor:'pointer' }} />
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <span style={{ fontSize:'0.72rem', color:'#aaa' }}>{clients.length}/{limit}</span>
-          <button onClick={startNew} style={{ padding:'6px 14px', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'9px', fontSize:'0.78rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>+ Add client</button>
+          <span style={{ fontSize:'0.72rem', color:'#979899' }}>{clients.length}/{limit}</span>
+          <button onClick={startNew} style={{ padding:'6px 14px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'10px', fontSize:'0.78rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>+ Add client</button>
         </div>
       </div>
 
@@ -123,19 +123,19 @@ export default function Clients() {
         )}
 
         {loading ? (
-          <p style={{ color:'#aaa', textAlign:'center', padding:'2rem' }}>Loading...</p>
+          <p style={{ color:'#979899', textAlign:'center', padding:'2rem' }}>Loading...</p>
         ) : clients.length === 0 && !showForm ? (
           <div style={{ ...card, textAlign:'center', padding:'3rem 1.5rem' }}>
-            <p style={{ color:'#bbb', fontSize:'0.875rem', marginBottom:'1rem' }}>No clients yet.</p>
-            <button onClick={startNew} style={{ padding:'8px 16px', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'10px', fontSize:'0.82rem', cursor:'pointer', fontFamily:'inherit' }}>Add first client</button>
+            <p style={{ color:'#979899', fontSize:'0.875rem', marginBottom:'1rem' }}>No clients yet.</p>
+            <button onClick={startNew} style={{ padding:'8px 16px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.82rem', cursor:'pointer', fontFamily:'inherit' }}>Add first client</button>
           </div>
         ) : clients.map(c => (
-          <div key={c.id} style={{ background:'#fff', borderRadius:'12px', padding:'1rem 1.25rem', border:'1px solid #eeede8', marginBottom:'8px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div key={c.id} style={{ background:'#F9FAFA', borderRadius:'14px', padding:'1rem 1.25rem', border:'1px solid #E4E5E5', marginBottom:'8px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <div>
-              <p style={{ fontWeight:'600', fontSize:'0.88rem', color:'#1a1a18' }}>{c.company_name}</p>
-              {c.contact_name && <p style={{ fontSize:'0.78rem', color:'#888', marginTop:'1px' }}>{c.contact_name}</p>}
-              {c.email && <p style={{ fontSize:'0.75rem', color:'#aaa', marginTop:'1px' }}>{c.email}</p>}
-              {c.address && <p style={{ fontSize:'0.72rem', color:'#bbb', marginTop:'1px' }}>{c.address}</p>}
+              <p style={{ fontWeight:'600', fontSize:'0.88rem', color:'#111111' }}>{c.company_name}</p>
+              {c.contact_name && <p style={{ fontSize:'0.78rem', color:'#979899', marginTop:'1px' }}>{c.contact_name}</p>}
+              {c.email && <p style={{ fontSize:'0.75rem', color:'#979899', marginTop:'1px' }}>{c.email}</p>}
+              {c.address && <p style={{ fontSize:'0.72rem', color:'#979899', marginTop:'1px' }}>{c.address}</p>}
             </div>
             <div style={{ display:'flex', gap:'6px', flexShrink:0 }}>
               <button onClick={() => { setEditClient(c); setShowForm(true); }} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #e5e5e3', background:'#fff', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Edit</button>

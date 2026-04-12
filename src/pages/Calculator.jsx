@@ -11,15 +11,15 @@ import {
   RENOVATION_COMPLEXITY, COMPLEXITY, LAND_PROCUREMENT, LAND_SLOPE, BREAKDOWN_ELEMENTS,
 } from '../engine/rates';
 
-const card    = { background: '#fff', borderRadius: '14px', padding: '1.5rem', border: '1px solid #eeede8', marginBottom: '1rem' };
-const lbl     = { display: 'block', fontSize: '0.7rem', fontWeight: '600', color: '#999', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' };
-const sel     = { width: '100%', padding: '0.6rem 0.875rem', border: '1.5px solid #e5e5e3', borderRadius: '10px', fontSize: '0.875rem', background: '#fff', color: '#1a1a18', fontFamily: 'inherit', outline: 'none', cursor: 'pointer' };
-const divider = { borderTop: '1px solid #f0f0ee', margin: '1.25rem 0' };
-const rowStyle = { display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid #f5f5f3', fontSize: '0.82rem' };
-const rowLbl   = { color: '#555' };
-const rowVal   = { fontWeight: '600', color: '#1a1a18' };
+const card    = { background: '#F9FAFA', borderRadius: '16px', padding: '1.5rem', border: '1px solid #E4E5E5', marginBottom: '1rem' };
+const lbl     = { display: 'block', fontSize: '0.7rem', fontWeight: '600', color: '#979899', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' };
+const sel     = { width: '100%', padding: '0.6rem 0.875rem', border: '1.5px solid #E4E5E5', borderRadius: '12px', fontSize: '0.875rem', background: '#F9FAFA', color: '#111111', fontFamily: 'inherit', outline: 'none', cursor: 'pointer' };
+const divider = { borderTop: '1px solid #E4E5E5', margin: '1.25rem 0' };
+const rowStyle = { display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid #E4E5E5', fontSize: '0.82rem' };
+const rowLbl   = { color: '#979899' };
+const rowVal   = { fontWeight: '600', color: '#111111' };
 
-const PRO_BADGE = <span style={{ marginLeft: '5px', fontSize: '0.6rem', background: '#f0f0ee', color: '#aaa', padding: '1px 5px', borderRadius: '6px', verticalAlign: 'middle', fontWeight: '600' }}>PRO</span>;
+const PRO_BADGE = <span style={{ marginLeft: '5px', fontSize: '0.6rem', background: '#E4E5E5', color: '#979899', padding: '1px 5px', borderRadius: '6px', verticalAlign: 'middle', fontWeight: '600' }}>PRO</span>;
 
 function fmtZAR(n) {
   if (!n || isNaN(n) || n === 0) return 'R 0';
@@ -378,7 +378,7 @@ export default function Calculator() {
       </div>
 
       {result.elementBreakdown.map((el, i) => (
-        <div key={el.key} style={{ display: 'flex', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #f5f5f3', fontSize: '0.82rem', gap: '0.5rem' }}>
+        <div key={el.key} style={{ display: 'flex', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #E4E5E5', fontSize: '0.82rem', gap: '0.5rem' }}>
           <span style={{ flex: 1, color: '#555', textAlign: 'left' }}>{el.label}</span>
           {inputs.useCustomSplit && isPro ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -613,44 +613,44 @@ export default function Calculator() {
     </div>
 
     <button onClick={handleSave} disabled={saving || saved || !selectedProjectId}
-      style={{ width:'100%', padding:'0.75rem', background:saved?'#27ae60':selectedProjectId?'#fff':'#f5f5f3', color:saved?'#fff':selectedProjectId?'#1a1a18':'#ccc', border:'1.5px solid #e5e5e3', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', cursor:selectedProjectId?'pointer':'not-allowed', fontFamily:'inherit', marginBottom:'0.75rem' }}>
+      style={{ width:'100%', padding:'0.75rem', background:saved?'#0F4C5C':selectedProjectId?'#F9FAFA':'#F9FAFA', color:saved?'#F9FAFA':selectedProjectId?'#111111':'#979899', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', cursor:selectedProjectId?'pointer':'not-allowed', fontFamily:'inherit', marginBottom:'0.75rem' }}>
       {saving?'Saving…':saved?'Saved':'Save estimate'}
     </button>
     {isPro && result ? (
       <>
       <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'1rem' }}>
         {({loading})=>(
-          <button style={{ width:'100%', padding:'0.75rem', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
+          <button style={{ width:'100%', padding:'0.75rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
             {loading?'Preparing PDF…':'Download PDF'}
           </button>
         )}
       </PDFDownloadLink>
       <button onClick={handleShare} disabled={!result || sharing}
-        style={{ width:'100%', padding:'0.75rem', background:shareCopied?'#27ae60':result?'#fff':'#f5f5f3', color:shareCopied?'#fff':result?'#1a1a18':'#ccc', border:'1.5px solid #e5e5e3', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit', marginBottom:'0.75rem' }}>
+        style={{ width:'100%', padding:'0.75rem', background:shareCopied?'#0F4C5C':result?'#F9FAFA':'#F9FAFA', color:shareCopied?'#F9FAFA':result?'#111111':'#979899', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit', marginBottom:'0.75rem' }}>
         {sharing?'Generating link…':shareCopied?'✓ Link copied to clipboard':'Share estimate'}
       </button>
       </>
     ) : !isPro ? (
       <button onClick={()=>navigate('/upgrade')}
-        style={{ width:'100%', padding:'0.75rem', background:'#1a1a18', color:'#fff', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', marginBottom:'1rem' }}>
+        style={{ width:'100%', padding:'0.75rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', marginBottom:'1rem' }}>
         Upgrade to Pro — unlock PDF export
       </button>
     ) : null}
   </>);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f3', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
       <style>{`@media(max-width:700px){.desktop-grid{display:block!important;}.desktop-right{display:none!important;}.mobile-summary{display:block!important;}}`}</style>
 
       {/* ── Nav ── */}
-      <div style={{ background: '#fff', borderBottom: '1px solid #eeede8', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <HamburgerMenu />
           <img src="/logo.jpg" alt="AprIQ" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-          {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#fff3cd', color: '#856404', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}
-          <span onClick={!isPro ? ()=>navigate('/upgrade') : undefined} style={{ fontSize: '0.72rem', background: isPro ? '#eaf3de' : '#f0f0ee', color: isPro ? '#27500a' : '#aaa', padding: '2px 8px', borderRadius: '8px', fontWeight: '600', cursor: !isPro ? 'pointer' : 'default' }}>{tier === 'pro' ? 'Pro' : trialOk ? 'Trial' : 'Free ↑'}</span>
+          {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#BFD1D6', color: '#0F4C5C', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}
+          <span onClick={!isPro ? ()=>navigate('/upgrade') : undefined} style={{ fontSize: '0.72rem', background: isPro ? '#BFD1D6' : '#E4E5E5', color: isPro ? '#0F4C5C' : '#979899', padding: '2px 8px', borderRadius: '8px', fontWeight: '600', cursor: !isPro ? 'pointer' : 'default' }}>{tier === 'pro' ? 'Pro' : trialOk ? 'Trial' : 'Free ↑'}</span>
           <span style={{ fontSize: '0.78rem', color: '#bbb' }}>{profile?.full_name || user?.email}</span>
         </div>
       </div>
@@ -800,16 +800,16 @@ export default function Calculator() {
           </div>
 
           {!isPro && (
-            <div style={{ background:'#1a1a18', borderRadius:'12px', padding:'1rem 1.25rem', marginBottom:'0.75rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div style={{ background:'#111111', borderRadius:'16px', padding:'1rem 1.25rem', marginBottom:'0.75rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <div>
                 <div style={{ color:'#fff', fontSize:'0.8rem', fontWeight:'600' }}>Free tier</div>
                 <div style={{ color:'#aaa', fontSize:'0.72rem' }}>PDF export, mixed-use & more on Pro</div>
               </div>
-              <button onClick={()=>navigate('/upgrade')} style={{ padding:'0.5rem 1rem', background:'#fff', color:'#1a1a18', border:'none', borderRadius:'8px', fontSize:'0.75rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>Upgrade →</button>
+              <button onClick={()=>navigate('/upgrade')} style={{ padding:'0.5rem 1rem', background:'#F9FAFA', color:'#111111', border:'none', borderRadius:'10px', fontSize:'0.75rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>Upgrade →</button>
             </div>
           )}
           {!isPro && (
-            <button onClick={handleCalc} style={{ width: '100%', padding: '0.875rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', marginBottom: '1rem', fontFamily: 'inherit' }}>
+            <button onClick={handleCalc} style={{ width: '100%', padding: '0.875rem', background: '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', marginBottom: '1rem', fontFamily: 'inherit' }}>
               Calculate estimate
             </button>
           )}
@@ -834,7 +834,7 @@ export default function Calculator() {
       </div>
 
       {/* ── Feedback ── */}
-      <button onClick={() => setFeedback(true)} style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '20px', padding: '0.5rem 1rem', fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.15)', zIndex: 50, fontFamily: 'inherit' }}>Feedback</button>
+      <button onClick={() => setFeedback(true)} style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', background: '#111111', color: '#F9FAFA', border: 'none', borderRadius: '20px', padding: '0.5rem 1rem', fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.15)', zIndex: 50, fontFamily: 'inherit' }}>Feedback</button>
       {feedback && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '16px', padding: '1.5rem', width: '100%', maxWidth: '400px', margin: '1rem' }}>
