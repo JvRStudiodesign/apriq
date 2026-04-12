@@ -78,12 +78,27 @@ export function calculate(inputs) {
   const vatAmount          = subtotalExVAT * vatPct;
   const totalProjectCost   = subtotalExVAT + vatAmount;
 
+  // Hidden backend weights — influence Rand distribution only, never exposed in UI
+  const ELEMENT_WEIGHTS = [0.55, 0.90, 1.25, 1.05, 1.30, 0.95, 1.45, 1.35, 0.70, 1.40, 0.80];
+
+  // Step 1: weighted_share_i = effectivePct_i x hidden_weight_i
+  const weightedShares = BREAKDOWN_ELEMENTS.map((el, i) => {
+    const pct = effectivePcts[i] ?? el.pct;
+    return pct * (ELEMENT_WEIGHTS[i] ?? 1);
+  });
+
+  // Step 2: total_weighted_share = SUM(all weighted_share_i)
+  const totalWeightedShare = weightedShares.reduce((s, w) => s + w, 0);
+
+  // Step 3: final_cost_i = (weighted_share_i / total_weighted_share) x constructionCost
   const elementBreakdown = BREAKDOWN_ELEMENTS.map((el, i) => ({
     key:          el.key,
     label:        el.label,
     defaultPct:   el.pct,
     effectivePct: effectivePcts[i] ?? el.pct,
-    amount:       constructionCost * (effectivePcts[i] ?? el.pct),
+    amount:       totalWeightedShare > 0
+                    ? (weightedShares[i] / totalWeightedShare) * constructionCost
+                    : 0,
   }));
 
   let escalationYears = [], escalatedTotal = totalProjectCost, monthsToStart = 0, yearsToStart = 0;
