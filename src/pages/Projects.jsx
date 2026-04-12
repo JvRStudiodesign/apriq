@@ -26,7 +26,7 @@ function ProjectForm({ initial, clients, onSave, onCancel, saving }) {
 
   return (
     <div style={card}>
-      <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#1a1a18', display:'block', marginBottom:'1.25rem' }}>
+      <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#111111', display:'block', marginBottom:'1.25rem' }}>
         {initial?.id ? 'Edit project' : 'New project'}
       </span>
       {[
@@ -156,8 +156,8 @@ export default function Projects() {
       </div>
 
       <div style={{ maxWidth:'680px', margin:'0 auto', padding:'2rem 1.25rem' }}>
-        <h1 style={{ fontSize:'1.44rem', fontWeight:'700', color:'#1a1a18', marginBottom:'0.25rem' }}>Projects</h1>
-        <p style={{ fontSize:'0.78rem', color:'#aaa', marginBottom:'1.5rem' }}>Each project holds its saved estimate. Edit or re-export anytime.</p>
+        <h1 style={{ fontSize:'1.375rem', fontWeight:'700', color:'#111111', marginBottom:'0.25rem' }}>Projects</h1>
+        <p style={{ fontSize:'0.78rem', color:'#979899', marginBottom:'1.5rem' }}>Each project holds its saved estimate. Edit or re-export anytime.</p>
 
         {showForm && (
           <ProjectForm
@@ -175,7 +175,7 @@ export default function Projects() {
         ) : projects.length === 0 && !showForm ? (
           <div style={{ ...card, textAlign:'center', padding:'3rem 1.5rem' }}>
             <p style={{ color:'#979899', fontSize:'0.875rem', marginBottom:'1rem' }}>No projects yet.</p>
-            <button onClick={startNew} style={{ padding:'8px 16px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.82rem', cursor:'pointer', fontFamily:'inherit' }}>Create first project</button>
+            <button onClick={startNew} style={{ padding:'8px 16px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.82rem', fontWeight:'500', cursor:'pointer', fontFamily:'inherit' }}>Create first project</button>
           </div>
         ) : projects.map(proj => (
           <div key={proj.id} style={{ background:'#F9FAFA', borderRadius:'16px', padding:'1.25rem 1.5rem', border:'1px solid #E4E5E5', marginBottom:'10px' }}>
@@ -190,7 +190,7 @@ export default function Projects() {
               </div>
               <div style={{ display:'flex', gap:'6px', flexShrink:0 }}>
                 <button onClick={() => startEdit(proj)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #E4E5E5', background:'#F9FAFA', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Edit</button>
-                <button onClick={() => handleDelete(proj.id)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #fdecea', background:'#fdecea', color:'#c0392b', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Delete</button>
+                <button onClick={() => handleDelete(proj.id)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #E4E5E5', background:'#F9FAFA', color:'#979899', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Delete</button>
               </div>
             </div>
             {proj.latestEstimate ? (

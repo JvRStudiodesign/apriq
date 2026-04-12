@@ -109,8 +109,8 @@ export default function Clients() {
       </div>
 
       <div style={{ maxWidth:'560px', margin:'0 auto', padding:'2rem 1.25rem' }}>
-        <h1 style={{ fontSize:'1.44rem', fontWeight:'700', color:'#1a1a18', marginBottom:'0.25rem' }}>Clients</h1>
-        <p style={{ fontSize:'0.78rem', color:'#aaa', marginBottom:'1.5rem' }}>Client details appear on PDF exports when linked to a project.</p>
+        <h1 style={{ fontSize:'1.375rem', fontWeight:'700', color:'#111111', marginBottom:'0.25rem' }}>Clients</h1>
+        <p style={{ fontSize:'0.78rem', color:'#979899', marginBottom:'1.5rem' }}>Client details appear on PDF exports when linked to a project.</p>
 
         {showForm && (
           <ClientForm
@@ -127,7 +127,7 @@ export default function Clients() {
         ) : clients.length === 0 && !showForm ? (
           <div style={{ ...card, textAlign:'center', padding:'3rem 1.5rem' }}>
             <p style={{ color:'#979899', fontSize:'0.875rem', marginBottom:'1rem' }}>No clients yet.</p>
-            <button onClick={startNew} style={{ padding:'8px 16px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.82rem', cursor:'pointer', fontFamily:'inherit' }}>Add first client</button>
+            <button onClick={startNew} style={{ padding:'8px 16px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.82rem', fontWeight:'500', cursor:'pointer', fontFamily:'inherit' }}>Add first client</button>
           </div>
         ) : clients.map(c => (
           <div key={c.id} style={{ background:'#F9FAFA', borderRadius:'14px', padding:'1rem 1.25rem', border:'1px solid #E4E5E5', marginBottom:'8px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -139,7 +139,7 @@ export default function Clients() {
             </div>
             <div style={{ display:'flex', gap:'6px', flexShrink:0 }}>
               <button onClick={() => { setEditClient(c); setShowForm(true); }} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #e5e5e3', background:'#fff', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Edit</button>
-              <button onClick={() => handleDelete(c.id)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #fdecea', background:'#fdecea', color:'#c0392b', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Delete</button>
+              <button onClick={() => handleDelete(c.id)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #E4E5E5', background:'#F9FAFA', color:'#979899', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Delete</button>
             </div>
           </div>
         ))}

@@ -143,11 +143,7 @@ export default function SharedEstimate() {
           <div style={card}>
             <div style={stitle}>Element breakdown</div>
             {breakdown.map((el, i) => (
-              <div key={i} style={row}>
-                <span style={lbl}>{el.name}</span>
-                <span style={{ color:'#979899', fontSize:'0.8rem' }}>{el.pct != null ? (el.pct*100).toFixed(1)+'%' : ''}</span>
-                <span style={bold}>{fmtZAR(el.amount)}</span>
-              </div>
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'0.35rem 0', borderBottom:'1px solid #E4E5E5' }}><span style={{ color:'#979899', flex:1 }}>{el.label}</span><span style={{ color:'#979899', fontSize:'0.8rem', width:'48px', textAlign:'right', paddingRight:'0.75rem' }}>{el.effectivePct != null ? (el.effectivePct*100).toFixed(1)+'%' : ''}</span><span style={{ fontWeight:'600', color:'#111111', textAlign:'right' }}>{fmtZAR(el.amount)}</span></div>
             ))}
             {isRenovation && result?.newArea > 0 && <div style={{ ...row, marginTop:'0.5rem' }}><span style={{ ...lbl, fontWeight:'600' }}>Construction cost — New ({result.newArea} m²)</span><span style={bold}>{fmtZAR(result.baseConstructionCostNew)}</span></div>}
             {isRenovation && result?.renovArea > 0 && <div style={row}><span style={{ ...lbl, fontWeight:'600' }}>Construction cost — Renovation ({result.renovArea} m²)</span><span style={bold}>{fmtZAR(result.baseConstructionCostRenovation)}</span></div>}
@@ -161,11 +157,11 @@ export default function SharedEstimate() {
             <div style={stitle}>Financial stack</div>
             <div style={row}><span style={lbl}>Construction cost</span><span style={bold}>{fmtZAR(result.constructionCost)}</span></div>
             {(result.landProcurementCost > 0) && <div style={row}><span style={lbl}>Land cost</span><span style={bold}>{fmtZAR(result.landProcurementCost)}</span></div>}
-            {result.contingencyAmount > 0 && <div style={row}><span style={lbl}>Contingency ({pct(inputs?.contingencyPct / 100)})</span><span style={bold}>{fmtZAR(result.contingencyAmount)}</span></div>}
-            {result.contractorProfit > 0 && <div style={row}><span style={lbl}>Contractor profit ({pct(inputs?.profitPct / 100)})</span><span style={bold}>{fmtZAR(result.contractorProfit)}</span></div>}
-            {result.preliminaries > 0 && <div style={row}><span style={lbl}>Preliminaries ({pct(inputs?.prelimPct / 100)})</span><span style={bold}>{fmtZAR(result.preliminaries)}</span></div>}
-            {result.professionalFees > 0 && <div style={row}><span style={lbl}>Professional fees ({pct(inputs?.feesPct / 100)})</span><span style={bold}>{fmtZAR(result.professionalFees)}</span></div>}
-            {result.vatAmount > 0 && <div style={row}><span style={lbl}>VAT ({pct(inputs?.vatPct / 100)})</span><span style={bold}>{fmtZAR(result.vatAmount)}</span></div>}
+            {result.contingencyAmount > 0 && <div style={row}><span style={lbl}>Contingency ({pct(inputs?.contingencyPct)})</span><span style={bold}>{fmtZAR(result.contingencyAmount)}</span></div>}
+            {result.contractorProfit > 0 && <div style={row}><span style={lbl}>Contractor profit ({pct(inputs?.profitPct)})</span><span style={bold}>{fmtZAR(result.contractorProfit)}</span></div>}
+            {result.preliminaries > 0 && <div style={row}><span style={lbl}>Preliminaries ({pct(inputs?.prelimPct)})</span><span style={bold}>{fmtZAR(result.preliminaries)}</span></div>}
+            {result.professionalFees > 0 && <div style={row}><span style={lbl}>Professional fees ({pct(inputs?.feesPct)})</span><span style={bold}>{fmtZAR(result.professionalFees)}</span></div>}
+            {result.vatAmount > 0 && <div style={row}><span style={lbl}>VAT ({pct(inputs?.vatPct)})</span><span style={bold}>{fmtZAR(result.vatAmount)}</span></div>}
             <div style={divdr} />
             <div style={{ ...row, paddingTop:'0.5rem' }}>
               <span style={{ fontWeight:'700', fontSize:'1rem' }}>Total project cost</span>

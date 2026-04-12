@@ -361,11 +361,38 @@ export default function Calculator() {
 
   const Summary = () => !result ? null : (<>
     {/* ── Total project cost hero ── */}
-    <div style={{ background: '#1a1a18', borderRadius: '14px', padding: '1.5rem', marginBottom: '1rem', color: '#fff' }}>
-      <p style={{ fontSize: '0.68rem', color: '#888', marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total project cost</p>
-      <p style={{ fontSize: '2rem', fontWeight: '700', letterSpacing: '-1px', lineHeight: 1.1, color: '#fff' }}>{fmtZAR(result.totalProjectCost)}</p>
-      {isPro && <p style={{ fontSize: '0.68rem', color: '#555', marginTop: '0.5rem' }}>Updates live as you adjust inputs</p>}
+    <div style={{ background: '#111111', borderRadius: '14px', padding: '1.5rem', marginBottom: '0.75rem', color: '#F9FAFA' }}>
+      <p style={{ fontSize: '0.68rem', color: '#979899', marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total project cost</p>
+      <p style={{ fontSize: '2rem', fontWeight: '700', letterSpacing: '-1px', lineHeight: 1.1, color: '#F9FAFA' }}>{fmtZAR(result.totalProjectCost)}</p>
+      {isPro && <p style={{ fontSize: '0.68rem', color: '#979899', marginTop: '0.5rem' }}>Updates live as you adjust inputs</p>}
     </div>
+    {/* ── CTAs always visible at top of right panel ── */}
+    {isPro && result ? (
+      <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem', marginBottom:'0.75rem' }}>
+        <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none' }}>
+          {({loading})=>(
+            <button style={{ width:'100%', padding:'0.65rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.82rem', fontWeight:'600', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
+              {loading?'Preparing PDF…':'Download PDF'}
+            </button>
+          )}
+        </PDFDownloadLink>
+        <div style={{ display:'flex', gap:'0.5rem' }}>
+          <button onClick={handleSave} disabled={!result || saving}
+            style={{ flex:1, padding:'0.65rem', background:saved?'#0F4C5C':selectedProjectId?'#F9FAFA':'#F9FAFA', color:saved?'#F9FAFA':selectedProjectId?'#111111':'#979899', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.78rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit' }}>
+            {saving?'Saving…':saved?'✓ Saved':'Save estimate'}
+          </button>
+          <button onClick={handleShare} disabled={!result || sharing}
+            style={{ flex:1, padding:'0.65rem', background:shareCopied?'#0F4C5C':'#F9FAFA', color:shareCopied?'#F9FAFA':'#111111', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.78rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit' }}>
+            {sharing?'Generating…':shareCopied?'✓ Copied':'Share estimate'}
+          </button>
+        </div>
+      </div>
+    ) : !isPro ? (
+      <button onClick={()=>navigate('/upgrade')}
+        style={{ width:'100%', padding:'0.75rem', background:'#FF8210', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', marginBottom:'0.75rem' }}>
+        Upgrade to Pro — unlock PDF export
+      </button>
+    ) : null}
 
     {/* ── Element breakdown ── */}
     <div style={card}>
@@ -646,11 +673,11 @@ export default function Calculator() {
       <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <HamburgerMenu />
-          <img src="/logo.jpg" alt="AprIQ" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+          <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
           {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#BFD1D6', color: '#0F4C5C', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}
-          <span onClick={!isPro ? ()=>navigate('/upgrade') : undefined} style={{ fontSize: '0.72rem', background: isPro ? '#BFD1D6' : '#E4E5E5', color: isPro ? '#0F4C5C' : '#979899', padding: '2px 8px', borderRadius: '8px', fontWeight: '600', cursor: !isPro ? 'pointer' : 'default' }}>{tier === 'pro' ? 'Pro' : trialOk ? 'Trial' : 'Free ↑'}</span>
+          <span onClick={!isPro ? ()=>navigate('/upgrade') : undefined} style={{ fontSize: '0.72rem', background: isPro ? '#BFD1D6' : (trialOk ? '#FF8210' : '#E4E5E5'), color: isPro ? '#0F4C5C' : (trialOk ? '#F9FAFA' : '#979899'), padding: '2px 8px', borderRadius: '8px', fontWeight: '600', cursor: !isPro ? 'pointer' : 'default' }}>{tier === 'pro' ? 'Pro' : trialOk ? 'Trial' : 'Free ↑'}</span>
           <span style={{ fontSize: '0.78rem', color: '#bbb' }}>{profile?.full_name || user?.email}</span>
         </div>
       </div>
@@ -805,7 +832,7 @@ export default function Calculator() {
                 <div style={{ color:'#fff', fontSize:'0.8rem', fontWeight:'600' }}>Free tier</div>
                 <div style={{ color:'#aaa', fontSize:'0.72rem' }}>PDF export, mixed-use & more on Pro</div>
               </div>
-              <button onClick={()=>navigate('/upgrade')} style={{ padding:'0.5rem 1rem', background:'#F9FAFA', color:'#111111', border:'none', borderRadius:'10px', fontSize:'0.75rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>Upgrade →</button>
+              <button onClick={()=>navigate('/upgrade')} style={{ padding:'0.5rem 1rem', background:'#FF8210', color:'#F9FAFA', border:'none', borderRadius:'10px', fontSize:'0.75rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>Upgrade →</button>
             </div>
           )}
           {!isPro && (

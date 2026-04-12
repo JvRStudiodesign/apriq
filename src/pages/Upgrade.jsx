@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { HamburgerMenu } from '../components/HamburgerMenu';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -58,14 +59,17 @@ export default function Upgrade() {
   }
 
   return (
-    <div style={{ minHeight:'100vh', background:'#F9FAFA', paddingTop:'1.5rem' }}>
+    <div style={{ minHeight:'100vh', background:'#F9FAFA' }}>
+      <div style={{ background:'#F9FAFA', borderBottom:'1px solid #E4E5E5', padding:'0.875rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'4px' }}>
+          <HamburgerMenu />
+          <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height:'32px', width:'auto', objectFit:'contain' }} />
+        </div>
+        <span style={{ fontSize:'0.78rem', color:'#979899' }}>Upgrade to Pro</span>
+      </div>
       <div style={{ maxWidth:'720px', margin:'0 auto', padding:'2rem 1.25rem 4rem', fontFamily:"'Roboto', system-ui, sans-serif" }}>
 
-        <div style={{ marginBottom:'0.5rem' }}>
-          <span onClick={()=>navigate('/')} style={{ cursor:'pointer', fontSize:'0.8rem', color:'#979899' }}>← Back to calculator</span>
-        </div>
-
-        <h1 style={{ fontSize:'1.5rem', fontWeight:'700', marginBottom:'0.5rem' }}>Upgrade to AprIQ Pro</h1>
+        <h1 style={{ fontSize:'1.375rem', fontWeight:'700', marginBottom:'0.5rem', color:'#111111' }}>Upgrade to Pro</h1>
         <p style={{ color:'#888', fontSize:'0.9rem', marginBottom:'2rem' }}>Unlock all features. Cancel anytime.</p>
 
         {isPro ? (

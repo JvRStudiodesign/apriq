@@ -95,13 +95,13 @@ export default function UserProfile() {
       <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
           <HamburgerMenu />
-          <span style={{ fontWeight: '700', fontSize: '1.5rem', letterSpacing: '-0.04em', cursor: 'pointer' }} onClick={() => navigate('/')}><img src="/logo.jpg" alt="AprIQ" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} /></span>
+          <span style={{ fontWeight: '700', fontSize: '1.5rem', letterSpacing: '-0.04em', cursor: 'pointer' }} onClick={() => navigate('/')}><img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} /></span>
         </div>
         <span style={{ fontSize: '0.78rem', color: '#979899' }}>User Profile</span>
       </div>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '2rem 1.25rem' }}>
-        <h1 style={{ fontSize: '1.2rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem' }}>Profile</h1>
+        <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem' }}>Profile</h1>
         <p style={{ fontSize: '0.78rem', color: '#979899', marginBottom: '1.5rem' }}>Your details auto-populate on every PDF export.</p>
 
         {/* Logo */}
