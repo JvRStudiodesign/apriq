@@ -648,7 +648,7 @@ export default function Calculator() {
       <style>{`@media(max-width:700px){.desktop-grid{display:block!important;}.desktop-right{display:none!important;}.mobile-summary{display:block!important;}}`}</style>
 
       {/* ── Nav ── */}
-      <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem 0.875rem 1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <HamburgerMenu />
           <img src="/logo-transparent.png" alt="AprIQ" style={{ height: '88px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
