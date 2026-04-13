@@ -29,7 +29,7 @@ const s = StyleSheet.create({
   rowLabelBold: { fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: '#111111', flex: 1 },
   rowVal: { fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: '#111111', textAlign: 'right' },
   rowUplift: { fontSize: 8.5, color: '#979899', textAlign: 'right' },
-  rowMeta: { fontSize: 8, color: '#979899', textAlign: 'right', width: 44, marginRight: 8 },
+  rowMeta: { fontSize: 8, color: '#979899', textAlign: 'left', width: 44 },
   divLine: { borderTopWidth: 1, borderTopColor: '#1a1a18', borderTopStyle: 'solid', marginVertical: 5 },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5, paddingHorizontal: 8, backgroundColor: '#FAFAFA', borderRadius: 3, marginTop: 4 },
   totalLabel: { fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: '#111111' },
