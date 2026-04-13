@@ -613,27 +613,29 @@ export default function Calculator() {
       )}
     </div>
 
-    <button onClick={handleSave} disabled={saving || saved || !selectedProjectId}
-      style={{ width:'100%', padding:'0.75rem', background:saved?'#0F4C5C':selectedProjectId?'#F9FAFA':'#F9FAFA', color:saved?'#F9FAFA':selectedProjectId?'#111111':'#979899', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', cursor:selectedProjectId?'pointer':'not-allowed', fontFamily:'inherit', marginBottom:'0.75rem' }}>
-      {saving?'Saving…':saved?'Saved':'Save estimate'}
-    </button>
     {isPro && result ? (
       <>
-      <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'1rem' }}>
-        {({loading})=>(
-          <button style={{ width:'100%', padding:'0.75rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
-            {loading?'Preparing PDF…':'Download PDF'}
+        <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'0.5rem' }}>
+          {({loading})=>(
+            <button style={{ width:'100%', padding:'0.75rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
+              {loading?'Preparing PDF…':'Download PDF'}
+            </button>
+          )}
+        </PDFDownloadLink>
+        <div style={{ display:'flex', gap:'0.5rem', marginBottom:'0.75rem' }}>
+          <button onClick={handleSave} disabled={saving || saved || !selectedProjectId}
+            style={{ flex:1, padding:'0.75rem', background:saved?'#0F4C5C':selectedProjectId?'#F9FAFA':'#F9FAFA', color:saved?'#F9FAFA':selectedProjectId?'#111111':'#979899', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.82rem', fontWeight:'500', cursor:selectedProjectId?'pointer':'not-allowed', fontFamily:'inherit' }}>
+            {saving?'Saving…':saved?'✓ Saved':'Save estimate'}
           </button>
-        )}
-      </PDFDownloadLink>
-      <button onClick={handleShare} disabled={!result || sharing}
-        style={{ width:'100%', padding:'0.75rem', background:shareCopied?'#0F4C5C':result?'#F9FAFA':'#F9FAFA', color:shareCopied?'#F9FAFA':result?'#111111':'#979899', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit', marginBottom:'0.75rem' }}>
-        {sharing?'Generating link…':shareCopied?'✓ Link copied to clipboard':'Share estimate'}
-      </button>
+          <button onClick={handleShare} disabled={!result || sharing}
+            style={{ flex:1, padding:'0.75rem', background:shareCopied?'#0F4C5C':'#F9FAFA', color:shareCopied?'#F9FAFA':'#111111', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.82rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit' }}>
+            {sharing?'Generating…':shareCopied?'✓ Copied':'Share estimate'}
+          </button>
+        </div>
       </>
     ) : !isPro ? (
       <button onClick={()=>navigate('/upgrade')}
-        style={{ width:'100%', padding:'0.75rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', marginBottom:'1rem' }}>
+        style={{ width:'100%', padding:'0.75rem', background:'#FF8210', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', marginBottom:'1rem' }}>
         Upgrade to Pro — unlock PDF export
       </button>
     ) : null}
@@ -647,7 +649,7 @@ export default function Calculator() {
       <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <HamburgerMenu />
-          <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
+          <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height: '44px', width: 'auto', objectFit: 'contain' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
           {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#BFD1D6', color: '#0F4C5C', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}

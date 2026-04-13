@@ -55,10 +55,11 @@ export default function ComingSoon() {
             </form>
           )}
 
-          <div style={{ display:'flex', gap:'10px', flexWrap:'wrap', justifyContent:'center', marginTop: submitted ? '2rem' : '0' }}>
-            {[['⚡','Instant estimates'],['🏗️','100 building types'],['📄','PDF export'],['🇿🇦','South African market']].map(([icon,label]) => (
-              <div key={label} style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:'20px', padding:'6px 14px', fontSize:'0.8rem', color:'#979899', display:'flex', alignItems:'center', gap:'6px' }}>
-                <span>{icon}</span><span>{label}</span>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'10px', maxWidth:'540px', margin: submitted ? '2rem auto 0' : '0 auto', width:'100%' }}>
+            {[['⚡','Instant estimates'],['📐','100 building types'],['📄','PDF export'],['🇿🇦','SA market rates'],['🔗','Shareable links'],['👥','Projects & clients']].map(([icon,label]) => (
+              <div key={label} style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:'12px', padding:'10px 14px', fontSize:'0.8rem', display:'flex', alignItems:'center', gap:'8px', justifyContent:'center' }}>
+                <span style={{ fontSize:'1rem', filter:'grayscale(1)', opacity:0.5 }}>{icon}</span>
+                <span style={{ color:'#111111', fontWeight:'500' }}>{label}</span>
               </div>
             ))}
           </div>
