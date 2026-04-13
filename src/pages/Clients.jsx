@@ -138,7 +138,7 @@ export default function Clients() {
               {c.address && <p style={{ fontSize:'0.72rem', color:'#979899', marginTop:'1px' }}>{c.address}</p>}
             </div>
             <div style={{ display:'flex', gap:'6px', flexShrink:0 }}>
-              <button onClick={() => { setEditClient(c); setShowForm(true); }} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #e5e5e3', background:'#fff', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Edit</button>
+              <button onClick={() => { setEditClient(c); setShowForm(true); }} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #E4E5E5', background:'#F9FAFA', color:'#111111', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Edit</button>
               <button onClick={() => handleDelete(c.id)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #E4E5E5', background:'#F9FAFA', color:'#979899', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Delete</button>
             </div>
           </div>

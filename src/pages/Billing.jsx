@@ -24,7 +24,7 @@ export default function Billing() {
       <div style={{ background:'#F9FAFA', borderBottom:'1px solid #E4E5E5', padding:'0.875rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'4px' }}>
           <HamburgerMenu />
-          <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height:'44px', width:'auto', objectFit:'contain' }} />
+          <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height:'44px', width:'auto', objectFit:'contain', mixBlendMode:'multiply' }} />
         </div>
         <span style={{ fontSize:'0.78rem', color:'#979899' }}>Billing & plan</span>
       </div>
