@@ -6,9 +6,9 @@ function fmt(n) {
 }
 
 const s = StyleSheet.create({
-  page: { fontFamily: 'Helvetica', fontSize: 9, color: '#111111', paddingTop: 36, paddingBottom: 52, paddingHorizontal: 40, backgroundColor: '#F9FAFA' },
+  page: { fontFamily: 'Helvetica', fontSize: 9, color: '#111111', paddingTop: 36, paddingBottom: 52, paddingHorizontal: 40, backgroundColor: '#FAFAFA' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, paddingBottom: 14, borderBottomWidth: 1.5, borderBottomColor: '#111111', borderBottomStyle: 'solid' },
-  logoImg: { width: 110, height: 48, objectFit: 'contain' },
+  logoImg: { width: 120, height: 52, objectFit: 'contain', backgroundColor: 'transparent' },
   brandText: { fontSize: 16, fontFamily: 'Helvetica-Bold', color: '#111111', marginBottom: 2 },
   brandSub: { fontSize: 7.5, color: '#979899' },
   brandUrl: { fontSize: 7.5, color: '#185fa5' },
@@ -31,7 +31,7 @@ const s = StyleSheet.create({
   rowUplift: { fontSize: 8.5, color: '#979899', textAlign: 'right' },
   rowMeta: { fontSize: 8, color: '#979899', textAlign: 'right', width: 44, marginRight: 8 },
   divLine: { borderTopWidth: 1, borderTopColor: '#1a1a18', borderTopStyle: 'solid', marginVertical: 5 },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5, paddingHorizontal: 8, backgroundColor: '#F9FAFA', borderRadius: 3, marginTop: 4 },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5, paddingHorizontal: 8, backgroundColor: '#FAFAFA', borderRadius: 3, marginTop: 4 },
   totalLabel: { fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: '#111111' },
   totalVal: { fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: '#111111' },
   grandTotal: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12, backgroundColor: '#111111', borderRadius: 5, marginBottom: 12 },

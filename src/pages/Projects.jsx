@@ -189,7 +189,7 @@ export default function Projects() {
                 {proj.address && <p style={{ fontSize:'0.75rem', color:'#aaa', marginTop:'1px' }}>{proj.address}</p>}
               </div>
               <div style={{ display:'flex', gap:'6px', flexShrink:0 }}>
-                <button onClick={() => startEdit(proj)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #E4E5E5', background:'#F9FAFA', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Edit</button>
+                <button onClick={() => startEdit(proj)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #E4E5E5', background:'#F9FAFA', color:'#111111', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Edit</button>
                 <button onClick={() => handleDelete(proj.id)} style={{ padding:'4px 10px', borderRadius:'8px', border:'1.5px solid #E4E5E5', background:'#F9FAFA', color:'#979899', fontSize:'0.72rem', cursor:'pointer', fontFamily:'inherit' }}>Delete</button>
               </div>
             </div>

@@ -66,13 +66,18 @@ function Slider({ label, value, min, max, step, onChange, fmtFn, locked }) {
 }
 
 function NumBox({ label, value, onChange, suffix }) {
+  const [raw, setRaw] = React.useState(String(value === 0 ? '' : value));
+  React.useEffect(() => { if (document.activeElement?.dataset?.numbox !== 'true') setRaw(String(value === 0 ? '' : value)); }, [value]);
   return (
     <div style={{ marginBottom: '1.1rem' }}>
       {label && <label style={lbl}>{label}</label>}
-      <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e5e5e3', borderRadius: '10px', overflow: 'hidden' }}>
-        <input type="number" value={value} onChange={e => onChange(parseFloat(e.target.value) || 0)} onFocus={e => e.target.select()} style={{ textAlign:'right', paddingRight:'8px' }}
-          style={{ flex: 1, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#1a1a18', background: '#fff' }} />
-        {suffix && <span style={{ padding: '0.6rem 0.875rem', background: '#f5f5f3', fontSize: '0.8rem', color: '#aaa', borderLeft: '1px solid #e5e5e3' }}>{suffix}</span>}
+      <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #E4E5E5', borderRadius: '12px', overflow: 'hidden' }}>
+        <input type="text" inputMode="numeric" pattern="[0-9]*" data-numbox="true" value={raw}
+          onChange={e => { const v = e.target.value.replace(/[^0-9]/g,''); setRaw(v); onChange(parseInt(v) || 0); }}
+          onFocus={e => { e.target.dataset.numbox = 'true'; e.target.select(); }}
+          onBlur={e => { e.target.dataset.numbox = 'false'; if (!raw) setRaw(''); }}
+          style={{ flex: 1, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#111111', background: '#F9FAFA', colorScheme: 'light' }} />
+        {suffix && <span style={{ padding: '0.6rem 0.875rem', background: '#E4E5E5', fontSize: '0.8rem', color: '#979899', borderLeft: '1px solid #E4E5E5' }}>{suffix}</span>}
       </div>
     </div>
   );
@@ -380,24 +385,24 @@ export default function Calculator() {
 
       {result.elementBreakdown.map((el, i) => (
         <div key={el.key} style={{ display: 'flex', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #E4E5E5', fontSize: '0.82rem', gap: '0.5rem' }}>
-          <span style={{ flex: 1, color: '#555', textAlign: 'left' }}>{el.label}</span>
+          <span style={{ flex: 1, color: '#979899', textAlign: 'left' }}>{el.label}</span>
           {inputs.useCustomSplit && isPro ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <input type="number" min={0} max={100} step={1} defaultValue={Math.round(el.effectivePct * 1000) / 10}
                 onFocus={e => e.target.select()}
                 onBlur={e => updateCustomPct(i, parseFloat(e.target.value) / 100)}
-                style={{ width: '70px', padding: '2px 2px 2px 2px', border: '1px solid #e5e5e3', borderRadius: '6px', fontSize: '0.78rem', textAlign: 'right', paddingRight: '6px', fontFamily: 'inherit', MozAppearance: 'textfield' }} />
-              <span style={{ color: '#aaa', fontSize: '0.75rem' }}>%</span>
+                style={{ width: '68px', padding: '4px 24px 4px 8px', border: '1px solid #E4E5E5', borderRadius: '8px', fontSize: '0.78rem', textAlign: 'right', fontFamily: 'inherit', MozAppearance: 'textfield', WebkitAppearance: 'none', color: '#111111', background: '#F9FAFA', colorScheme: 'light' }} />
+              <span style={{ color: '#979899', fontSize: '0.75rem' }}>%</span>
             </div>
           ) : (
-            <span style={{ color: '#aaa', fontSize: '0.75rem', minWidth: '36px', textAlign: 'left' }}>{pctFmt(el.defaultPct)}</span>
+            <span style={{ color: '#979899', fontSize: '0.75rem', minWidth: '44px', textAlign: 'right' }}>{pctFmt(el.defaultPct)}</span>
           )}
-          <span style={{ fontWeight: '600', color: '#1a1a18', minWidth: '90px', textAlign: 'right' }}>{fmtZAR(el.amount)}</span>
+          <span style={{ fontWeight: '600', color: '#111111', minWidth: '90px', textAlign: 'right' }}>{fmtZAR(el.amount)}</span>
         </div>
       ))}
 
       {inputs.useCustomSplit && (
-        <div style={{ marginTop: '0.75rem', borderRadius: '8px', padding: '0.45rem 0.875rem', background: customPctOk ? '#eaf3de' : '#fdecea', fontSize: '0.78rem', color: customPctOk ? '#27500a' : '#c0392b' }}>
+        <div style={{ marginTop: '0.75rem', borderRadius: '8px', padding: '0.45rem 0.875rem', background: customPctOk ? '#BFD1D6' : '#fdecea', fontSize: '0.78rem', color: customPctOk ? '#0F4C5C' : '#c0392b' }}>
           {customPctOk ? 'Element split totals 100%' : `Element split totals ${(customPctSum * 100).toFixed(1)}% — must equal 100%`}
         </div>
       )}
@@ -649,7 +654,7 @@ export default function Calculator() {
       <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <HamburgerMenu />
-          <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height: '44px', width: 'auto', objectFit: 'contain' }} />
+          <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height: '44px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
           {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#BFD1D6', color: '#0F4C5C', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}

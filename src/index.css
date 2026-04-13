@@ -57,11 +57,10 @@ body {
 }
 
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -128,4 +127,22 @@ input[type="checkbox"] {
 input[type="checkbox"]:checked {
   background-color: #FF8210;
   border-color: #FF8210;
+}
+
+/* Force light mode on all inputs — dark mode must not invert input fills */
+input, select, textarea {
+  color-scheme: light !important;
+  background-color: #F9FAFA !important;
+  color: #111111 !important;
+}
+
+/* Number input — hide arrows for cleaner look */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.4;
+}
+
+/* Remove #root max-width restriction that caused inconsistent page widths */
+#root {
+  text-align: left;
 }

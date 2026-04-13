@@ -33,7 +33,7 @@ export default function SharedEstimate() {
   const card   = { background:'#F9FAFA', borderRadius:'16px', padding:'1.25rem 1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem' };
   const stitle = { fontSize:'0.72rem', fontWeight:'600', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'0.75rem' };
   const row    = { display:'flex', justifyContent:'space-between', padding:'0.35rem 0', borderBottom:'1px solid #E4E5E5' };
-  const lbl    = { color:'#979899', textAlign:'left' };
+  const lbl    = { color:'#979899', textAlign:'left', flex:1 };
   const bold   = { fontWeight:'600', color:'#111111', textAlign:'right' };
   const divdr  = { borderTop:'1px solid #E4E5E5', margin:'0.625rem 0' };
 
