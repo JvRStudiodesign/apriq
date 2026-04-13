@@ -24,13 +24,13 @@ export default function Billing() {
       <div style={{ background:'#F9FAFA', borderBottom:'1px solid #E4E5E5', padding:'0.875rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'4px' }}>
           <HamburgerMenu />
-          <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height:'32px', width:'auto', objectFit:'contain' }} />
+          <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height:'44px', width:'auto', objectFit:'contain' }} />
         </div>
         <span style={{ fontSize:'0.78rem', color:'#979899' }}>Billing & plan</span>
       </div>
       <div style={{ maxWidth:'560px', margin:'0 auto', padding:'2rem 1.25rem 4rem', fontFamily:"'Roboto', system-ui, sans-serif" }}>
 
-        <h1 style={{ fontSize:'1.375rem', fontWeight:'700', marginBottom:'2rem', color:'#111111' }}>Billing & plan</h1>
+        <h1 style={{ fontSize:'1.375rem', fontWeight:'700', marginBottom:'2rem', color:'#111111', letterSpacing:'-0.01em', fontFamily:"'Roboto', system-ui, sans-serif" }}>Billing & plan</h1>
 
         <div style={card}>
           <div style={{ fontSize:'0.85rem', fontWeight:'600', color:'#111111', marginBottom:'1rem' }}>Current plan</div>

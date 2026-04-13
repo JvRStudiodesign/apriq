@@ -101,7 +101,7 @@ export default function UserProfile() {
       </div>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '2rem 1.25rem' }}>
-        <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem' }}>Profile</h1>
+        <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem', letterSpacing: '-0.01em', fontFamily: "'Roboto', system-ui, sans-serif" }}>Profile</h1>
         <p style={{ fontSize: '0.78rem', color: '#979899', marginBottom: '1.5rem' }}>Your details auto-populate on every PDF export.</p>
 
         {/* Logo */}

@@ -366,33 +366,7 @@ export default function Calculator() {
       <p style={{ fontSize: '2rem', fontWeight: '700', letterSpacing: '-1px', lineHeight: 1.1, color: '#F9FAFA' }}>{fmtZAR(result.totalProjectCost)}</p>
       {isPro && <p style={{ fontSize: '0.68rem', color: '#979899', marginTop: '0.5rem' }}>Updates live as you adjust inputs</p>}
     </div>
-    {/* ── CTAs always visible at top of right panel ── */}
-    {isPro && result ? (
-      <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem', marginBottom:'0.75rem' }}>
-        <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none' }}>
-          {({loading})=>(
-            <button style={{ width:'100%', padding:'0.65rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.82rem', fontWeight:'600', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
-              {loading?'Preparing PDF…':'Download PDF'}
-            </button>
-          )}
-        </PDFDownloadLink>
-        <div style={{ display:'flex', gap:'0.5rem' }}>
-          <button onClick={handleSave} disabled={!result || saving}
-            style={{ flex:1, padding:'0.65rem', background:saved?'#0F4C5C':selectedProjectId?'#F9FAFA':'#F9FAFA', color:saved?'#F9FAFA':selectedProjectId?'#111111':'#979899', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.78rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit' }}>
-            {saving?'Saving…':saved?'✓ Saved':'Save estimate'}
-          </button>
-          <button onClick={handleShare} disabled={!result || sharing}
-            style={{ flex:1, padding:'0.65rem', background:shareCopied?'#0F4C5C':'#F9FAFA', color:shareCopied?'#F9FAFA':'#111111', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.78rem', fontWeight:'500', cursor:result?'pointer':'not-allowed', fontFamily:'inherit' }}>
-            {sharing?'Generating…':shareCopied?'✓ Copied':'Share estimate'}
-          </button>
-        </div>
-      </div>
-    ) : !isPro ? (
-      <button onClick={()=>navigate('/upgrade')}
-        style={{ width:'100%', padding:'0.75rem', background:'#FF8210', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', marginBottom:'0.75rem' }}>
-        Upgrade to Pro — unlock PDF export
-      </button>
-    ) : null}
+
 
     {/* ── Element breakdown ── */}
     <div style={card}>
@@ -861,7 +835,7 @@ export default function Calculator() {
       </div>
 
       {/* ── Feedback ── */}
-      <button onClick={() => setFeedback(true)} style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', background: '#111111', color: '#F9FAFA', border: 'none', borderRadius: '20px', padding: '0.5rem 1rem', fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.15)', zIndex: 50, fontFamily: 'inherit' }}>Feedback</button>
+      <button onClick={() => setFeedback(true)} style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', background: '#FF8210', color: '#F9FAFA', border: 'none', borderRadius: '20px', padding: '0.5rem 1rem', fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.15)', zIndex: 50, fontFamily: 'inherit' }}>Feedback</button>
       {feedback && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '16px', padding: '1.5rem', width: '100%', maxWidth: '400px', margin: '1rem' }}>

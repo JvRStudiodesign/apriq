@@ -111,3 +111,21 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* AprIQ orange accent overrides */
+input[type="range"] {
+  accent-color: #FF8210;
+}
+input[type="range"]::-webkit-slider-thumb {
+  background: #FF8210 !important;
+}
+input[type="range"]::-moz-range-thumb {
+  background: #FF8210 !important;
+}
+input[type="checkbox"] {
+  accent-color: #FF8210;
+}
+input[type="checkbox"]:checked {
+  background-color: #FF8210;
+  border-color: #FF8210;
+}

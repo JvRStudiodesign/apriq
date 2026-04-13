@@ -41,9 +41,9 @@ export function HamburgerMenu() {
       <button
         onClick={() => setOpen(v => !v)}
         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', display: 'flex', flexDirection: 'column', gap: '4px', marginRight: '4px' }}>
-        <span style={{ display: 'block', width: '18px', height: '2px', background: '#111111', borderRadius: '2px' }} />
-        <span style={{ display: 'block', width: '18px', height: '2px', background: '#111111', borderRadius: '2px' }} />
-        <span style={{ display: 'block', width: '18px', height: '2px', background: '#111111', borderRadius: '2px' }} />
+        <span style={{ display: 'block', width: '18px', height: '2px', background: '#FF8210', borderRadius: '2px' }} />
+        <span style={{ display: 'block', width: '18px', height: '2px', background: '#FF8210', borderRadius: '2px' }} />
+        <span style={{ display: 'block', width: '18px', height: '2px', background: '#FF8210', borderRadius: '2px' }} />
       </button>
       {open && (
         <div style={{

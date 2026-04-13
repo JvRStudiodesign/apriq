@@ -40,8 +40,8 @@ export default function Login() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
       <div style={{ background: '#F9FAFA', padding: '2.5rem', borderRadius: '20px', width: '100%', maxWidth: '400px', boxShadow: '0 1px 12px rgba(0,0,0,0.04)' }}>
-        <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height:'48px', objectFit:'contain', marginBottom:'0.5rem', display:'block' }} />
-        <p style={{ color: '#979899', marginBottom: '2rem', fontSize: '0.85rem' }}>Construction Cost Intelligence</p>
+        <img src="/logo-offwhite.jpg" alt="AprIQ" style={{ height:'80px', objectFit:'contain', marginBottom:'1rem', display:'block', margin:'0 auto 1rem' }} />
+        <p style={{ color: '#979899', marginBottom: '2rem', fontSize: '0.85rem', textAlign:'center' }}>Construction Cost Intelligence</p>
         {error && <p style={{ color: '#c0392b', background: '#fdecea', borderRadius: '8px', padding: '0.5rem 0.75rem', fontSize: '0.8rem', marginBottom: '1rem' }}>{error}</p>}
         {!showReset ? (
           <>

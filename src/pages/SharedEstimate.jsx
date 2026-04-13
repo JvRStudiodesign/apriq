@@ -33,8 +33,8 @@ export default function SharedEstimate() {
   const card   = { background:'#F9FAFA', borderRadius:'16px', padding:'1.25rem 1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem' };
   const stitle = { fontSize:'0.72rem', fontWeight:'600', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'0.75rem' };
   const row    = { display:'flex', justifyContent:'space-between', padding:'0.35rem 0', borderBottom:'1px solid #E4E5E5' };
-  const lbl    = { color:'#979899' };
-  const bold   = { fontWeight:'600', color:'#111111' };
+  const lbl    = { color:'#979899', textAlign:'left' };
+  const bold   = { fontWeight:'600', color:'#111111', textAlign:'right' };
   const divdr  = { borderTop:'1px solid #E4E5E5', margin:'0.625rem 0' };
 
   if (loading) return (
@@ -159,7 +159,7 @@ export default function SharedEstimate() {
             {(result.landProcurementCost > 0) && <div style={row}><span style={lbl}>Land cost</span><span style={bold}>{fmtZAR(result.landProcurementCost)}</span></div>}
             {result.contingencyAmount > 0 && <div style={row}><span style={lbl}>Contingency ({pct(inputs?.contingencyPct)})</span><span style={bold}>{fmtZAR(result.contingencyAmount)}</span></div>}
             {result.contractorProfit > 0 && <div style={row}><span style={lbl}>Contractor profit ({pct(inputs?.profitPct)})</span><span style={bold}>{fmtZAR(result.contractorProfit)}</span></div>}
-            {result.preliminaries > 0 && <div style={row}><span style={lbl}>Preliminaries ({pct(inputs?.prelimPct)})</span><span style={bold}>{fmtZAR(result.preliminaries)}</span></div>}
+            {result.preliminaries > 0 && <div style={row}><span style={lbl}>Preliminaries ({pct(inputs?.preliminariesPct)})</span><span style={bold}>{fmtZAR(result.preliminaries)}</span></div>}
             {result.professionalFees > 0 && <div style={row}><span style={lbl}>Professional fees ({pct(inputs?.feesPct)})</span><span style={bold}>{fmtZAR(result.professionalFees)}</span></div>}
             {result.vatAmount > 0 && <div style={row}><span style={lbl}>VAT ({pct(inputs?.vatPct)})</span><span style={bold}>{fmtZAR(result.vatAmount)}</span></div>}
             <div style={divdr} />
