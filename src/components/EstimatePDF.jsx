@@ -86,7 +86,7 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
           <View>
             {userDetails?.logo_url
               ? <Image src={userDetails.logo_url} style={s.logoImg} />
-              : <Image src="/logo.jpg" style={{ width: 120, height: 52, objectFit: 'contain' }} />
+              : <Image src="/logo-transparent.png" style={{ width: 120, height: 52, objectFit: 'contain' }} />
             }
           </View>
           <View style={s.rightCol}>
