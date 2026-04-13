@@ -33,8 +33,8 @@ export default function SharedEstimate() {
   const card   = { background:'#F9FAFA', borderRadius:'16px', padding:'1.25rem 1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem' };
   const stitle = { fontSize:'0.72rem', fontWeight:'600', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'0.75rem' };
   const row    = { display:'flex', justifyContent:'space-between', padding:'0.35rem 0', borderBottom:'1px solid #E4E5E5' };
-  const lbl    = { color:'#979899', textAlign:'left', flex:1 };
-  const bold   = { fontWeight:'600', color:'#111111', textAlign:'right' };
+  const lbl    = { color:'#979899', textAlign:'left', flex:1, minWidth:0 };
+  const bold   = { fontWeight:'600', color:'#111111', textAlign:'right', flexShrink:0 };
   const divdr  = { borderTop:'1px solid #E4E5E5', margin:'0.625rem 0' };
 
   if (loading) return (
@@ -77,7 +77,7 @@ export default function SharedEstimate() {
           <div>
             {logoUrl
               ? <img src={logoUrl} alt="logo" style={{ height:'44px', marginBottom:'0.5rem', display:'block', objectFit:'contain' }} />
-              : <img src="/logo.jpg" alt="AprIQ" style={{ height:'44px', marginBottom:'0.5rem', display:'block', objectFit:'contain' }} />
+              : <img src="/logo-transparent.png" alt="AprIQ" style={{ height:'44px', marginBottom:'0.5rem', display:'block', objectFit:'contain' }} />
             }
             {userDetails?.full_name && <div style={{ fontWeight:'600', fontSize:'0.9rem' }}>{userDetails.full_name}</div>}
             {companyName && <div style={{ color:'#979899', fontSize:'0.8rem' }}>{companyName}</div>}
@@ -143,7 +143,11 @@ export default function SharedEstimate() {
           <div style={card}>
             <div style={stitle}>Element breakdown</div>
             {breakdown.map((el, i) => (
-              <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'0.35rem 0', borderBottom:'1px solid #E4E5E5' }}><span style={{ color:'#979899', flex:1 }}>{el.label}</span><span style={{ color:'#979899', fontSize:'0.8rem', width:'48px', textAlign:'right', paddingRight:'0.75rem' }}>{el.effectivePct != null ? (el.effectivePct*100).toFixed(1)+'%' : ''}</span><span style={{ fontWeight:'600', color:'#111111', textAlign:'right' }}>{fmtZAR(el.amount)}</span></div>
+              <div key={i} style={{ display:'flex', alignItems:'center', padding:'0.35rem 0', borderBottom:'1px solid #E4E5E5' }}>
+                <span style={{ flex:1, color:'#979899', textAlign:'left', paddingRight:'0.5rem' }}>{el.label}</span>
+                <span style={{ width:'52px', color:'#979899', fontSize:'0.8rem', textAlign:'right', paddingRight:'1rem', flexShrink:0 }}>{el.effectivePct != null ? (el.effectivePct*100).toFixed(1)+'%' : ''}</span>
+                <span style={{ width:'100px', fontWeight:'600', color:'#111111', textAlign:'right', flexShrink:0 }}>{fmtZAR(el.amount)}</span>
+              </div>
             ))}
             {isRenovation && result?.newArea > 0 && <div style={{ ...row, marginTop:'0.5rem' }}><span style={{ ...lbl, fontWeight:'600' }}>Construction cost — New ({result.newArea} m²)</span><span style={bold}>{fmtZAR(result.baseConstructionCostNew)}</span></div>}
             {isRenovation && result?.renovArea > 0 && <div style={row}><span style={{ ...lbl, fontWeight:'600' }}>Construction cost — Renovation ({result.renovArea} m²)</span><span style={bold}>{fmtZAR(result.baseConstructionCostRenovation)}</span></div>}
