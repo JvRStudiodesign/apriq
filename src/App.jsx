@@ -1,3 +1,4 @@
+import { OfflineBanner } from './components/OfflineBanner';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
+      <OfflineBanner />
     </BrowserRouter>
   );
 }

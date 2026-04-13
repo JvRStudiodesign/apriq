@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { InstallPWA } from '../components/InstallPWA';
 import { HamburgerMenu } from '../components/HamburgerMenu';
 
 const card = { background: '#F9FAFA', borderRadius: '16px', padding: '1.5rem', border: '1px solid #E4E5E5', marginBottom: '1rem' };
@@ -188,6 +189,11 @@ export default function UserProfile() {
           style={{ width: '100%', padding: '0.875rem', background: saved ? '#0F4C5C' : '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
           {uploading ? 'Uploading logo...' : saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save profile'}
         </button>
+        <div style={{ background:'#F9FAFA', borderRadius:'16px', padding:'1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem' }}>
+          <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#111111', display:'block', marginBottom:'0.5rem' }}>Install app</span>
+          <p style={{ fontSize:'0.78rem', color:'#979899', marginBottom:'0.75rem', lineHeight:'1.5' }}>Add AprIQ to your home screen for instant access and limited offline use.</p>
+          <InstallPWA />
+        </div>
       </div>
     </div>
   );

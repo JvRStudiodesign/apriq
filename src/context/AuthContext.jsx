@@ -19,7 +19,13 @@ export function AuthProvider({ children }) {
       if (session?.user) fetchProfile(session.user.id);
       else setProfile(null);
     });
-    return () => subscription.unsubscribe();
+    const handleOnline = () => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) fetchProfile(session.user.id);
+      });
+    };
+    window.addEventListener('online', handleOnline);
+    return () => { subscription.unsubscribe(); window.removeEventListener('online', handleOnline); };
   }, []);
 
   async function fetchProfile(userId) {
@@ -30,6 +36,7 @@ export function AuthProvider({ children }) {
       data = res.data;
     }
     setProfile(data);
+    if (data?.tier) localStorage.setItem('apriq_tier', data.tier);
     // Trial email triggers — fire-and-forget after profile loads
     if (data) {
       const trialEnd = data.trial_end_date ? new Date(data.trial_end_date) : null;
