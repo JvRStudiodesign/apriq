@@ -66,16 +66,13 @@ function Slider({ label, value, min, max, step, onChange, fmtFn, locked }) {
 }
 
 function NumBox({ label, value, onChange, suffix }) {
-  const [raw, setRaw] = React.useState(String(value === 0 ? '' : value));
-  React.useEffect(() => { if (document.activeElement?.dataset?.numbox !== 'true') setRaw(String(value === 0 ? '' : value)); }, [value]);
   return (
     <div style={{ marginBottom: '1.1rem' }}>
       {label && <label style={lbl}>{label}</label>}
       <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #E4E5E5', borderRadius: '12px', overflow: 'hidden' }}>
-        <input type="text" inputMode="numeric" pattern="[0-9]*" data-numbox="true" value={raw}
-          onChange={e => { const v = e.target.value.replace(/[^0-9]/g,''); setRaw(v); onChange(parseInt(v) || 0); }}
-          onFocus={e => { e.target.dataset.numbox = 'true'; e.target.select(); }}
-          onBlur={e => { e.target.dataset.numbox = 'false'; if (!raw) setRaw(''); }}
+        <input type="number" value={value || ''}
+          onChange={e => { const v = e.target.value; onChange(v === '' ? 0 : parseInt(v) || 0); }}
+          onFocus={e => e.target.select()}
           style={{ flex: 1, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#111111', background: '#F9FAFA', colorScheme: 'light' }} />
         {suffix && <span style={{ padding: '0.6rem 0.875rem', background: '#E4E5E5', fontSize: '0.8rem', color: '#979899', borderLeft: '1px solid #E4E5E5' }}>{suffix}</span>}
       </div>
