@@ -74,19 +74,19 @@ export default function SharedEstimate() {
 
         {/* Header — matches PDF layout */}
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'1.5rem', flexWrap:'wrap', gap:'0.75rem' }}>
-          <div>
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-start' }}>
             {logoUrl
-              ? <img src={logoUrl} alt="logo" style={{ height:'44px', marginBottom:'0.5rem', display:'block', objectFit:'contain' }} />
-              : <img src="/logo-transparent.png" alt="AprIQ" style={{ height:'44px', marginBottom:'0.5rem', display:'block', objectFit:'contain' }} />
+              ? <img src={logoUrl} alt="logo" style={{ height:'88px', marginBottom:'0.75rem', display:'block', objectFit:'contain', objectPosition:'left' }} />
+              : <img src="/logo-transparent.png" alt="AprIQ" style={{ height:'88px', marginBottom:'0.75rem', display:'block', objectFit:'contain', objectPosition:'left' }} />
             }
-            {userDetails?.full_name && <div style={{ fontWeight:'600', fontSize:'0.9rem' }}>{userDetails.full_name}</div>}
-            {companyName && <div style={{ color:'#979899', fontSize:'0.8rem' }}>{companyName}</div>}
-            {userDetails?.email && <div style={{ color:'#979899', fontSize:'0.78rem' }}>{userDetails.email}</div>}
-            {userDetails?.phone && <div style={{ color:'#979899', fontSize:'0.78rem' }}>{userDetails.phone}</div>}
+            {userDetails?.full_name && <div style={{ fontWeight:'600', fontSize:'0.9rem', color:'#111111', textAlign:'left' }}>{userDetails.full_name}</div>}
+            {companyName && <div style={{ color:'#979899', fontSize:'0.8rem', textAlign:'left' }}>{companyName}</div>}
+            {userDetails?.email && <div style={{ color:'#979899', fontSize:'0.78rem', textAlign:'left' }}>{userDetails.email}</div>}
+            {userDetails?.phone && <div style={{ color:'#979899', fontSize:'0.78rem', textAlign:'left' }}>{userDetails.phone}</div>}
           </div>
           <div style={{ textAlign:'right' }}>
-            <div style={{ fontSize:'0.7rem', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.05em' }}>Reference</div>
-            <div style={{ fontWeight:'700', fontSize:'1rem' }}>{reference || '—'}</div>
+            <div style={{ fontSize:'0.7rem', color:'#979899', textTransform:'uppercase', letterSpacing:'0.05em' }}>Reference</div>
+            <div style={{ fontWeight:'700', fontSize:'1rem', color:'#111111' }}>{reference || '—'}</div>
             {issueDate && <div style={{ color:'#979899', fontSize:'0.75rem', marginTop:'2px' }}>{issueDate}</div>}
             <div style={{ color:'#979899', fontSize:'0.72rem', marginTop:'2px' }}>ROM Cost Estimate</div>
           </div>
