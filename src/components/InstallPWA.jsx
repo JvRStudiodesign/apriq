@@ -153,11 +153,7 @@ export function InstallPWA() {
         {prompt ? 'Install AprIQ' : 'How to install AprIQ'}
       </button>
 
-      {/* How-to guide — always visible on platforms without direct prompt */}
-      <button onClick={() => setShowGuide(true)}
-        style={{ width:'100%', padding:'0.75rem', background:'#F9FAFA', color:'#979899', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.82rem', cursor:'pointer', ...T }}>
-        View installation guide →
-      </button>
+
 
       {/* Full-screen installation guide modal */}
       {showGuide && (
