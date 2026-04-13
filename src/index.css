@@ -129,20 +129,8 @@ input[type="checkbox"]:checked {
   border-color: #FF8210;
 }
 
-/* Force light mode on all inputs — dark mode must not invert input fills */
-input, select, textarea {
-  color-scheme: light !important;
-  background-color: #F9FAFA !important;
-  color: #111111 !important;
-}
-
-/* Number input — hide arrows for cleaner look */
+/* Number input — subtle arrows */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   opacity: 0.4;
-}
-
-/* Remove #root max-width restriction that caused inconsistent page widths */
-#root {
-  text-align: left;
 }
