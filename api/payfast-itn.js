@@ -1,3 +1,4 @@
+import { rateLimit, getClientIP } from './_rate-limit.js';
 // api/payfast-itn.js — PayFast ITN with signature verification
 import crypto from 'crypto';
 
@@ -16,6 +17,10 @@ function verifyPayFastSignature(body, passphrase) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end('Method not allowed');
+  // Rate limit: max 20 ITN calls per minute per IP
+  const ip = getClientIP(req);
+  const rl = rateLimit(`itn:${ip}`, 20, 60000);
+  if (!rl.allowed) return res.status(429).end('Too many requests');
 
   const serviceKey   = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const passphrase   = process.env.PAYFAST_PASSPHRASE || '';
@@ -117,6 +122,7 @@ export default async function handler(req, res) {
     return res.status(200).end('OK');
   } catch (err) {
     console.error('ITN error:', err.message);
-    return res.status(500).end('Server error');
+    console.error('Internal error in ' + process.env.VERCEL_URL + ':', err?.message);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }

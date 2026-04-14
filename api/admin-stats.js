@@ -1,6 +1,10 @@
+import { rateLimit, getClientIP } from './_rate-limit.js';
 // api/admin-stats.js
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
+  const ip = getClientIP(req);
+  const rl = rateLimit(`admin:${ip}`, 30, 60000);
+  if (!rl.allowed) return res.status(429).end('Too many requests');
   // Server-side admin auth check
   const adminPassword = process.env.ADMIN_PASSWORD;
   const providedPassword = req.headers['x-admin-password'];
