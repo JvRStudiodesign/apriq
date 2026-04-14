@@ -3,8 +3,8 @@ import { HamburgerMenu } from '../components/HamburgerMenu';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-const MERCHANT_ID  = '34377269';
-const MERCHANT_KEY = 'vyu9zys41dbon';
+const MERCHANT_ID  = import.meta.env.VITE_PAYFAST_MERCHANT_ID  || '34377269';
+const MERCHANT_KEY = import.meta.env.VITE_PAYFAST_MERCHANT_KEY || 'vyu9zys41dbon';
 const SANDBOX      = true; // flip to false when PayFast approves account
 const PF_URL       = SANDBOX
   ? 'https://sandbox.payfast.co.za/eng/process'

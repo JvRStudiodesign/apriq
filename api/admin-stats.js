@@ -1,6 +1,12 @@
 // api/admin-stats.js
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
+  // Server-side admin auth check
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const providedPassword = req.headers['x-admin-password'];
+  if (!adminPassword || providedPassword !== adminPassword) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const url        = 'https://cocugdgelatgjzgkyhpz.supabase.co';
   if (!serviceKey) return res.status(503).json({ error: 'Service key not configured' });

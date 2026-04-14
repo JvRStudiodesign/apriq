@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const PASS = 'apriq2026';
+// Password checked server-side via API — not stored in frontend
 
 function Stat({ label, value, sub }) {
   return (
@@ -19,16 +19,21 @@ export default function Admin() {
   const [loading, setLoad] = useState(false);
   const [err, setErr]      = useState('');
 
-  function login(e) {
+  async function login(e) {
     e.preventDefault();
-    if (pw === PASS) { sessionStorage.setItem('admin_auth','1'); setAuth(true); }
-    else setErr('Incorrect password');
+    try {
+      const r = await fetch('/api/admin-stats', {
+        headers: { 'x-admin-password': pw }
+      });
+      if (r.ok) { sessionStorage.setItem('admin_auth','1'); sessionStorage.setItem('admin_pw', pw); setAuth(true); }
+      else setErr('Incorrect password');
+    } catch { setErr('Connection error'); }
   }
 
   useEffect(() => {
     if (!auth) return;
     setLoad(true);
-    fetch('/api/admin-stats')
+    fetch('/api/admin-stats', { headers: { 'x-admin-password': sessionStorage.getItem('admin_pw') || '' } })
       .then(r => r.json())
       .then(d => { setData(d); setLoad(false); })
       .catch(() => { setErr('Failed to load — add SUPABASE_SERVICE_ROLE_KEY to Vercel env vars'); setLoad(false); });

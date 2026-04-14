@@ -1,12 +1,18 @@
 // api/send-welcome.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+  if (!process.env.RESEND_API_KEY) return res.status(503).json({ error: 'Email not configured' });  // Internal-only endpoint — require shared secret
+  const internalSecret = process.env.INTERNAL_API_SECRET;
+  if (internalSecret && req.headers['x-internal-secret'] !== internalSecret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   const { to, ...data } = req.body || {};
   if (!to) return res.status(400).json({ error: 'Missing to' });
 
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer re_Cc3ibXuu_35CHshVGwZ9KFh1mocoEKNt6', 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       from: 'AprIQ <apriq@apriq.co.za>',
       to: [to],
