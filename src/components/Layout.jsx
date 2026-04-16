@@ -38,7 +38,7 @@ function Header({ onOpenModal, isLoggedIn }) {
         <nav style={h.nav} className="nav-desktop">
           {NAV.map((link) => (
             link.modal
-              ? <button key={link.to} onClick={() => { openModal(link.modal); }} style={{ ...h.navLink, color: T.grey, background:'none', border:'none', cursor:'pointer', fontWeight:400, padding:0 }}>{link.label}</button>
+              ? <button key={link.to} onClick={() => { onOpenModal(link.modal); }} style={{ ...h.navLink, color: T.grey, background:'none', border:'none', cursor:'pointer', fontWeight:400, padding:0 }}>{link.label}</button>
               : <Link key={link.to} to={link.to} style={{ ...h.navLink, color: active(link.to) ? T.petrol : T.grey, fontWeight: active(link.to) ? 500 : 400 }}>{link.label}</Link>
           ))}
           <div style={{ position:'relative' }}>
@@ -83,7 +83,7 @@ function Header({ onOpenModal, isLoggedIn }) {
         <div className="mobile-menu" style={h.mobileMenu}>
           {NAV.map((link) => (
             link.modal
-              ? <button key={link.to} onClick={() => { setMenuOpen(false); openModal(link.modal); }} style={{ ...h.mobileLink, color: T.ink, background:'none', border:'none', cursor:'pointer', textAlign:'left', width:'100%', borderBottom:'1px solid #E4E5E5', padding:'11px 0' }}>{link.label}</button>
+              ? <button key={link.to} onClick={() => { setMenuOpen(false); onOpenModal(link.modal); }} style={{ ...h.mobileLink, color: T.ink, background:'none', border:'none', cursor:'pointer', textAlign:'left', width:'100%', borderBottom:'1px solid #E4E5E5', padding:'11px 0' }}>{link.label}</button>
               : <Link key={link.to} to={link.to} style={{ ...h.mobileLink, color: active(link.to) ? T.petrol : T.ink, fontWeight: active(link.to) ? 500 : 400 }}>{link.label}</Link>
           ))}
           <div style={h.mobileDivider}/>
