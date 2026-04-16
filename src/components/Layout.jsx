@@ -121,16 +121,16 @@ function Footer() {
     <footer style={f.root}>
       <div style={f.inner} className="wrap">
         <div style={f.brand}>
-          <img src="/apriq-logo.png" alt="AprIQ" style={{ height:72, width:'auto', objectFit:'contain', display:'block', mixBlendMode:'multiply' }} />
+          <img src="/apriq-logo.png" alt="AprIQ" style={{ height:72, width:'auto', objectFit:'contain', display:'block' }} />
           <p style={f.brandSub}>ROM cost estimates for South African construction projects.</p>
         </div>
         <div style={f.centre}>
-          <span style={f.meta}>apriq@apriq.co.za</span>
-          <span style={f.sep}>|</span>
-          <span style={f.meta}>South Africa</span>
-          <div style={{width:'100%',textAlign:'center',marginTop:8}}>
-            <a href="/legal" style={{fontFamily:"'Roboto',system-ui,sans-serif",fontSize:11,color:'#C8C9CA',textDecoration:'none'}}>Terms of Service &amp; Privacy Policy</a>
+          <div style={{display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}>
+            <span style={f.meta}>apriq@apriq.co.za</span>
+            <span style={f.sep}>|</span>
+            <span style={f.meta}>South Africa</span>
           </div>
+          <a href="/legal" style={{fontFamily:"'Roboto',system-ui,sans-serif",fontSize:11,color:'#C8C9CA',textDecoration:'none',display:'block',textAlign:'center',marginTop:6}}>Terms of Service &amp; Privacy Policy</a>
         </div>
         <div style={f.right}>
           <Link to="/faq" style={f.faqPill}>FAQ's</Link>
@@ -152,14 +152,14 @@ function Footer() {
 
 const f = {
   root:{ borderTop:'1px solid #E4E5E5', background:'#F9FAFA', padding:'32px 0' },
-  inner:{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', flexWrap:'wrap', gap:24, maxWidth:960, margin:'0 auto', padding:'0 24px' },
+  inner:{ display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', gap:24, maxWidth:960, margin:'0 auto', padding:'0 24px' },
   brand:{ display:'flex', flexDirection:'column', gap:6 },
   logoMark:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:20, fontWeight:700, color:'#111111' },
   brandSub:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:11, color:'#979899', lineHeight:1.5, maxWidth:180 },
-  centre:{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:8, paddingTop:4, justifyContent:'center', maxWidth:220, textAlign:'center' },
+  centre:{ display:'flex', flexDirection:'column', alignItems:'center', gap:0, paddingTop:4, textAlign:'center' },
   meta:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:12, color:'#979899' },
   sep:{ fontSize:12, color:'#E4E5E5' },
-  right:{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:8 },
+  right:{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:8, justifySelf:'end' },
   faqPill:{ display:'inline-flex', alignItems:'center', padding:'5px 16px', borderRadius:100, border:'1px solid #FF8210', background:'#F9FAFA', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:12, color:'#FF8210', textDecoration:'none' },
   legalLink:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:11, color:'#C8C9CA', textDecoration:'none' },
   copy:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:11, color:'#979899' },
