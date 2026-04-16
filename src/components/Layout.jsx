@@ -31,7 +31,7 @@ function Header({ onOpenModal, isLoggedIn }) {
     <header style={h.root}>
       <div style={h.inner} className="wrap">
         <Link to="/home" style={h.logoWrap}>
-          <img src="/apriq-logo.png" alt="AprIQ" style={{ height:44, width:'auto', objectFit:'contain', display:'block' }} />
+          <img src="/logo-transparent.png" alt="AprIQ" style={{ height:72, width:'auto', objectFit:'contain', display:'block', mixBlendMode:'multiply' }} />
         </Link>
 
         <nav style={h.nav} className="nav-desktop">
@@ -121,7 +121,7 @@ function Footer() {
     <footer style={f.root}>
       <div style={f.inner} className="wrap">
         <div style={f.brand}>
-          <img src="/apriq-logo.png" alt="AprIQ" style={{ height:72, width:'auto', objectFit:'contain', display:'block' }} />
+          <img src="/logo-transparent.png" alt="AprIQ" style={{ height:72, width:'auto', objectFit:'contain', display:'block', mixBlendMode:'multiply' }} />
           <p style={f.brandSub}>ROM cost estimates for South African construction projects.</p>
         </div>
         <div style={f.centre}>
@@ -153,7 +153,7 @@ function Footer() {
 const f = {
   root:{ borderTop:'1px solid #E4E5E5', background:'#F9FAFA', padding:'32px 0' },
   inner:{ display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', gap:24, maxWidth:960, margin:'0 auto', padding:'0 24px' },
-  brand:{ display:'flex', flexDirection:'column', gap:6 },
+  brand:{ display:'flex', flexDirection:'column', gap:6, alignItems:'flex-start' },
   logoMark:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:20, fontWeight:700, color:'#111111' },
   brandSub:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:11, color:'#979899', lineHeight:1.5, maxWidth:180 },
   centre:{ display:'flex', flexDirection:'column', alignItems:'center', gap:0, paddingTop:4, textAlign:'center' },
@@ -290,6 +290,12 @@ export default function Layout() {
   const { user } = useAuth();
   const isLoggedIn = !!user;
   function openModal(mode = 'waitlist') { setModalMode(mode); setModalOpen(true); }
+  useEffect(() => {
+    const handler = () => openModal('contact');
+    window.addEventListener('open-contact-modal', handler);
+    window.__openContactModal = () => openModal('contact');
+    return () => { window.removeEventListener('open-contact-modal', handler); };
+  }, []);
   return (
     <>
       <Header onOpenModal={openModal} isLoggedIn={isLoggedIn}/>

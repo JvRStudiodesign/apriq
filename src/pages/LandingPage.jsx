@@ -67,7 +67,7 @@ const s = {
   panel:{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:32 },
   panelH2:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:20, fontWeight:600, color:'#111111', marginBottom:16 },
   body:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:14, color:'#979899', lineHeight:1.72 },
-  pillRow:{ display:'flex', flexWrap:'wrap', gap:8, marginTop:20, rowGap:8, justifyContent:'flex-start' },
+  pillRow:{ display:'flex', flexWrap:'wrap', gap:8, marginTop:20, justifyContent:'flex-start' },
   pill:{ display:'inline-flex', alignItems:'center', padding:'6px 16px', borderRadius:100, border:'1px solid #FF8210', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#111111', background:'#F9FAFA', whiteSpace:'nowrap' },
   stepRow:{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:8, marginTop:20, justifyContent:'flex-start' },
   step:{ padding:'8px 16px', border:'1px solid #FF8210', borderRadius:12, background:'#F9FAFA' },

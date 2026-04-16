@@ -77,7 +77,7 @@ const s = {
   journeyWrap:{ display:'flex', flexDirection:'column', gap:24 },
   journeyBlock:{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, overflow:'hidden' },
   journeyMeta:{ padding:'28px 32px 20px' },
-  placeholder:{ background:'#F9FAFA', borderTop:'1px solid #E4E5E5', overflow:'hidden' },
+  placeholder:{ background:'#F9FAFA', overflow:'hidden', borderRadius:'0 0 16px 16px' },
   placeholderInner:{ display:'flex', flexDirection:'column', alignItems:'center', gap:12, opacity:0.6 },
   placeholderIcon:{ width:56, height:56, borderRadius:16, border:'1px solid #E4E5E5', display:'flex', alignItems:'center', justifyContent:'center', background:'#F9FAFA' },
   placeholderLabel:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:12, color:'#979899', textAlign:'center' },
