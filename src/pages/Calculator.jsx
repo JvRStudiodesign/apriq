@@ -646,17 +646,7 @@ export default function Calculator() {
     <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
       <style>{`@media(max-width:700px){.desktop-grid{display:block!important;}.desktop-right{display:none!important;}.mobile-summary{display:block!important;}}`}</style>
 
-      {/* ── Nav ── */}
-      <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem 0.875rem 1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {/* Header handled by Layout */}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-          {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#BFD1D6', color: '#0F4C5C', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}
-          <span onClick={!isPro ? ()=>navigate('/upgrade') : undefined} style={{ fontSize: '0.72rem', background: isPro ? '#BFD1D6' : (trialOk ? '#FF8210' : '#E4E5E5'), color: isPro ? '#0F4C5C' : (trialOk ? '#F9FAFA' : '#979899'), padding: '2px 8px', borderRadius: '8px', fontWeight: '600', cursor: !isPro ? 'pointer' : 'default' }}>{tier === 'pro' ? 'Pro' : trialOk ? 'Trial' : 'Free ↑'}</span>
-          <span style={{ fontSize: '0.78rem', color: '#bbb' }}>{profile?.full_name || user?.email}</span>
-        </div>
-      </div>
+      {/* Nav handled by Layout */}
 
       {/* ── Main grid ── */}
       <div className="desktop-grid" style={{ maxWidth: '1140px', margin: '0 auto', padding: '1.5rem 1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
