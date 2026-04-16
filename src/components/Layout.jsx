@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
@@ -50,10 +52,14 @@ function Header({ onOpenModal, isLoggedIn }) {
               <div style={h.dropdown}>
                 {isLoggedIn ? (
                   <>
-                    <Link to="/billing" style={h.dropItem} onClick={() => setProfileOpen(false)}>My Plan</Link>
+                    <Link to="/" style={h.dropItem} onClick={() => setProfileOpen(false)}>Configurator</Link>
+                    <Link to="/projects" style={h.dropItem} onClick={() => setProfileOpen(false)}>Projects</Link>
+                    <Link to="/clients" style={h.dropItem} onClick={() => setProfileOpen(false)}>Clients</Link>
+                    <hr style={h.dropDivider}/>
+                    <Link to="/plans" style={h.dropItem} onClick={() => setProfileOpen(false)}>My Plan</Link>
                     <Link to="/profile" style={h.dropItem} onClick={() => setProfileOpen(false)}>Profile</Link>
                     <hr style={h.dropDivider}/>
-                    <button style={{ ...h.dropItem, ...h.dropBtn }}>Sign out</button>
+                    <button style={{ ...h.dropItem, ...h.dropBtn }} onClick={async () => { setProfileOpen(false); await supabase.auth.signOut(); }}>Sign out</button>
                   </>
                 ) : (
                   <>
@@ -167,6 +173,10 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist' }) {
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  async function handleGoogle() {
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+  }
+
   async function handleSubmit() {
     if (!email) return;
     setSaving(true);
@@ -210,6 +220,8 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist' }) {
             : <button onClick={handleSubmit} disabled={saving} style={{...m.submit,opacity:saving?0.6:1}}>{saving ? 'Saving...' : isWaitlist ? 'Join the waiting list' : 'Sign in'}</button>
           }
         </div>
+        {!submitted && (<div style={m.dividerRow}><span style={m.dividerLine}/><span style={m.dividerText}>or</span><span style={m.dividerLine}/></div>)}
+        {!submitted && (<button onClick={handleGoogle} style={m.googleBtn}>Continue with Google</button>)}
         <p style={m.toggle}>
           {isWaitlist ? <>Already have access?&nbsp;<button style={m.toggleLink}>Sign in</button></> : <>Don't have an account?&nbsp;<button style={m.toggleLink}>Join the waiting list</button></>}
         </p>
@@ -230,12 +242,17 @@ const m = {
   submit:{ width:'100%', padding:'12px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:12, fontSize:14, fontWeight:500, cursor:'pointer', fontFamily:"'Roboto',system-ui,sans-serif", marginTop:6 },
   toggle:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:12, color:'#979899', marginTop:16, textAlign:'center' },
   toggleLink:{ background:'none', border:'none', color:'#0F4C5C', fontSize:12, fontFamily:"'Roboto',system-ui,sans-serif", cursor:'pointer', textDecoration:'underline', padding:0 },
+  googleBtn:{ width:'100%', padding:'11px', background:'#F9FAFA', color:'#111111', border:'1px solid #E4E5E5', borderRadius:12, fontSize:13, fontWeight:500, cursor:'pointer', fontFamily:"'Roboto',system-ui,sans-serif", marginTop:4 },
+  dividerRow:{ display:'flex', alignItems:'center', gap:10, margin:'12px 0 4px' },
+  dividerLine:{ flex:1, height:1, background:'#E4E5E5', display:'block' },
+  dividerText:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:11, color:'#979899' },
 };
 
 export default function Layout() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('waitlist');
-  const isLoggedIn = false;
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
   function openModal(mode = 'waitlist') { setModalMode(mode); setModalOpen(true); }
   return (
     <>

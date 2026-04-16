@@ -4,7 +4,6 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { calculate } from '../engine/calculator';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import { HamburgerMenu } from '../components/HamburgerMenu';
 import { EstimatePDF } from '../components/EstimatePDF';
 import {
   CATEGORIES, QUALITY, SITE_ACCESS, PROJECT_TYPE,
@@ -650,8 +649,7 @@ export default function Calculator() {
       {/* ── Nav ── */}
       <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem 0.875rem 1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <HamburgerMenu />
-          <img src="/logo-transparent.png" alt="AprIQ" style={{ height: '88px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+          {/* Header handled by Layout */}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
           {trialOk && daysLeft <= 5 && <span style={{ fontSize: '0.72rem', background: '#BFD1D6', color: '#0F4C5C', padding: '2px 8px', borderRadius: '8px' }}>Trial {daysLeft}d left</span>}
