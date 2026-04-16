@@ -131,7 +131,8 @@ export default function UserProfile() {
               Upgrade to Pro to upload your company logo.
             </p>
           )}
-        </di{/* Details */}
+        </div>
+        {/* Details */}
         <div style={card}>
           <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Your details</span>
           {[
