@@ -2,8 +2,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useFadeIn } from '../hooks/useFadeIn';
 
 const TIERS = [
-  { id:'free', name:'Free', price:'R0', period:'always', description:'Get started with AprIQ and explore the early-stage estimating workflow.', features:['Basic cost estimates','Limited project workspaces','Limited client management','Basic AprIQ workflow access'], cta: isPro ? 'Upgrade not needed' : 'Your current plan', active: !isPro, highlight:false },
-  { id:'pro',  name:'Pro',  price:'R79', period:'/month', trialNote:'30-day free trial — no card required to start', description:'A more complete working setup with expanded access for ongoing project and professional output needs.', features:['Full cost estimates','More project workspaces','Full client management','Professional PDF exports','Shareable estimate links','Full AprIQ workflow access','More storage and saved data'], cta: isPro ? 'Your current plan' : 'Upgrade to Pro', active: isPro, highlight:true },
+  { id:'free', name:'Free', price:'R0', period:'always', description:'Get started with AprIQ and explore the early-stage estimating workflow.', features:['Basic cost estimates','Limited project workspaces','Limited client management','Basic AprIQ workflow access'], cta:'__free_cta__', active:true, highlight:false },
+  { id:'pro',  name:'Pro',  price:'R79', period:'/month', trialNote:'30-day free trial — no card required to start', description:'A more complete working setup with expanded access for ongoing project and professional output needs.', features:['Full cost estimates','More project workspaces','Full client management','Professional PDF exports','Shareable estimate links','Full AprIQ workflow access','More storage and saved data'], cta:'__pro_cta__', active:false, highlight:true },
 ];
 
 export default function BillingPage() {
@@ -33,7 +33,12 @@ export default function BillingPage() {
         <h2 style={s.h2} className="fi">Plans</h2>
         <p style={s.body} className="fi">Choose the plan that fits how you work. Pro starts with a 30-day free trial — no credit card required to begin.</p>
         <div style={s.tierGrid} className="fi">
-          {TIERS.map((tier) => (
+          {TIERS.map((tier) => {
+            const cta = tier.id === 'free'
+              ? (isPro ? 'Upgrade not needed' : 'Your current plan')
+              : (isPro ? 'Your current plan' : 'Upgrade to Pro');
+            const isActive = tier.id === 'free' ? !isPro : isPro;
+            return (
             <div key={tier.id} style={{...s.tierCard, borderColor:tier.highlight?'#0F4C5C':'#E4E5E5'}}>
               {tier.highlight && <div style={s.tierBadge}>Best value</div>}
               <div style={s.tierTop}>
@@ -53,9 +58,9 @@ export default function BillingPage() {
                   </li>
                 ))}
               </ul>
-              <button style={{...s.tierCta, background:tier.highlight?'#111111':'transparent', color:tier.highlight?'#F9FAFA':'#979899', border:tier.highlight?'none':'1px solid #E4E5E5', cursor:tier.active?'default':'pointer'}} disabled={tier.active}>{tier.cta}</button>
+              <button style={{...s.tierCta, background:tier.highlight?'#111111':'transparent', color:tier.highlight?'#F9FAFA':'#979899', border:tier.highlight?'none':'1px solid #E4E5E5', cursor:isActive?'default':'pointer'}} disabled={isActive}>{cta}</button>
             </div>
-          ))}
+          );})}
         </div>
       </div></div></section>
 
