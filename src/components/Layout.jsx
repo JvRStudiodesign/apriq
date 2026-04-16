@@ -72,7 +72,7 @@ function Header({ onOpenModal, isLoggedIn }) {
         </nav>
 
         <div style={{display:'flex',alignItems:'center',gap:8}}>
-        <div style={{position:'relative'}}>
+          <div style={{position:'relative'}}>
           <button onClick={() => setProfileOpen((p) => !p)} style={{...h.profileBtn, display:'flex'}} aria-label="Account">
             <svg width="16" height="16" fill="none" stroke="#FF8210" strokeWidth="1.5" viewBox="0 0 24 24">
               <circle cx="12" cy="8" r="4"/>
@@ -100,6 +100,7 @@ function Header({ onOpenModal, isLoggedIn }) {
               )}
             </div>
           )}
+          </div>
         </div>
         <button className="hamburger" style={h.hamburger} onClick={() => setMenuOpen((m) => !m)} aria-label="Toggle menu">
           <span style={{ ...h.bar, transform: menuOpen ? 'rotate(45deg) translate(5px,5px)' : 'none' }}/>
