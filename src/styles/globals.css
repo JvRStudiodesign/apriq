@@ -61,3 +61,34 @@ a:hover{text-decoration:underline;}
   .hamburger{display:none!important;}
   .mobile-menu{display:none!important;}
 }
+
+/* ── Checkbox styling — orange tick, transparent bg ── */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #979899;
+  border-radius: 4px;
+  background: var(--paper);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: border-color 150ms ease;
+}
+input[type="checkbox"]:checked {
+  border-color: #FF8210;
+  background: var(--paper);
+}
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 7px;
+  height: 11px;
+  border: 2px solid #FF8210;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}

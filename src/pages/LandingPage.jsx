@@ -15,7 +15,9 @@ export default function LandingPage() {
         <div className="wrap"><div style={s.heroWrap}>
           <h1 style={s.h1}>Early-Stage Construction Cost Intelligence for South Africa</h1>
           <p style={s.heroSub}>AprIQ provides early-stage construction feasibility and Rough Order of Magnitude cost estimates, enabling faster budget structuring and clearer professional estimates for project teams.</p>
-          <button onClick={() => openModal('waitlist')} style={s.cta}>Join the waiting list</button>
+          <div style={{display:'flex',justifyContent:'center'}}>
+            <button onClick={() => openModal('waitlist')} style={s.cta}>Join the waiting list</button>
+          </div>
         </div></div>
       </section>
 

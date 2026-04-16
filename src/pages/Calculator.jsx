@@ -41,6 +41,20 @@ function BtnGroup({ label, value, onChange, options, locked, cols, getDesc }) {
         ))}
       </div>
       {desc && <p style={{ fontSize: '0.72rem', color: '#aaa', marginTop: '0.4rem', marginBottom: 0 }}>{desc}</p>}
+
+      {/* ── How to install AprIQ (PWA) ── */}
+      <div style={{ maxWidth:'1140px', margin:'0 auto', padding:'0 1.25rem 2rem' }}>
+        <div style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:'1.5rem', textAlign:'center' }}>
+          <h3 style={{ fontSize:'0.875rem', fontWeight:'600', color:'#111111', marginBottom:'0.35rem', fontFamily:"'Roboto',system-ui,sans-serif" }}>Install app</h3>
+          <p style={{ fontSize:'0.75rem', color:'#979899', marginBottom:'0.75rem', fontFamily:"'Roboto',system-ui,sans-serif" }}>Add AprIQ to your home screen for instant access and limited offline use.</p>
+          <button
+            onClick={() => { if (window.deferredPrompt) { window.deferredPrompt.prompt(); window.deferredPrompt.userChoice.then(() => { window.deferredPrompt = null; }); } else { alert('To install: tap the Share button in your browser and select "Add to Home Screen".'); } }}
+            style={{ padding:'0.625rem 1.5rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:12, fontSize:'0.8rem', fontWeight:'500', cursor:'pointer', fontFamily:"'Roboto',system-ui,sans-serif" }}
+          >
+            How to install AprIQ
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -123,7 +137,7 @@ const DEFAULT = {
   use1Category: 'Residential', use1Subtype: 'Single Dwelling', use1Allocation: 1,
   use2Category: null, use2Subtype: null, use2Allocation: 0,
   use3Category: null, use3Subtype: null, use3Allocation: 0,
-  floorArea: 200, complexityKey: 'Low Complexity', siteAccessKey: 'Urban Setting',
+  floorArea: 0, complexityKey: 'Low Complexity', siteAccessKey: 'Urban Setting',
   projectTypeKey: 'New', renovationArea: 0, renovationComplexityKey: 'Low', qualityKey: 'Medium',
   contingencyPct: 0.10, profitPct: 0.10, preliminariesPct: 0.05, feesPct: 0.12, vatPct: 0.15,
   landProcurementType: 'N/A', landArea: 0, landSlopeKey: 'Flat Land (0-5%)',
@@ -827,7 +841,7 @@ export default function Calculator() {
       </div>
 
       {/* ── Feedback ── */}
-      <button onClick={() => setFeedback(true)} style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', background: '#FF8210', color: '#F9FAFA', border: 'none', borderRadius: '20px', padding: '0.5rem 1rem', fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.15)', zIndex: 50, fontFamily: 'inherit' }}>Feedback</button>
+      <button onClick={() => setFeedback(true)} style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', background: '#FF8210', color: '#F9FAFA', border: 'none', borderRadius: '20px', padding: '0.5rem 1.25rem', fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.15)', zIndex: 50, fontFamily: 'inherit', whiteSpace:'nowrap' }}>Feedback</button>
       {feedback && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '16px', padding: '1.5rem', width: '100%', maxWidth: '400px', margin: '1rem' }}>
@@ -845,10 +859,7 @@ export default function Calculator() {
           </div>
         </div>
       )}
-      {/* Legal footer */}
-      <div style={{ textAlign:"center", paddingTop:"0.75rem", paddingBottom:"0.25rem" }}>
-        <a href="/legal" style={{ fontSize:"0.7rem", color:"#ccc", textDecoration:"none" }}>Terms of Service &amp; Privacy Policy</a>
-      </div>
+
     </div>
   );
 }

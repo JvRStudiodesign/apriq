@@ -92,12 +92,7 @@ export default function UserProfile() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
-      <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-          {/* Header handled by Layout */}
-        </div>
-        <span style={{ fontSize: '0.78rem', color: '#979899' }}>User Profile</span>
-      </div>
+
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '2rem 1.25rem' }}>
         <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem', letterSpacing: '-0.01em', fontFamily: "'Roboto', system-ui, sans-serif" }}>Profile</h1>
@@ -172,17 +167,7 @@ export default function UserProfile() {
           </select>
         </div>
         {/* Change password */}
-        <div style={card}>
-          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Change password</span>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={lbl}>New password</label>
-            <input type="password" style={inp} value={form.newPassword} onChange={e => upd('newPassword', e.target.value)} placeholder="Min. 6 characters" />
-          </div>
-          <div style={{ marginBottom: '0.25rem' }}>
-            <label style={lbl}>Confirm new password</label>
-            <input type="password" style={inp} value={form.confirmPassword} onChange={e => upd('confirmPassword', e.target.value)} placeholder="Repeat new password" />
-          </div>
-        </div>
+        v>
         <button onClick={handleSave} disabled={saving || uploading}
           style={{ width: '100%', padding: '0.875rem', background: saved ? '#0F4C5C' : '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
           {uploading ? 'Uploading logo...' : saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save profile'}

@@ -30,9 +30,8 @@ function Header({ onOpenModal, isLoggedIn }) {
   return (
     <header style={h.root}>
       <div style={h.inner} className="wrap">
-        <Link to="/" style={h.logoWrap}>
-          <span style={h.logoMark}>AprIQ</span>
-          <span style={h.logoSub}>Smarter Construction Feasibility</span>
+        <Link to="/home" style={h.logoWrap}>
+          <img src="/apriq-logo.png" alt="AprIQ" style={{ height:44, width:'auto', objectFit:'contain', display:'block' }} />
         </Link>
 
         <nav style={h.nav} className="nav-desktop">
@@ -72,6 +71,36 @@ function Header({ onOpenModal, isLoggedIn }) {
           </div>
         </nav>
 
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+        <div style={{position:'relative'}}>
+          <button onClick={() => setProfileOpen((p) => !p)} style={{...h.profileBtn, display:'flex'}} aria-label="Account">
+            <svg width="16" height="16" fill="none" stroke="#FF8210" strokeWidth="1.5" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" strokeLinecap="round"/>
+            </svg>
+          </button>
+          {profileOpen && (
+            <div style={{...h.dropdown, left:'auto', right:0}}>
+              {isLoggedIn ? (
+                <>
+                  <Link to="/" style={h.dropItem} onClick={() => setProfileOpen(false)}>Configurator</Link>
+                  <Link to="/projects" style={h.dropItem} onClick={() => setProfileOpen(false)}>Projects</Link>
+                  <Link to="/clients" style={h.dropItem} onClick={() => setProfileOpen(false)}>Clients</Link>
+                  <hr style={h.dropDivider}/>
+                  <Link to="/plans" style={h.dropItem} onClick={() => setProfileOpen(false)}>My Plan</Link>
+                  <Link to="/profile" style={h.dropItem} onClick={() => setProfileOpen(false)}>Profile</Link>
+                  <hr style={h.dropDivider}/>
+                  <button style={{ ...h.dropItem, ...h.dropBtn }} onClick={async () => { setProfileOpen(false); await supabase.auth.signOut(); }}>Sign out</button>
+                </>
+              ) : (
+                <>
+                  <button style={{ ...h.dropItem, ...h.dropBtn }} onClick={() => { setProfileOpen(false); onOpenModal('waitlist'); }}>Join the waiting list</button>
+                  <button style={{ ...h.dropItem, ...h.dropBtn, color:'#0F4C5C', fontWeight:500 }} onClick={() => { setProfileOpen(false); onOpenModal('signin'); }}>Sign in</button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
         <button className="hamburger" style={h.hamburger} onClick={() => setMenuOpen((m) => !m)} aria-label="Toggle menu">
           <span style={{ ...h.bar, transform: menuOpen ? 'rotate(45deg) translate(5px,5px)' : 'none' }}/>
           <span style={{ ...h.bar, opacity: menuOpen ? 0 : 1 }}/>
@@ -100,8 +129,8 @@ const h = {
   root:{ position:'sticky', top:0, zIndex:200, background:'#F9FAFA', borderBottom:'1px solid #E4E5E5' },
   inner:{ display:'flex', alignItems:'center', justifyContent:'space-between', height:60, maxWidth:960, margin:'0 auto', padding:'0 24px' },
   logoWrap:{ display:'flex', flexDirection:'column', textDecoration:'none', lineHeight:1, gap:2 },
-  logoMark:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:22, fontWeight:700, color:'#111111', letterSpacing:'-0.3px' },
-  logoSub:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:9, color:'#979899', letterSpacing:'0.1px' },
+  logoMark:{ display:'none' },
+  logoSub:{ display:'none' },
   nav:{ display:'flex', alignItems:'center', gap:28 },
   navLink:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, textDecoration:'none', transition:'color 150ms ease' },
   profileBtn:{ width:36, height:36, borderRadius:10, border:'1px solid #E4E5E5', background:'#F9FAFA', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
@@ -122,7 +151,7 @@ function Footer() {
     <footer style={f.root}>
       <div style={f.inner} className="wrap">
         <div style={f.brand}>
-          <span style={f.logoMark}>AprIQ</span>
+          <img src="/apriq-logo.png" alt="AprIQ" style={{ height:72, width:'auto', objectFit:'contain', display:'block', mixBlendMode:'multiply' }} />
           <p style={f.brandSub}>ROM cost estimates for South African construction projects.</p>
         </div>
         <div style={f.centre}>
@@ -138,9 +167,9 @@ function Footer() {
           <span style={f.copy}>© 2025 AprIQ.</span>
           <div style={f.socialRow}>
             {[
-              { label:'Facebook',  href:'https://facebook.com',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="#979899"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> },
-              { label:'Instagram', href:'https://instagram.com', icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#979899" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#979899" stroke="none"/></svg> },
-              { label:'LinkedIn',  href:'https://linkedin.com',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="#979899"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
+              { label:'Facebook',  href:'https://www.facebook.com/profile.php?id=61574287355312',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="#979899"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> },
+              { label:'Instagram', href:'https://www.instagram.com/apriq.co.za/', icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#979899" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#979899" stroke="none"/></svg> },
+              { label:'LinkedIn',  href:'https://www.linkedin.com/company/apriq/?viewAsMember=true',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="#979899"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
             ].map(({ label, href, icon }) => (
               <a key={label} href={href} aria-label={label} target="_blank" rel="noreferrer" style={f.socialIcon}>{icon}</a>
             ))}
