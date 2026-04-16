@@ -1,0 +1,63 @@
+/* Override index.css root centering */
+#root { text-align: left; }
+
+/* AprIQ — Global Stylesheet | Brand Guide v1.2 */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap');
+
+:root {
+  --petrol:    #0F4C5C;
+  --ink:       #111111;
+  --paper:     #F9FAFA;
+  --mist:      #E4E5E5;
+  --grey:      #979899;
+  --orange:    #FF8210;
+  --pale-blue: #BFD1D6;
+  --font-heading: 'Aptos', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body:    'Roboto', 'Segoe UI', -apple-system, system-ui, sans-serif;
+  --s4:4px; --s8:8px; --s12:12px; --s16:16px; --s24:24px;
+  --s32:32px; --s40:40px; --s48:48px; --s64:64px;
+  --r-sm:10px; --r-md:12px; --r-lg:16px; --r-xl:20px;
+  --max-w:960px; --pad-x:24px;
+  --ease:150ms ease; --ease-fade:180ms ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;scroll-behavior:smooth;}
+body{font-family:var(--font-body);background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6;}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);color:var(--ink);line-height:1.2;font-weight:600;}
+p{font-family:var(--font-body);color:var(--grey);line-height:1.7;font-size:14px;}
+a{color:var(--petrol);text-decoration:none;}
+a:hover{text-decoration:underline;}
+.wrap{max-width:var(--max-w);margin:0 auto;padding:0 var(--pad-x);}
+.panel{background:var(--paper);border:1px solid var(--mist);border-radius:var(--r-lg);padding:var(--s32);}
+.pill{display:inline-flex;align-items:center;padding:6px 16px;border-radius:100px;border:1px solid var(--mist);font-family:var(--font-body);font-size:13px;color:var(--ink);background:var(--paper);white-space:nowrap;}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+.btn-ink{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 26px;background:var(--ink);color:var(--paper);border:none;border-radius:var(--r-md);font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;transition:opacity var(--ease);text-decoration:none;}
+.btn-ink:hover{opacity:0.86;text-decoration:none;}
+.btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 26px;background:var(--paper);color:var(--ink);border:1px solid var(--mist);border-radius:var(--r-md);font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;transition:background var(--ease);text-decoration:none;}
+.btn-outline:hover{background:var(--mist);}
+.input{width:100%;padding:10px 14px;background:var(--paper);border:1px solid var(--mist);border-radius:var(--r-md);font-family:var(--font-body);font-size:13px;color:var(--ink);outline:none;transition:border-color var(--ease);appearance:none;}
+.input::placeholder{color:var(--grey);}
+.input:focus{border-color:var(--pale-blue);}
+.fi{opacity:0;transform:translateY(7px);transition:opacity var(--ease-fade),transform 200ms ease;}
+.fi.show{opacity:1;transform:translateY(0);}
+.fi-group .fi:nth-child(1){transition-delay:0ms;}
+.fi-group .fi:nth-child(2){transition-delay:55ms;}
+.fi-group .fi:nth-child(3){transition-delay:110ms;}
+.fi-group .fi:nth-child(4){transition-delay:165ms;}
+.fi-group .fi:nth-child(5){transition-delay:220ms;}
+.fi-group .fi:nth-child(6){transition-delay:275ms;}
+.section{padding:56px 0;}
+.section-sm{padding:32px 0;}
+.divider{border:none;border-top:1px solid var(--mist);margin:32px 0;}
+@media(max-width:700px){
+  :root{--pad-x:16px;--s32:24px;}
+  h1{font-size:24px!important;}
+  h2{font-size:18px!important;}
+  .panel{padding:24px 20px;}
+  .nav-desktop{display:none!important;}
+  .hamburger{display:flex!important;}
+}
+@media(min-width:701px){
+  .hamburger{display:none!important;}
+  .mobile-menu{display:none!important;}
+}

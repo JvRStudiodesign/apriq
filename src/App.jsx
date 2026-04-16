@@ -14,12 +14,20 @@ import SharedEstimate from './pages/SharedEstimate';
 import Upgrade from './pages/Upgrade';
 import Billing from './pages/Billing';
 import Admin from './pages/Admin';
+import Layout from './components/Layout';
+import LandingPage from './pages/LandingPage';
+import AboutPage from './pages/AboutPage';
+import HowItWorksPage from './pages/HowItWorksPage';
+import FeaturesPage from './pages/FeaturesPage';
+import FAQPage from './pages/FAQPage';
+import BillingPage from './pages/BillingPage';
+
 
 function RootRoute() {
   const { user, loading } = useAuth();
   if (loading) return <div className="loading">Loading...</div>;
   if (user) return <Calculator />;
-  return <ComingSoon />;
+  return <Navigate to="/home" replace />;
 }
 
 function ProtectedRoute({ children }) {
@@ -40,11 +48,20 @@ export default function App() {
           <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
           <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-          <Route path="/legal" element={<LegalPage />} />
+
           <Route path="/estimate/:token" element={<SharedEstimate />} />
           <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
           <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
           <Route path="/admin" element={<Admin />} />
+          <Route element={<Layout />}>
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
+            <Route path="/features" element={<FeaturesPage />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/plans" element={<BillingPage />} />
+            <Route path="/home" element={<LandingPage />} />
+            <Route path="/legal" element={<LegalPage />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
