@@ -110,15 +110,12 @@ export default function UserProfile() {
                   ? <img src={logoPreview} alt="Logo" style={{ width: '160px', height: '28px', width: 'auto', objectFit: 'contain', borderRadius: '8px', border: '1px solid #eee', background: '#F9FAFA', padding: '8px' }} />
                   : <div style={{ width: '160px', height: '70px', borderRadius: '8px', border: '1.5px dashed #E4E5E5', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA', colorScheme: 'light' }}>
                       <span style={{ fontSize: '0.65rem', color: '#979899' }}>No logo</span>
-                    </div>}
-                <div>
-                  <button onClick={() => fileRef.current.click()} style={{ padding: '6px 14px', borderRadius: '9px', border: '1.5px solid #E4E5E5', background: '#F9FAFA', color: '#111111', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', display: 'block', marginBottom: '4px', colorScheme: 'light' }}>
+                    </di}
+                <di<button onClick={() => fileRef.current.click()} style={{ padding: '6px 14px', borderRadius: '9px', border: '1.5px solid #E4E5E5', background: '#F9FAFA', color: '#111111', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', display: 'block', marginBottom: '4px', colorScheme: 'light' }}>
                     {uploading ? 'Uploading...' : logoPreview ? 'Change logo' : 'Upload logo'}
                   </button>
                   <span style={{ fontSize: '0.68rem', color: '#bbb' }}>PNG, SVG or JPEG · max 3MB</span>
-                </div>
-              </div>
-              <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/svg+xml" onChange={handleLogoChange} style={{ display: 'none' }} />
+                </di</di<input ref={fileRef} type="file" accept="image/png,image/jpeg,image/svg+xml" onChange={handleLogoChange} style={{ display: 'none' }} />
               {logoPreview && (
                 <button onClick={() => { setLogoPreview(null); setLogoFile(null); setSaved(false); }}
                   style={{ fontSize: '0.72rem', color: '#0F4C5C', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
@@ -131,9 +128,7 @@ export default function UserProfile() {
               Upgrade to Pro to upload your company logo.
             </p>
           )}
-        </div>
-
-        {/* Details */}
+        </di{/* Details */}
         <div style={card}>
           <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Your details</span>
           {[
@@ -145,15 +140,11 @@ export default function UserProfile() {
             <div key={f.field} style={{ marginBottom: '1rem' }}>
               <label style={lbl}>{f.label}</label>
               <input style={inp} value={form[f.field]} onChange={e => upd(f.field, e.target.value)} placeholder={f.placeholder} />
-            </div>
-          ))}
+            </di))}
           <div style={{ marginBottom: '1rem' }}>
             <label style={lbl}>Email</label>
             <input style={{ ...inp, background: '#E4E5E5', color: '#979899' }} value={user?.email || ''} disabled />
-          </div>
-        </div>
-
-        {/* Profession */}
+          </di</di{/* Profession */}
         <div style={card}>
           <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Profession</span>
           <select style={inp} value={form.profession} onChange={e => upd('profession', e.target.value)}>
@@ -165,18 +156,10 @@ export default function UserProfile() {
             <option value="Project Manager">Project Manager</option>
             <option value="Other">Other</option>
           </select>
-        </div>
-        {/* Change password */}
-        v>
-        <button onClick={handleSave} disabled={saving || uploading}
+        </di{/* Change password */}<button onClick={handleSave} disabled={saving || uploading}
           style={{ width: '100%', padding: '0.875rem', background: saved ? '#0F4C5C' : '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
           {uploading ? 'Uploading logo...' : saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save profile'}
         </button>
-        <div style={{ background:'#F9FAFA', borderRadius:'16px', padding:'1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem', marginTop:'1rem' }}>
-          <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#111111', display:'block', marginBottom:'0.5rem' }}>Install app</span>
-          <p style={{ fontSize:'0.78rem', color:'#979899', marginBottom:'0.75rem', lineHeight:'1.5' }}>Add AprIQ to your home screen for instant access and limited offline use.</p>
-          <InstallPWA />
-        </div>
       </div>
     </div>
   );
