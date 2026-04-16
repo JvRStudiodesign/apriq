@@ -156,7 +156,8 @@ export default function UserProfile() {
             <option value="Project Manager">Project Manager</option>
             <option value="Other">Other</option>
           </select>
-        </di{/* Change password */}<button onClick={handleSave} disabled={saving || uploading}
+        </div>
+        {/* Change password */}<button onClick={handleSave} disabled={saving || uploading}
           style={{ width: '100%', padding: '0.875rem', background: saved ? '#0F4C5C' : '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
           {uploading ? 'Uploading logo...' : saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save profile'}
         </button>
