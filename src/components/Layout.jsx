@@ -254,12 +254,12 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
             ? <p style={{fontFamily:"'Roboto',system-ui,sans-serif",fontSize:13,color:'#0F4C5C',textAlign:'center',marginTop:8}}>You are on the list. We will be in touch.</p>
             : <button onClick={handleSubmit} disabled={saving} style={{...m.submit,opacity:saving?0.6:1}}>{saving ? 'Saving...' : isWaitlist ? 'Join the waiting list' : 'Sign in'}</button>
           }
-        </div>
-        {!submitted && (<div style={m.dividerRow}><span style={m.dividerLine}/><span style={m.dividerText}>or</span><span style={m.dividerLine}/></div>)}
-        {!submitted && (<button onClick={handleGoogle} style={m.googleBtn}>Continue with Google</button>)}
-        <p style={m.toggle}>
+        </div>}
+        {!isContact && !submitted && (<div style={m.dividerRow}><span style={m.dividerLine}/><span style={m.dividerText}>or</span><span style={m.dividerLine}/></div>)}
+        {!isContact && !submitted && (<button onClick={handleGoogle} style={m.googleBtn}>Continue with Google</button>)}
+        {!isContact && <p style={m.toggle}>
           {isWaitlist ? <>Already have access?&nbsp;<button style={m.toggleLink}>Sign in</button></> : <>Don't have an account?&nbsp;<button style={m.toggleLink}>Join the waiting list</button></>}
-        </p>
+        </p>}
       </div>
     </div>
   );
