@@ -92,7 +92,12 @@ export default function UserProfile() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
-
+      <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+          {/* Header handled by Layout */}
+        </div>
+        <span style={{ fontSize: '0.78rem', color: '#979899' }}>User Profile</span>
+      </div>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '2rem 1.25rem' }}>
         <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem', letterSpacing: '-0.01em', fontFamily: "'Roboto', system-ui, sans-serif" }}>Profile</h1>
@@ -111,7 +116,7 @@ export default function UserProfile() {
                   : <div style={{ width: '160px', height: '70px', borderRadius: '8px', border: '1.5px dashed #E4E5E5', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA', colorScheme: 'light' }}>
                       <span style={{ fontSize: '0.65rem', color: '#979899' }}>No logo</span>
                     </div>}
-                </div>
+                <div>
                   <button onClick={() => fileRef.current.click()} style={{ padding: '6px 14px', borderRadius: '9px', border: '1.5px solid #E4E5E5', background: '#F9FAFA', color: '#111111', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', display: 'block', marginBottom: '4px', colorScheme: 'light' }}>
                     {uploading ? 'Uploading...' : logoPreview ? 'Change logo' : 'Upload logo'}
                   </button>
@@ -132,6 +137,7 @@ export default function UserProfile() {
             </p>
           )}
         </div>
+
         {/* Details */}
         <div style={card}>
           <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Your details</span>
@@ -144,13 +150,15 @@ export default function UserProfile() {
             <div key={f.field} style={{ marginBottom: '1rem' }}>
               <label style={lbl}>{f.label}</label>
               <input style={inp} value={form[f.field]} onChange={e => upd(f.field, e.target.value)} placeholder={f.placeholder} />
-            </div>))}
+            </div>
+          ))}
           <div style={{ marginBottom: '1rem' }}>
             <label style={lbl}>Email</label>
             <input style={{ ...inp, background: '#E4E5E5', color: '#979899' }} value={user?.email || ''} disabled />
           </div>
-          </div>
-          {/* Profession */}
+        </div>
+
+        {/* Profession */}
         <div style={card}>
           <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Profession</span>
           <select style={inp} value={form.profession} onChange={e => upd('profession', e.target.value)}>
@@ -163,10 +171,27 @@ export default function UserProfile() {
             <option value="Other">Other</option>
           </select>
         </div>
-        {/* Change password */}<button onClick={handleSave} disabled={saving || uploading}
+        {/* Change password */}
+        <div style={card}>
+          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Change password</span>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={lbl}>New password</label>
+            <input type="password" style={inp} value={form.newPassword} onChange={e => upd('newPassword', e.target.value)} placeholder="Min. 6 characters" />
+          </div>
+          <div style={{ marginBottom: '0.25rem' }}>
+            <label style={lbl}>Confirm new password</label>
+            <input type="password" style={inp} value={form.confirmPassword} onChange={e => upd('confirmPassword', e.target.value)} placeholder="Repeat new password" />
+          </div>
+        </div>
+        <button onClick={handleSave} disabled={saving || uploading}
           style={{ width: '100%', padding: '0.875rem', background: saved ? '#0F4C5C' : '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
           {uploading ? 'Uploading logo...' : saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save profile'}
         </button>
+        <div style={{ background:'#F9FAFA', borderRadius:'16px', padding:'1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem', marginTop:'1rem' }}>
+          <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#111111', display:'block', marginBottom:'0.5rem' }}>Install app</span>
+          <p style={{ fontSize:'0.78rem', color:'#979899', marginBottom:'0.75rem', lineHeight:'1.5' }}>Add AprIQ to your home screen for instant access and limited offline use.</p>
+          <InstallPWA />
+        </div>
       </div>
     </div>
   );
