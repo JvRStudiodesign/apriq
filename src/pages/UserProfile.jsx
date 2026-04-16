@@ -144,11 +144,13 @@ export default function UserProfile() {
             <div key={f.field} style={{ marginBottom: '1rem' }}>
               <label style={lbl}>{f.label}</label>
               <input style={inp} value={form[f.field]} onChange={e => upd(f.field, e.target.value)} placeholder={f.placeholder} />
-            </di))}
+            </div>))}
           <div style={{ marginBottom: '1rem' }}>
             <label style={lbl}>Email</label>
             <input style={{ ...inp, background: '#E4E5E5', color: '#979899' }} value={user?.email || ''} disabled />
-          </di</di{/* Profession */}
+          </div>
+          </div>
+          {/* Profession */}
         <div style={card}>
           <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Profession</span>
           <select style={inp} value={form.profession} onChange={e => upd('profession', e.target.value)}>
