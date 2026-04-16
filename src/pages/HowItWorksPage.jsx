@@ -68,7 +68,7 @@ const s = {
   h3:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:17, fontWeight:600, color:'#111111' },
   body:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:14, color:'#979899', lineHeight:1.72 },
   stepRow:{ display:'flex', flexWrap:'wrap', gap:8, marginTop:24 },
-  step:{ padding:'8px 16px', border:'1px solid #E4E5E5', borderRadius:12, background:'#F9FAFA' },
+  step:{ padding:'8px 16px', border:'1px solid #FF8210', borderRadius:12, background:'#F9FAFA' },
   stepLabel:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#111111', whiteSpace:'pre-line', lineHeight:1.35, display:'block', textAlign:'center' },
   journeyWrap:{ display:'flex', flexDirection:'column', gap:24 },
   journeyBlock:{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, overflow:'hidden' },

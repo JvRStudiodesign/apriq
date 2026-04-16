@@ -15,7 +15,7 @@ const NAV = [
   { label:'How it works', to:'/how-it-works' },
   { label:'Features',     to:'/features'     },
   { label:'About',        to:'/about'        },
-  { label:'Contact us',   to:'/contact'      },
+  { label:'Contact us',   to:'/contact',  modal:'contact' },
 ];
 
 function Header({ onOpenModal, isLoggedIn }) {
@@ -37,13 +37,13 @@ function Header({ onOpenModal, isLoggedIn }) {
 
         <nav style={h.nav} className="nav-desktop">
           {NAV.map((link) => (
-            <Link key={link.to} to={link.to} style={{ ...h.navLink, color: active(link.to) ? T.petrol : T.grey, fontWeight: active(link.to) ? 500 : 400 }}>
-              {link.label}
-            </Link>
+            link.modal
+              ? <button key={link.to} onClick={() => { openModal(link.modal); }} style={{ ...h.navLink, color: T.grey, background:'none', border:'none', cursor:'pointer', fontWeight:400, padding:0 }}>{link.label}</button>
+              : <Link key={link.to} to={link.to} style={{ ...h.navLink, color: active(link.to) ? T.petrol : T.grey, fontWeight: active(link.to) ? 500 : 400 }}>{link.label}</Link>
           ))}
           <div style={{ position:'relative' }}>
             <button onClick={() => setProfileOpen((p) => !p)} style={h.profileBtn} aria-label="Account">
-              <svg width="18" height="18" fill="none" stroke={T.ink} strokeWidth="1.5" viewBox="0 0 24 24">
+              <svg width="18" height="18" fill="none" stroke="#FF8210" strokeWidth="1.5" viewBox="0 0 24 24">
                 <circle cx="12" cy="8" r="4"/>
                 <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" strokeLinecap="round"/>
               </svg>
@@ -82,9 +82,9 @@ function Header({ onOpenModal, isLoggedIn }) {
       {menuOpen && (
         <div className="mobile-menu" style={h.mobileMenu}>
           {NAV.map((link) => (
-            <Link key={link.to} to={link.to} style={{ ...h.mobileLink, color: active(link.to) ? T.petrol : T.ink, fontWeight: active(link.to) ? 500 : 400 }}>
-              {link.label}
-            </Link>
+            link.modal
+              ? <button key={link.to} onClick={() => { setMenuOpen(false); openModal(link.modal); }} style={{ ...h.mobileLink, color: T.ink, background:'none', border:'none', cursor:'pointer', textAlign:'left', width:'100%', borderBottom:'1px solid #E4E5E5', padding:'11px 0' }}>{link.label}</button>
+              : <Link key={link.to} to={link.to} style={{ ...h.mobileLink, color: active(link.to) ? T.petrol : T.ink, fontWeight: active(link.to) ? 500 : 400 }}>{link.label}</Link>
           ))}
           <div style={h.mobileDivider}/>
           <button style={{ ...h.mobileLink, ...h.mobileLinkBtn, color:T.petrol, fontWeight:500 }} onClick={() => { setMenuOpen(false); onOpenModal('waitlist'); }}>
@@ -133,7 +133,7 @@ function Footer() {
         <div style={f.right}>
           <Link to="/faq" style={f.faqPill}>FAQ's</Link>
           <Link to="/legal" style={f.legalLink}>Terms of Service &amp; Privacy Policy</Link>
-          <span style={f.copy}>© 2026 AprIQ.</span>
+          <span style={f.copy}>© 2025 AprIQ.</span>
           <div style={f.socialRow}>
             {[
               { label:'Facebook',  href:'https://facebook.com',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="#979899"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> },
@@ -159,14 +159,14 @@ const f = {
   meta:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:12, color:'#979899' },
   sep:{ fontSize:12, color:'#E4E5E5' },
   right:{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:8 },
-  faqPill:{ display:'inline-flex', alignItems:'center', padding:'5px 16px', borderRadius:100, border:'1px solid #E4E5E5', background:'#F9FAFA', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:12, color:'#979899', textDecoration:'none' },
+  faqPill:{ display:'inline-flex', alignItems:'center', padding:'5px 16px', borderRadius:100, border:'1px solid #FF8210', background:'#F9FAFA', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:12, color:'#FF8210', textDecoration:'none' },
   legalLink:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:11, color:'#C8C9CA', textDecoration:'none' },
   copy:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:11, color:'#979899' },
   socialRow:{ display:'flex', alignItems:'center', gap:8, marginTop:4 },
-  socialIcon:{ width:30, height:30, borderRadius:10, border:'1px solid #E4E5E5', display:'flex', alignItems:'center', justifyContent:'center', textDecoration:'none' },
+  socialIcon:{ width:30, height:30, borderRadius:10, border:'1px solid #FF8210', display:'flex', alignItems:'center', justifyContent:'center', textDecoration:'none' },
 };
 
-export function WaitlistModal({ open, onClose, mode = 'waitlist' }) {
+export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _openModal }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [profession, setProfession] = useState('');
@@ -187,8 +187,27 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist' }) {
   }
 
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
+  const [contactName, setContactName] = useState('');
+  const [contactSurname, setContactSurname] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactSent, setContactSent] = useState(false);
+  const [contactSaving, setContactSaving] = useState(false);
+
+  async function handleContact() {
+    if (!contactEmail || !contactMessage) return;
+    setContactSaving(true);
+    await supabase.from('contact_submissions').insert({
+      name: contactName, surname: contactSurname,
+      email: contactEmail, message: contactMessage,
+    });
+    setContactSaving(false);
+    setContactSent(true);
+  }
+
   if (!open) return null;
   const isWaitlist = mode === 'waitlist';
+  const isContact = mode === 'contact';
   return (
     <div style={m.overlay} onClick={(e) => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true">
       <div style={m.panel}>
@@ -198,9 +217,25 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist' }) {
           </svg>
         </button>
         <span style={m.brand}>AprIQ</span>
-        <h2 style={m.title}>{isWaitlist ? 'Join the waiting list' : 'Sign in to AprIQ'}</h2>
-        <p style={m.sub}>{isWaitlist ? 'Be among the first to access AprIQ when we launch.' : 'Welcome back. Enter your details below.'}</p>
-        <div style={m.form}>
+        <h2 style={m.title}>{isContact ? 'Contact us' : isWaitlist ? 'Join the waiting list' : 'Sign in to AprIQ'}</h2>
+        <p style={m.sub}>{isContact ? 'Send us a message and we will get back to you.' : isWaitlist ? 'Be among the first to access AprIQ when we launch.' : 'Welcome back. Enter your details below.'}</p>
+        {isContact && (
+          <div style={m.form}>
+            {contactSent
+              ? <p style={{fontFamily:"'Roboto',system-ui,sans-serif",fontSize:13,color:'#0F4C5C',padding:'12px 0'}}>Message sent. We will be in touch soon.</p>
+              : <>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                    <input type="text" placeholder="Name" value={contactName} onChange={e=>setContactName(e.target.value)} style={m.input}/>
+                    <input type="text" placeholder="Surname" value={contactSurname} onChange={e=>setContactSurname(e.target.value)} style={m.input}/>
+                  </div>
+                  <input type="email" placeholder="Email address" value={contactEmail} onChange={e=>setContactEmail(e.target.value)} style={m.input}/>
+                  <textarea placeholder="Message" value={contactMessage} onChange={e=>setContactMessage(e.target.value)} rows={4} style={{...m.input,resize:'vertical',lineHeight:1.5}}/>
+                  <button onClick={handleContact} disabled={contactSaving} style={{...m.submit,opacity:contactSaving?0.6:1}}>{contactSaving?'Sending...':'Send message'}</button>
+                </>
+            }
+          </div>
+        )}
+        {!isContact && <div style={m.form}>
           {isWaitlist && <input type="text" placeholder="Full name" value={name} onChange={e => setName(e.target.value)} style={m.input}/>}
           <input type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} style={m.input}/>
           {isWaitlist ? (
@@ -215,7 +250,7 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist' }) {
           ) : (
             <input type="password" placeholder="Password" style={m.input}/>
           )}
-          {submitted && isWaitlist
+          {!isContact && submitted && isWaitlist
             ? <p style={{fontFamily:"'Roboto',system-ui,sans-serif",fontSize:13,color:'#0F4C5C',textAlign:'center',marginTop:8}}>You are on the list. We will be in touch.</p>
             : <button onClick={handleSubmit} disabled={saving} style={{...m.submit,opacity:saving?0.6:1}}>{saving ? 'Saving...' : isWaitlist ? 'Join the waiting list' : 'Sign in'}</button>
           }

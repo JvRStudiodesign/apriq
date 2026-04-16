@@ -1,0 +1,9 @@
+-- Run this in your Supabase SQL editor:
+-- create table if not exists contact_submissions (
+--   id uuid default gen_random_uuid() primary key,
+--   name text, surname text, email text, message text,
+--   created_at timestamptz default now()
+-- );
+-- alter table contact_submissions enable row level security;
+-- create policy "insert anon" on contact_submissions for insert to anon with check (true);
+-- create policy "insert auth" on contact_submissions for insert to authenticated with check (true);

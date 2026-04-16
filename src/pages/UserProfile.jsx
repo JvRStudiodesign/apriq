@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { InstallPWA } from '../components/InstallPWA';
-import { HamburgerMenu } from '../components/HamburgerMenu';
 
 const card = { background: '#F9FAFA', borderRadius: '16px', padding: '1.5rem', border: '1px solid #E4E5E5', marginBottom: '1rem' };
 const lbl = { display: 'block', fontSize: '0.7rem', fontWeight: '600', color: '#979899', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' };
@@ -95,8 +94,7 @@ export default function UserProfile() {
     <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
       <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-          <HamburgerMenu />
-          <span style={{ fontWeight: '700', fontSize: '1.5rem', letterSpacing: '-0.04em', cursor: 'pointer' }} onClick={() => navigate('/')}><img src="/logo-transparent.png" alt="AprIQ" style={{ height: '88px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} /></span>
+          {/* Header handled by Layout */}
         </div>
         <span style={{ fontSize: '0.78rem', color: '#979899' }}>User Profile</span>
       </div>

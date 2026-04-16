@@ -1,13 +1,20 @@
+import { useAuth } from '../hooks/useAuth';
 import { useFadeIn } from '../hooks/useFadeIn';
 
 const TIERS = [
-  { id:'free', name:'Free', price:'R0', period:'always', description:'Get started with AprIQ and explore the early-stage estimating workflow.', features:['Basic cost estimates','Limited project workspaces','Limited client management','Basic AprIQ workflow access'], cta:'Your current plan', active:true, highlight:false },
-  { id:'pro',  name:'Pro',  price:'R79', period:'/month', trialNote:'30-day free trial — no card required to start', description:'A more complete working setup with expanded access for ongoing project and professional output needs.', features:['Full cost estimates','More project workspaces','Full client management','Professional PDF exports','Shareable estimate links','Full AprIQ workflow access','More storage and saved data'], cta:'Upgrade to Pro', active:false, highlight:true },
+  { id:'free', name:'Free', price:'R0', period:'always', description:'Get started with AprIQ and explore the early-stage estimating workflow.', features:['Basic cost estimates','Limited project workspaces','Limited client management','Basic AprIQ workflow access'], cta: isPro ? 'Upgrade not needed' : 'Your current plan', active: !isPro, highlight:false },
+  { id:'pro',  name:'Pro',  price:'R79', period:'/month', trialNote:'30-day free trial — no card required to start', description:'A more complete working setup with expanded access for ongoing project and professional output needs.', features:['Full cost estimates','More project workspaces','Full client management','Professional PDF exports','Shareable estimate links','Full AprIQ workflow access','More storage and saved data'], cta: isPro ? 'Your current plan' : 'Upgrade to Pro', active: isPro, highlight:true },
 ];
 
 export default function BillingPage() {
   const r1=useFadeIn(), r2=useFadeIn(), r3=useFadeIn();
-  const currentTier = 'free';
+  const { profile } = useAuth();
+  const tier = profile?.tier || 'free';
+  const trialEnd = profile?.trial_end ? new Date(profile.trial_end) : null;
+  const trialOk = tier === 'trial' && trialEnd && trialEnd > new Date();
+  const isPro = tier === 'pro';
+  const isTrial = trialOk;
+  const currentTier = isPro ? 'pro' : isTrial ? 'trial' : 'free';
   return (
     <div>
       <div style={s.pageTop}/>
@@ -16,7 +23,7 @@ export default function BillingPage() {
         <div style={s.currentRow} className="fi">
           <div>
             <p style={s.label}>Current plan</p>
-            <p style={s.currentPlan}>{currentTier === 'pro' ? 'Pro' : currentTier === 'trial' ? 'Pro Trial' : 'Free'}</p>
+            <p style={{...s.currentPlan, color: isPro || isTrial ? '#FF8210' : s.currentPlan.color}}>{isPro ? 'Pro' : isTrial ? 'Pro Trial' : 'Free'}</p>
           </div>
           {currentTier === 'free' && <button style={s.upgradeCta}>Start 30-day free trial</button>}
         </div>

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { HamburgerMenu } from '../components/HamburgerMenu';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { EstimatePDF } from '../components/EstimatePDF';
 
@@ -146,8 +145,7 @@ export default function Projects() {
     <div style={{ minHeight:'100vh', background:'#F9FAFA', fontFamily:"'Roboto', system-ui, sans-serif" }}>
       <div style={{ background:'#F9FAFA', borderBottom:'1px solid #E4E5E5', padding:'0.875rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'2px' }}>
-          <HamburgerMenu />
-          <img src="/logo.jpg" alt="AprIQ" onClick={() => navigate('/')} style={{ height:'36px', width:'auto', objectFit:'contain', cursor:'pointer' }} />
+          {/* Header handled by Layout */}
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
           <span style={{ fontSize:'0.72rem', color:'#979899' }}>{projects.length}/{limit}</span>

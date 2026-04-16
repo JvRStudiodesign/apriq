@@ -69,7 +69,7 @@ const s = {
   mvCard:{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:32 },
   valuesGrid:{ display:'flex', flexDirection:'column', gap:0 },
   valueRow:{ display:'grid', gridTemplateColumns:'180px 1fr', gap:24, padding:'16px 0', borderBottom:'1px solid #E4E5E5', alignItems:'flex-start' },
-  valueLabel:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, fontWeight:500, color:'#111111', padding:'4px 16px', border:'1px solid #E4E5E5', borderRadius:100, display:'inline-flex', alignItems:'center', height:32, whiteSpace:'nowrap' },
+  valueLabel:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, fontWeight:500, color:'#111111', padding:'4px 16px', border:'1px solid #FF8210', borderRadius:100, display:'inline-flex', alignItems:'center', height:32, whiteSpace:'nowrap' },
   valueDesc:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#979899', lineHeight:1.65, paddingTop:6 },
   refBlock:{ marginTop:24, padding:16, background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:12, display:'flex', flexDirection:'column', gap:6 },
   refText:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:11, color:'#979899', lineHeight:1.5 },

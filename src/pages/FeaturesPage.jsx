@@ -60,7 +60,7 @@ const s = {
   h2:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:22, fontWeight:600, color:'#111111', marginBottom:16 },
   body:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:14, color:'#979899', lineHeight:1.72 },
   pillRow:{ display:'flex', flexWrap:'wrap', gap:8, marginTop:20 },
-  pill:{ display:'inline-flex', alignItems:'center', padding:'6px 16px', borderRadius:100, border:'1px solid #E4E5E5', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#111111', background:'#F9FAFA', whiteSpace:'nowrap' },
+  pill:{ display:'inline-flex', alignItems:'center', padding:'6px 16px', borderRadius:100, border:'1px solid #FF8210', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#FF8210', background:'#F9FAFA', whiteSpace:'nowrap' },
   tableWrap:{ marginTop:28, border:'1px solid #E4E5E5', borderRadius:12, overflow:'hidden' },
   tableHead:{ display:'grid', gridTemplateColumns:'1fr 120px 120px', background:'#111111', padding:'12px 20px', gap:16 },
   tableRow:{ display:'grid', gridTemplateColumns:'1fr 120px 120px', padding:'14px 20px', gap:16, borderBottom:'1px solid #E4E5E5', alignItems:'center' },
