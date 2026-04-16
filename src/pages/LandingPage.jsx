@@ -56,19 +56,19 @@ export default function LandingPage() {
 }
 
 const s = {
-  hero:{ padding:'56px 0 48px' },
-  heroWrap:{ maxWidth:580 },
-  h1:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:30, fontWeight:700, color:'#111111', lineHeight:1.18, letterSpacing:'-0.3px', marginBottom:20 },
-  heroSub:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:15, color:'#979899', lineHeight:1.65, marginBottom:32, maxWidth:540 },
+  hero:{ padding:'80px 0 72px', textAlign:'center' },
+  heroWrap:{ maxWidth:700, margin:'0 auto' },
+  h1:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:36, fontWeight:700, color:'#111111', lineHeight:1.15, letterSpacing:'-0.5px', marginBottom:20, textAlign:'center' },
+  heroSub:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:15, color:'#979899', lineHeight:1.65, marginBottom:32, maxWidth:560, textAlign:'center', margin:'0 auto 32px' },
   cta:{ display:'inline-flex', alignItems:'center', padding:'11px 26px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:12, fontFamily:"'Roboto',system-ui,sans-serif", fontSize:14, fontWeight:500, cursor:'pointer' },
   section:{ padding:'16px 0' },
   panel:{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:32 },
   panelH2:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:20, fontWeight:600, color:'#111111', marginBottom:16 },
   body:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:14, color:'#979899', lineHeight:1.72 },
-  pillRow:{ display:'flex', flexWrap:'wrap', gap:8, marginTop:20 },
-  pill:{ display:'inline-flex', alignItems:'center', padding:'6px 16px', borderRadius:100, border:'1px solid #FF8210', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#FF8210', background:'#F9FAFA', whiteSpace:'nowrap' },
-  stepRow:{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:8, marginTop:20 },
+  pillRow:{ display:'flex', flexWrap:'wrap', gap:8, marginTop:20, justifyContent:'flex-start' },
+  pill:{ display:'inline-flex', alignItems:'center', padding:'6px 16px', borderRadius:100, border:'1px solid #FF8210', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#111111', background:'#F9FAFA', whiteSpace:'nowrap' },
+  stepRow:{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:8, marginTop:20, justifyContent:'flex-start' },
   step:{ padding:'8px 16px', border:'1px solid #FF8210', borderRadius:12, background:'#F9FAFA' },
-  stepLabel:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#111111', whiteSpace:'pre-line', lineHeight:1.35, textAlign:'center', display:'block' },
+  stepLabel:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#111111', whiteSpace:'pre-line', lineHeight:1.35, textAlign:'left', display:'block' },
   moreLink:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#FF8210', textDecoration:'none', marginLeft:4 },
 };

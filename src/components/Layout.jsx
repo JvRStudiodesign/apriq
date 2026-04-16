@@ -129,10 +129,12 @@ function Footer() {
           <span style={f.meta}>apriq@apriq.co.za</span>
           <span style={f.sep}>|</span>
           <span style={f.meta}>South Africa</span>
+          <div style={{width:'100%',textAlign:'center',marginTop:8}}>
+            <a href="/legal" style={{fontFamily:"'Roboto',system-ui,sans-serif",fontSize:11,color:'#C8C9CA',textDecoration:'none'}}>Terms of Service &amp; Privacy Policy</a>
+          </div>
         </div>
         <div style={f.right}>
           <Link to="/faq" style={f.faqPill}>FAQ's</Link>
-          <Link to="/legal" style={f.legalLink}>Terms of Service &amp; Privacy Policy</Link>
           <span style={f.copy}>© 2025 AprIQ.</span>
           <div style={f.socialRow}>
             {[
@@ -155,7 +157,7 @@ const f = {
   brand:{ display:'flex', flexDirection:'column', gap:6 },
   logoMark:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:20, fontWeight:700, color:'#111111' },
   brandSub:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:11, color:'#979899', lineHeight:1.5, maxWidth:180 },
-  centre:{ display:'flex', alignItems:'center', gap:8, paddingTop:4 },
+  centre:{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:8, paddingTop:4, justifyContent:'center', maxWidth:220, textAlign:'center' },
   meta:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:12, color:'#979899' },
   sep:{ fontSize:12, color:'#E4E5E5' },
   right:{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:8 },

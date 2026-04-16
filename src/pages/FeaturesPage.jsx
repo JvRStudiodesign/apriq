@@ -21,6 +21,7 @@ export default function FeaturesPage() {
         <p style={s.body} className="fi">AprIQ combines speed, structure, and clarity to support early-stage construction cost planning. Key features include building and project type selection, structured cost adjustments, rate summaries, elemental breakdowns, and clear total project cost outputs.</p>
         <p style={{...s.body,marginTop:12}} className="fi">AprIQ also supports practical workflow needs by allowing estimates to be saved, linked to projects and clients, and used to support early feasibility discussions, budget planning, and decision-making.</p>
         <div style={s.pillRow} className="fi">{BENEFIT_PILLS.map((p) => <span key={p} style={s.pill}>{p}</span>)}</div>
+        <div style={{...s.pillRow, marginTop:8}} className="fi">{['ROM Estimates','Feasibility Planning','Building Types','Project Types','Cost Adjustments','Element Breakdowns','Rate Summaries'].map((p) => <span key={p} style={s.pill}>{p}</span>)}</div>
       </div></div></section>
 
       <section style={s.section}><div className="wrap" ref={r2}><div style={s.panel} className="fi-group">
@@ -60,7 +61,7 @@ const s = {
   h2:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:22, fontWeight:600, color:'#111111', marginBottom:16 },
   body:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:14, color:'#979899', lineHeight:1.72 },
   pillRow:{ display:'flex', flexWrap:'wrap', gap:8, marginTop:20 },
-  pill:{ display:'inline-flex', alignItems:'center', padding:'6px 16px', borderRadius:100, border:'1px solid #FF8210', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#FF8210', background:'#F9FAFA', whiteSpace:'nowrap' },
+  pill:{ display:'inline-flex', alignItems:'center', padding:'6px 16px', borderRadius:100, border:'1px solid #FF8210', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#111111', background:'#F9FAFA', whiteSpace:'nowrap' },
   tableWrap:{ marginTop:28, border:'1px solid #E4E5E5', borderRadius:12, overflow:'hidden' },
   tableHead:{ display:'grid', gridTemplateColumns:'1fr 120px 120px', background:'#111111', padding:'12px 20px', gap:16 },
   tableRow:{ display:'grid', gridTemplateColumns:'1fr 120px 120px', padding:'14px 20px', gap:16, borderBottom:'1px solid #E4E5E5', alignItems:'center' },
