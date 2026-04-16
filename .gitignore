@@ -25,3 +25,5 @@ dist-ssr
 .env
 .vercel
 .env*.local
+public/*.mp4
+public/files.zip
