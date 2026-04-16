@@ -3,7 +3,7 @@ import { useFadeIn } from '../hooks/useFadeIn';
 
 const WHY_PILLS = ['Faster Early Decisions','Structured Cost Guidance','Instant Cost Breakdown','Clearer Feasibility Planning'];
 const HOW_STEPS = ['Add Project\n& Client info','Add Project\nArea','Select All\nCost Factors','Generate/Export\nSummary'];
-const WHO_PILLS = ['Architects','QS','Developers','Contractors','Everyone'];
+const WHO_PILLS = ['Architects','Quantity Surveyor','Developers','Contractors','Everyone'];
 const FEATURE_PILLS = ['ROM Estimates','Feasibility Planning','Building Types','Project Types','Cost Adjustments','Element Breakdowns','Rate Summaries'];
 
 export default function LandingPage() {

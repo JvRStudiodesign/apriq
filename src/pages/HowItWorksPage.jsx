@@ -46,16 +46,7 @@ export default function HowItWorksPage() {
                 <h3 style={s.h3}>{item.heading}</h3>
                 <p style={{...s.body,marginTop:8}}>{item.desc}</p>
               </div>
-              <div style={s.placeholder}>
-                <video
-                  src={`/${{'profile':'user_profile.mp4','project':'add_project_information.mp4','client':'add_client.mp4','configurator':'add_project.mp4','export':'export_pdf.mp4'}[item.id]}`}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  style={{ width:'100%', display:'block', borderRadius:0 }}
-                />
-              </div>
+
             </div>
           ))}
         </div>
@@ -77,7 +68,7 @@ const s = {
   journeyWrap:{ display:'flex', flexDirection:'column', gap:24 },
   journeyBlock:{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, overflow:'hidden' },
   journeyMeta:{ padding:'28px 32px 20px' },
-  placeholder:{ background:'#F9FAFA', overflow:'hidden', borderRadius:'0 0 16px 16px' },
+  placeholder:{ background:'#F9FAFA', overflow:'hidden', borderRadius:'0 0 16px 16px', padding:'12px 32px', borderTop:'1px solid #E4E5E5' },
   placeholderInner:{ display:'flex', flexDirection:'column', alignItems:'center', gap:12, opacity:0.6 },
   placeholderIcon:{ width:56, height:56, borderRadius:16, border:'1px solid #E4E5E5', display:'flex', alignItems:'center', justifyContent:'center', background:'#F9FAFA' },
   placeholderLabel:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:12, color:'#979899', textAlign:'center' },
