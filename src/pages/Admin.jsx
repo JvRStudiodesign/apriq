@@ -13,7 +13,9 @@ function Stat({ label, value, sub }) {
 }
 
 export default function Admin() {
-  const [auth, setAuth]    = useState(() => sessionStorage.getItem('admin_auth') === '1');
+  // Clear any stale admin session on mount
+  useEffect(() => { sessionStorage.removeItem('admin_auth'); }, []);
+  const [auth, setAuth]    = useState(false); // Never auto-restore admin auth
   const [pw, setPw]        = useState('');
   const [data, setData]    = useState(null);
   const [loading, setLoad] = useState(false);
@@ -25,7 +27,7 @@ export default function Admin() {
       const r = await fetch('/api/admin-stats', {
         headers: { 'x-admin-password': pw }
       });
-      if (r.ok) { sessionStorage.setItem('admin_auth','1'); sessionStorage.setItem('admin_pw', pw); setAuth(true); }
+      if (r.ok) { sessionStorage.setItem('admin_auth','1'); setAuth(true); setPw(''); }
       else setErr('Incorrect password');
     } catch { setErr('Connection error'); }
   }
@@ -33,7 +35,7 @@ export default function Admin() {
   useEffect(() => {
     if (!auth) return;
     setLoad(true);
-    fetch('/api/admin-stats', { headers: { 'x-admin-password': sessionStorage.getItem('admin_pw') || '' } })
+    fetch('/api/admin-stats', { headers: { 'x-admin-password': pw || '' } })
       .then(r => r.json())
       .then(d => { setData(d); setLoad(false); })
       .catch(() => { setErr('Failed to load — add SUPABASE_SERVICE_ROLE_KEY to Vercel env vars'); setLoad(false); });

@@ -104,7 +104,7 @@ export default async function handler(req, res) {
     });
     const users = await userRes.json();
     const u = users?.[0];
-    if (u?.email) {
+    if (u?.email && process.env.INTERNAL_API_SECRET) {
       const emailEndpoint = paymentStatus === 'COMPLETE' ? '/api/send-payment-confirmed'
                           : paymentStatus === 'CANCELLED' ? '/api/send-cancelled'
                           : '/api/send-payment-failed';
@@ -113,7 +113,7 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-internal-secret': process.env.INTERNAL_API_SECRET || '',
+          'x-internal-secret': process.env.INTERNAL_API_SECRET || 'missing-secret',
         },
         body: JSON.stringify({ to: u.email, name: u.full_name, amount: body.amount_gross }),
       }).catch(e => console.error('Email send failed:', e));

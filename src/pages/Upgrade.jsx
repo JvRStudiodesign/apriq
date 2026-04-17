@@ -3,9 +3,9 @@ import { HamburgerMenu } from '../components/HamburgerMenu';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-const MERCHANT_ID  = import.meta.env.VITE_PAYFAST_MERCHANT_ID  || '34377269';
-const MERCHANT_KEY = import.meta.env.VITE_PAYFAST_MERCHANT_KEY || 'vyu9zys41dbon';
-const SANDBOX      = true; // flip to false when PayFast approves account
+const MERCHANT_ID  = import.meta.env.VITE_PAYFAST_MERCHANT_ID;
+const MERCHANT_KEY = import.meta.env.VITE_PAYFAST_MERCHANT_KEY;
+const SANDBOX      = import.meta.env.VITE_PAYFAST_SANDBOX !== 'false';
 const PF_URL       = SANDBOX
   ? 'https://sandbox.payfast.co.za/eng/process'
   : 'https://www.payfast.co.za/eng/process';
@@ -20,6 +20,7 @@ export default function Upgrade() {
   const badge = { position:'absolute', top:'-12px', left:'50%', transform:'translateX(-50%)', background:'#0F4C5C', color:'#F9FAFA', fontSize:'0.7rem', fontWeight:'600', padding:'3px 12px', borderRadius:'20px', whiteSpace:'nowrap' };
 
   function buildForm(plan) {
+    if (!MERCHANT_ID || !MERCHANT_KEY) { alert('Payment configuration error. Please contact support.'); return; }
     const BASE_URL = window.location.origin;
     const isAnnual = plan === 'annual';
     const amount   = isAnnual ? '1490.00' : '149.00';

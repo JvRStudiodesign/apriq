@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
       data = res.data;
     }
     setProfile(data);
-    if (data?.tier) localStorage.setItem('apriq_tier', data.tier);
+    // Tier is always read from server profile — never cached locally
     // Trial email triggers — fire-and-forget after profile loads
     if (data) {
       const trialEnd = data.trial_end_date ? new Date(data.trial_end_date) : null;
