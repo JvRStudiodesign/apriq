@@ -151,7 +151,7 @@ function Footer() {
         <div style={f.centre} className="footer-centre">
           <div style={{display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}>
             <span style={f.meta}>apriq@apriq.co.za</span>
-            <span style={f.sep}>|</span>
+            <span style={f.sep} className="footer-sep">|</span>
             <span style={f.meta}>South Africa</span>
           </div>
           <a href="/legal" style={{fontFamily:"'Roboto',system-ui,sans-serif",fontSize:11,color:'#C8C9CA',textDecoration:'none',display:'block',textAlign:'center',marginTop:6}}>Terms of Service &amp; Privacy Policy</a>
