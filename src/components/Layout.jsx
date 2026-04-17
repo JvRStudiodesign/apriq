@@ -96,7 +96,7 @@ function Header({ onOpenModal, isLoggedIn }) {
 }
 
 const h = {
-  root:{ position:'sticky', top:0, zIndex:200, background:'#F9FAFA', borderBottom:'1px solid #E4E5E5' },
+  root:{ position:'sticky', top:0, zIndex:200, background:'#F9FAFA', borderBottom:'1px solid #E4E5E5', minHeight:80 },
   inner:{ display:'flex', alignItems:'center', justifyContent:'space-between', height:60, maxWidth:960, margin:'0 auto', padding:'0 24px' },
   logoWrap:{ display:'flex', flexDirection:'column', textDecoration:'none', lineHeight:1, gap:2 },
   logoMark:{ display:'none' },
@@ -152,7 +152,7 @@ function Footer() {
 
 const f = {
   root:{ borderTop:'1px solid #E4E5E5', background:'#F9FAFA', padding:'32px 0' },
-  inner:{ display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', gap:24, maxWidth:960, margin:'0 auto', padding:'0 24px' },
+  inner:{ display:'flex', alignItems:'center', justifyContent:'space-between', height:80, maxWidth:960, margin:'0 auto', padding:'0 24px' },
   brand:{ display:'flex', flexDirection:'column', gap:6, alignItems:'flex-start' },
   logoMark:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:20, fontWeight:700, color:'#111111' },
   brandSub:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:11, color:'#979899', lineHeight:1.5, maxWidth:180 },

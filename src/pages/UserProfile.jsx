@@ -92,14 +92,15 @@ export default function UserProfile() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
-      <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ background: '#F9FAFA', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
           {/* Header handled by Layout */}
         </div>
         <span style={{ fontSize: '0.78rem', color: '#979899' }}>User Profile</span>
       </div>
 
-      <div style={{ maxWidth: '560px', margin: '0 auto', padding: '2rem 1.25rem' }}>
+      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '1.5rem 24px' }}>
+        <div style={{ maxWidth: 560 }}>
         <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem', letterSpacing: '-0.01em', fontFamily: "'Roboto', system-ui, sans-serif" }}>Profile</h1>
         <p style={{ fontSize: '0.78rem', color: '#979899', marginBottom: '1.5rem' }}>Your details auto-populate on every PDF export.</p>
 

@@ -119,6 +119,9 @@ const slopeOpts      = [{ value: 'Flat Land (0-5%)', label: 'Flat', desc: '0–5
 const landOpts       = Object.entries(LAND_PROCUREMENT).map(([k, v]) => ({ value: k, label: v.label }));
 const categoryOpts   = CATEGORIES.map(c => ({ value: c.key, label: c.label }));
 const qualityDesc    = { Low: 'Budget spec (×0.85)', Medium: 'Standard spec (×1.0)', High: 'High-end (×1.25)', Premium: 'Luxury spec (×1.6)' };
+
+
+
 const DEFAULT_PCTS   = BREAKDOWN_ELEMENTS.map(e => e.pct);
 
 const DEFAULT = {
@@ -849,15 +852,7 @@ export default function Calculator() {
       )}
       {/* ── How to install AprIQ ── */}
       <div style={{ maxWidth:'1140px', margin:'0 auto', padding:'0 1.25rem 2.5rem' }}>
-        <div style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:'1.5rem' }}>
-          <p style={{ fontSize:'0.85rem', fontWeight:600, color:'#111111', marginBottom:8, fontFamily:"'Roboto',system-ui,sans-serif" }}>Install AprIQ</p>
-          <p style={{ fontSize:'0.75rem', color:'#979899', marginBottom:12, fontFamily:"'Roboto',system-ui,sans-serif" }}>Add AprIQ to your home screen:</p>
-          <p style={{ fontSize:'0.75rem', color:'#555', fontFamily:"'Roboto',system-ui,sans-serif", lineHeight:1.6 }}>
-            <strong>iOS/iPad:</strong> Tap Share → Add to Home Screen<br/>
-            <strong>Android:</strong> Tap Menu → Add to Home Screen / Install App<br/>
-            <strong>Windows/Mac (Chrome/Edge):</strong> Click the install icon in the address bar
-          </p>
-        </div>
+        <InstallPWA />
       </div>
     </div>
   );
