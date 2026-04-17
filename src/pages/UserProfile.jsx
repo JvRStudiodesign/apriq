@@ -92,7 +92,7 @@ export default function UserProfile() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
-      <div style={{ background: '#F9FAFA', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
           {/* Header handled by Layout */}
         </div>
@@ -100,7 +100,7 @@ export default function UserProfile() {
       </div>
 
       <div style={{ maxWidth: '960px', margin: '0 auto', padding: '1.5rem 24px' }}>
-<div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'0.25rem' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'0.25rem' }}>
           <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', letterSpacing: '-0.01em', fontFamily: "'Roboto', system-ui, sans-serif" }}>Profile</h1>
         </div>
         <p style={{ fontSize: '0.78rem', color: '#979899', marginBottom: '1.5rem' }}>Your details auto-populate on every PDF export.</p>
@@ -186,8 +186,6 @@ export default function UserProfile() {
             <input type="password" style={inp} value={form.confirmPassword} onChange={e => upd('confirmPassword', e.target.value)} placeholder="Repeat new password" />
           </div>
         </div>
-        </div>
-        <div style={{ maxWidth: 560 }}>
         <button onClick={handleSave} disabled={saving || uploading}
           style={{ width: '100%', padding: '0.875rem', background: saved ? '#0F4C5C' : '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
           {uploading ? 'Uploading logo...' : saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save profile'}
@@ -196,6 +194,7 @@ export default function UserProfile() {
           <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#111111', display:'block', marginBottom:'0.5rem' }}>Install app</span>
           <p style={{ fontSize:'0.78rem', color:'#979899', marginBottom:'0.75rem', lineHeight:'1.5' }}>Add AprIQ to your home screen for instant access and limited offline use.</p>
           <InstallPWA />
+        </div>
         </div>
       </div>
     </div>
