@@ -93,59 +93,17 @@ input[type="checkbox"]:checked::after {
   transform: rotate(45deg);
 }
 
-/* ── Input consistency — all devices, light + dark mode ── */
+
+/* ── Prevent iOS input zoom (font-size 16px minimum) ── */
 input, select, textarea {
-  font-size: 16px !important; /* Prevents iOS zoom/scroll jump on focus */
-  -webkit-text-size-adjust: 100%;
+  font-size: 16px;
   touch-action: manipulation;
-  background-color: #F9FAFA;
-  color: #111111;
-  color-scheme: light;
-  -webkit-appearance: none;
 }
 
-/* Dark mode inputs — match page background */
-@media (prefers-color-scheme: dark) {
-  input:not([type="checkbox"]):not([type="radio"]),
-  select,
-  textarea {
-    background-color: #1c1c1a !important;
-    color: #e8e6de !important;
-    color-scheme: dark;
-    border-color: rgba(255,255,255,0.15) !important;
-  }
-}
-
-/* Date input — fix mobile white block */
-input[type="date"] {
-  min-height: 40px;
-  padding: 8px 12px;
-  background-color: #F9FAFA;
-  color: #111111;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  input[type="date"] {
-    background-color: #1c1c1a !important;
-    color: #e8e6de !important;
-    color-scheme: dark;
-  }
-}
-
-/* Number input — no spinner on iOS */
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* Prevent scroll jump on input focus (Android/iOS) */
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  scroll-margin-top: 80px;
+/* ── Force all inputs to always use light color scheme ── */
+/* This prevents iOS/Android/Chrome dark mode from making inputs black */
+input, select, textarea, input[type="date"], input[type="number"], input[type="text"], input[type="email"], input[type="password"] {
+  color-scheme: light !important;
 }
 
 /* ── Footer mobile responsive ── */
@@ -157,18 +115,7 @@ input:focus, select:focus, textarea:focus {
     text-align: center !important;
     padding: 20px 24px !important;
   }
-  .footer-brand {
-    align-items: center !important;
-    text-align: center !important;
-  }
-  .footer-right {
-    align-items: center !important;
-  }
-  .footer-centre {
-    text-align: center !important;
-  }
-  /* Mobile header — show profile icon, keep hamburger */
-  .mobile-profile-btn {
-    display: flex !important;
-  }
+  .footer-brand { align-items: center !important; text-align: center !important; }
+  .footer-right { align-items: center !important; }
+  .footer-centre { text-align: center !important; }
 }
