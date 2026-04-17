@@ -144,11 +144,11 @@ function Footer() {
   return (
     <footer style={f.root}>
       <div style={f.inner} className="wrap">
-        <div style={f.brand}>
+        <div style={f.brand} className="footer-brand">
           <img src="/logo-transparent.png" alt="AprIQ" style={{ height:72, width:'auto', objectFit:'contain', display:'block', mixBlendMode:'multiply' }} />
           <p style={f.brandSub}>ROM cost estimates for South African construction projects.</p>
         </div>
-        <div style={f.centre}>
+        <div style={f.centre} className="footer-centre">
           <div style={{display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}>
             <span style={f.meta}>apriq@apriq.co.za</span>
             <span style={f.sep}>|</span>
@@ -156,9 +156,9 @@ function Footer() {
           </div>
           <a href="/legal" style={{fontFamily:"'Roboto',system-ui,sans-serif",fontSize:11,color:'#C8C9CA',textDecoration:'none',display:'block',textAlign:'center',marginTop:6}}>Terms of Service &amp; Privacy Policy</a>
         </div>
-        <div style={f.right}>
+        <div style={f.right} className="footer-right">
           <Link to="/faq" style={f.faqPill}>FAQ's</Link>
-          <span style={f.copy}>© 2025 AprIQ.</span>
+          <span style={f.copy} className="footer-copy">© 2025 AprIQ.</span>
           <div style={f.socialRow}>
             {[
               { label:'Facebook',  href:'https://www.facebook.com/profile.php?id=61574287355312',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="#979899"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> },
