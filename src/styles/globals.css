@@ -120,55 +120,59 @@ input, select, textarea, input[type="date"], input[type="number"], input[type="t
   .footer-centre { text-align: center !important; }
 }
 
-/* ── Mobile footer — phones only (≤600px) ── */
+/* ── Mobile footer — phones only (max-width:600px) ── */
 @media (max-width: 600px) {
   .footer-inner {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: flex-start !important;
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    grid-template-rows: auto !important;
+    align-items: start !important;
     justify-content: space-between !important;
-    padding: 24px 20px 20px !important;
+    padding: 24px 20px !important;
+    height: auto !important;
     gap: 0 !important;
   }
-  /* LEFT: logo then social icons below */
+  /* LEFT col — logo only */
   .footer-brand {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    gap: 16px !important;
-    flex: 0 0 auto !important;
+    gap: 14px !important;
   }
   .footer-brand p { display: none !important; }
-  .footer-social {
+
+  /* Social icons below logo, left-aligned */
+  /* socialRow is inside footer-right — move it visually via order */
+  .footer-right {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
     display: flex !important;
     flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
     gap: 8px !important;
-    margin-top: 0 !important;
+    padding-top: 12px !important;
   }
-  /* RIGHT: FAQ, copyright, email, SA, terms — all right-aligned */
-  .footer-right {
+  /* Hide FAQ pill and copyright from footer-right on mobile — they go right col */
+  .footer-right > a:first-child,
+  .footer-right > span { display: none !important; }
+
+  /* RIGHT col — FAQ, copyright, email, SA, Terms stacked right-aligned */
+  .footer-centre {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-end !important;
     gap: 6px !important;
-    flex: 0 0 auto !important;
+    text-align: right !important;
   }
-  .footer-centre {
-    display: flex !important;
+  .footer-centre > div {
     flex-direction: column !important;
     align-items: flex-end !important;
     gap: 4px !important;
-    margin-top: 6px !important;
-  }
-  .footer-centre > div {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-end !important;
-    gap: 3px !important;
-  }
-  .footer-centre span, .footer-centre a {
-    text-align: right !important;
   }
   .footer-sep { display: none !important; }
-  .footer-copy { text-align: right !important; }
 }
