@@ -125,44 +125,46 @@ input, select, textarea, input[type="date"], input[type="number"], input[type="t
 
 
 
+
+
 /* ── Mobile footer phones ≤600px ── */
 @media (max-width: 600px) {
   footer .wrap {
     flex-wrap: wrap !important;
     height: auto !important;
-    padding: 24px 20px 20px !important;
+    padding: 24px 20px !important;
     align-items: flex-start !important;
   }
-  /* LEFT: logo + tagline hidden + social icons stacked */
-  footer .footer-brand {
-    flex: 0 0 auto !important;
-    align-items: flex-start !important;
-    gap: 12px !important;
-  }
+  /* LEFT col: logo (order 1) */
+  footer .footer-brand { order: 1; flex: 0 0 auto !important; }
   footer .footer-brand p { display: none !important; }
 
-  /* RIGHT: centre content (email/SA/terms) right-aligned */
+  /* RIGHT col: all text info right-aligned (order 2) */
   footer .footer-centre {
+    order: 2;
     flex: 0 0 auto !important;
     margin-left: auto !important;
     align-items: flex-end !important;
     text-align: right !important;
   }
-  footer .footer-centre > div {
-    flex-direction: column !important;
-    align-items: flex-end !important;
-    gap: 2px !important;
-  }
-  footer .footer-centre .footer-sep { display: none !important; }
-  footer .footer-centre a { text-align: right !important; }
+  footer .footer-centre > div { flex-direction: column !important; align-items: flex-end !important; }
+  footer .footer-sep { display: none !important; }
 
-  /* RIGHT continued: FAQ + copyright below email/SA/terms */
+  /* RIGHT col continued: FAQ + copyright (order 3) */
   footer .footer-right {
+    order: 3;
     flex: 0 0 auto !important;
     flex-direction: column !important;
     align-items: flex-end !important;
     margin-left: auto !important;
-    margin-top: 8px !important;
+    margin-top: 4px !important;
     gap: 6px !important;
+  }
+  /* Social icons: move to LEFT under logo (order 4, reset margin) */
+  footer .footer-social {
+    order: 4;
+    flex: 0 0 100% !important;
+    justify-content: flex-start !important;
+    margin-top: 12px !important;
   }
 }
