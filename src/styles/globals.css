@@ -123,41 +123,46 @@ input, select, textarea, input[type="date"], input[type="number"], input[type="t
 
 
 
+
+
 /* ── Mobile footer phones ≤600px ── */
 @media (max-width: 600px) {
-  footer .footer-inner {
+  footer .wrap {
     flex-wrap: wrap !important;
-    padding: 24px 20px !important;
-    align-items: flex-start !important;
     height: auto !important;
-    gap: 0 !important;
+    padding: 24px 20px 20px !important;
+    align-items: flex-start !important;
   }
+  /* LEFT: logo + tagline hidden + social icons stacked */
   footer .footer-brand {
     flex: 0 0 auto !important;
     align-items: flex-start !important;
+    gap: 12px !important;
   }
   footer .footer-brand p { display: none !important; }
+
+  /* RIGHT: centre content (email/SA/terms) right-aligned */
   footer .footer-centre {
     flex: 0 0 auto !important;
     margin-left: auto !important;
-    display: flex !important;
-    flex-direction: column !important;
     align-items: flex-end !important;
-    gap: 4px !important;
+    text-align: right !important;
   }
   footer .footer-centre > div {
     flex-direction: column !important;
     align-items: flex-end !important;
-    gap: 3px !important;
+    gap: 2px !important;
   }
   footer .footer-centre .footer-sep { display: none !important; }
+  footer .footer-centre a { text-align: right !important; }
+
+  /* RIGHT continued: FAQ + copyright below email/SA/terms */
   footer .footer-right {
-    flex: 0 0 100% !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    margin-top: 16px !important;
-    border-top: 1px solid #E4E5E5 !important;
-    padding-top: 12px !important;
+    flex: 0 0 auto !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    margin-left: auto !important;
+    margin-top: 8px !important;
+    gap: 6px !important;
   }
 }

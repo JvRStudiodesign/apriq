@@ -134,6 +134,15 @@ function Footer() {
         <div style={f.brand} className="footer-brand">
           <img src="/logo-transparent.png" alt="AprIQ" style={{ height:72, width:'auto', objectFit:'contain', display:'block', mixBlendMode:'multiply' }} />
           <p style={f.brandSub}>ROM cost estimates for South African construction projects.</p>
+          <div style={f.socialRow} className="footer-social">
+            {[
+              { label:'Facebook',  href:'https://www.facebook.com/profile.php?id=61574287355312',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="#979899"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> },
+              { label:'Instagram', href:'https://www.instagram.com/apriq.co.za/', icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#979899" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#979899" stroke="none"/></svg> },
+              { label:'LinkedIn',  href:'https://www.linkedin.com/company/apriq/?viewAsMember=true',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="#979899"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
+            ].map(({ label, href, icon }) => (
+              <a key={label} href={href} aria-label={label} target="_blank" rel="noreferrer" style={f.socialIcon}>{icon}</a>
+            ))}
+          </div>
         </div>
         <div style={f.centre} className="footer-centre">
           <div style={{display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}>
@@ -146,15 +155,6 @@ function Footer() {
         <div style={f.right} className="footer-right">
           <Link to="/faq" style={f.faqPill}>FAQ's</Link>
           <span style={f.copy} className="footer-copy">© 2025 AprIQ.</span>
-          <div style={f.socialRow}>
-            {[
-              { label:'Facebook',  href:'https://www.facebook.com/profile.php?id=61574287355312',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="#979899"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> },
-              { label:'Instagram', href:'https://www.instagram.com/apriq.co.za/', icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#979899" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#979899" stroke="none"/></svg> },
-              { label:'LinkedIn',  href:'https://www.linkedin.com/company/apriq/?viewAsMember=true',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="#979899"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
-            ].map(({ label, href, icon }) => (
-              <a key={label} href={href} aria-label={label} target="_blank" rel="noreferrer" style={f.socialIcon}>{icon}</a>
-            ))}
-          </div>
         </div>
       </div>
     </footer>
@@ -162,7 +162,7 @@ function Footer() {
 }
 
 const f = {
-  root:{ borderTop:'1px solid #E4E5E5', background:'#F9FAFA', padding:'0' },
+  root:{ borderTop:'1px solid #E4E5E5', background:'#F9FAFA', padding:'32px 0' },
   inner:{ display:'flex', alignItems:'center', justifyContent:'space-between', height:80, maxWidth:960, margin:'0 auto', padding:'0 24px' },
   brand:{ display:'flex', flexDirection:'column', gap:6, alignItems:'flex-start' },
   logoMark:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:20, fontWeight:700, color:'#111111' },
