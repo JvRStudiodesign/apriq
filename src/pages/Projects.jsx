@@ -143,18 +143,16 @@ export default function Projects() {
 
   return (
     <div style={{ minHeight:'100vh', background:'#F9FAFA', fontFamily:"'Roboto', system-ui, sans-serif" }}>
-      <div style={{ background:'#F9FAFA', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'2px' }}>
-          {/* Header handled by Layout */}
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <span style={{ fontSize:'0.72rem', color:'#979899' }}>{projects.length}/{limit}</span>
-          <button onClick={startNew} style={{ padding:'6px 14px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'10px', fontSize:'0.78rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>+ New project</button>
-        </div>
-      </div>
 
-      <div style={{ maxWidth:'680px', margin:'0 auto', padding:'2rem 1.25rem' }}>
-        <h1 style={{ fontSize:'1.375rem', fontWeight:'700', color:'#111111', marginBottom:'0.25rem', letterSpacing:'-0.01em', fontFamily:"'Roboto', system-ui, sans-serif" }}>Projects</h1>
+
+      <div style={{ maxWidth:'960px', margin:'0 auto', padding:'1.5rem 24px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'0.25rem' }}>
+          <h1 style={{ fontSize:'1.375rem', fontWeight:'700', color:'#111111', letterSpacing:'-0.01em', fontFamily:"'Roboto', system-ui, sans-serif" }}>Projects</h1>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <span style={{ fontSize:'0.72rem', color:'#979899' }}>{projects.length}/{limit}</span>
+            <button onClick={startNew} style={{ padding:'6px 14px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'10px', fontSize:'0.78rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>+ New project</button>
+          </div>
+        </div>
         <p style={{ fontSize:'0.78rem', color:'#979899', marginBottom:'1.5rem' }}>Each project holds its saved estimate. Edit or re-export anytime.</p>
 
         {showForm && (
