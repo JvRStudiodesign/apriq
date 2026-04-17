@@ -847,13 +847,16 @@ export default function Calculator() {
           </div>
         </div>
       )}
-
       {/* ── How to install AprIQ ── */}
       <div style={{ maxWidth:'1140px', margin:'0 auto', padding:'0 1.25rem 2.5rem' }}>
-        <div style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:'1.5rem', textAlign:'center' }}>
-          <h3 style={{ fontSize:'0.875rem', fontWeight:'600', color:'#111111', marginBottom:'0.35rem', fontFamily:"'Roboto',system-ui,sans-serif" }}>Install app</h3>
-          <p style={{ fontSize:'0.75rem', color:'#979899', marginBottom:'0.75rem', fontFamily:"'Roboto',system-ui,sans-serif" }}>Add AprIQ to your home screen for instant access and limited offline use.</p>
-          <button onClick={() => { if (window.deferredPrompt) { window.deferredPrompt.prompt(); } else { alert('To install: tap the Share icon in your browser then select Add to Home Screen.'); } }} style={{ padding:'0.625rem 1.5rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:12, fontSize:'0.8rem', fontWeight:'500', cursor:'pointer', fontFamily:"'Roboto',system-ui,sans-serif" }}>How to install AprIQ</button>
+        <div style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:'1.5rem' }}>
+          <p style={{ fontSize:'0.85rem', fontWeight:600, color:'#111111', marginBottom:8, fontFamily:"'Roboto',system-ui,sans-serif" }}>Install AprIQ</p>
+          <p style={{ fontSize:'0.75rem', color:'#979899', marginBottom:12, fontFamily:"'Roboto',system-ui,sans-serif" }}>Add AprIQ to your home screen:</p>
+          <p style={{ fontSize:'0.75rem', color:'#555', fontFamily:"'Roboto',system-ui,sans-serif", lineHeight:1.6 }}>
+            <strong>iOS/iPad:</strong> Tap Share → Add to Home Screen<br/>
+            <strong>Android:</strong> Tap Menu → Add to Home Screen / Install App<br/>
+            <strong>Windows/Mac (Chrome/Edge):</strong> Click the install icon in the address bar
+          </p>
         </div>
       </div>
     </div>

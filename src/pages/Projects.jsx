@@ -143,7 +143,7 @@ export default function Projects() {
 
   return (
     <div style={{ minHeight:'100vh', background:'#F9FAFA', fontFamily:"'Roboto', system-ui, sans-serif" }}>
-      <div style={{ background:'#F9FAFA', borderBottom:'1px solid #E4E5E5', padding:'0.875rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
+      <div style={{ background:'#F9FAFA', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, zIndex:100 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'2px' }}>
           {/* Header handled by Layout */}
         </div>
