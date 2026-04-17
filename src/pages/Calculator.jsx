@@ -106,6 +106,10 @@ function RateRow({ rawRate, adjustedRate, adjustField, toggleField, adjValue, ad
           </div>
         </div>
       )}
+      {/* ── How to install AprIQ ── */}
+      <div style={{ maxWidth:'1140px', margin:'0 auto', padding:'0 1.25rem 2.5rem' }}>
+        <InstallPWA />
+      </div>
     </div>
   );
 }
@@ -119,6 +123,9 @@ const slopeOpts      = [{ value: 'Flat Land (0-5%)', label: 'Flat', desc: '0–5
 const landOpts       = Object.entries(LAND_PROCUREMENT).map(([k, v]) => ({ value: k, label: v.label }));
 const categoryOpts   = CATEGORIES.map(c => ({ value: c.key, label: c.label }));
 const qualityDesc    = { Low: 'Budget spec (×0.85)', Medium: 'Standard spec (×1.0)', High: 'High-end (×1.25)', Premium: 'Luxury spec (×1.6)' };
+
+
+
 
 
 
@@ -850,10 +857,5 @@ export default function Calculator() {
           </div>
         </div>
       )}
-      {/* ── How to install AprIQ ── */}
-      <div style={{ maxWidth:'1140px', margin:'0 auto', padding:'0 1.25rem 2.5rem' }}>
-        <InstallPWA />
-      </div>
-    </div>
   );
 }
