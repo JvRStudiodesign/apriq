@@ -55,8 +55,8 @@ function Header({ onOpenModal, isLoggedIn }) {
                     <Link to="/projects" style={h.dropItem} onClick={() => setProfileOpen(false)}>Projects</Link>
                     <Link to="/clients" style={h.dropItem} onClick={() => setProfileOpen(false)}>Clients</Link>
                     <hr style={h.dropDivider}/>
-                    <Link to="/plans" style={h.dropItem} onClick={() => setProfileOpen(false)}>My Plan</Link>
                     <Link to="/profile" style={h.dropItem} onClick={() => setProfileOpen(false)}>Profile</Link>
+                    <Link to="/plans" style={h.dropItem} onClick={() => setProfileOpen(false)}>My Plan</Link>
                     <hr style={h.dropDivider}/>
                     <button style={{ ...h.dropItem, ...h.dropBtn }} onClick={async () => { setProfileOpen(false); await supabase.auth.signOut(); }}>Sign out</button>
                   </>
@@ -97,7 +97,7 @@ function Header({ onOpenModal, isLoggedIn }) {
 
 const h = {
   root:{ position:'sticky', top:0, zIndex:200, background:'#F9FAFA', borderBottom:'1px solid #E4E5E5', minHeight:80 },
-  inner:{ display:'flex', alignItems:'center', justifyContent:'space-between', height:60, maxWidth:960, margin:'0 auto', padding:'0 24px' },
+  inner:{ display:'flex', alignItems:'center', justifyContent:'space-between', height:80, maxWidth:960, margin:'0 auto', padding:'0 24px' },
   logoWrap:{ display:'flex', flexDirection:'column', textDecoration:'none', lineHeight:1, gap:2 },
   logoMark:{ display:'none' },
   logoSub:{ display:'none' },
