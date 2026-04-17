@@ -71,35 +71,11 @@ function Header({ onOpenModal, isLoggedIn }) {
           </div>
         </nav>
 
-        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-          <div style={{ position:'relative' }}>
-            <button onClick={() => setProfileOpen(p => !p)} style={h.profileBtn} aria-label="Account" className="mobile-profile-btn">
-              <svg width="16" height="16" fill="none" stroke="#FF8210" strokeWidth="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" strokeLinecap="round"/></svg>
-            </button>
-            {profileOpen && (
-              <div style={{...h.dropdown, right:0, left:'auto'}}>
-                {isLoggedIn ? (<>
-                  <Link to="/" style={h.dropItem} onClick={()=>setProfileOpen(false)}>Configurator</Link>
-                  <Link to="/projects" style={h.dropItem} onClick={()=>setProfileOpen(false)}>Projects</Link>
-                  <Link to="/clients" style={h.dropItem} onClick={()=>setProfileOpen(false)}>Clients</Link>
-                  <hr style={h.dropDivider}/>
-                  <Link to="/profile" style={h.dropItem} onClick={()=>setProfileOpen(false)}>Profile</Link>
-                  <Link to="/plans" style={h.dropItem} onClick={()=>setProfileOpen(false)}>My Plan</Link>
-                  <hr style={h.dropDivider}/>
-                  <button style={{...h.dropItem,...h.dropBtn}} onClick={async()=>{setProfileOpen(false);await supabase.auth.signOut();}}>Sign out</button>
-                </>) : (<>
-                  <button style={{...h.dropItem,...h.dropBtn}} onClick={()=>{setProfileOpen(false);onOpenModal('waitlist');}}>Join waiting list</button>
-                  <button style={{...h.dropItem,...h.dropBtn,color:'#0F4C5C',fontWeight:500}} onClick={()=>{setProfileOpen(false);onOpenModal('signin');}}>Sign in</button>
-                </>)}
-              </div>
-            )}
-          </div>
-          <button className="hamburger" style={h.hamburger} onClick={() => setMenuOpen((m) => !m)} aria-label="Toggle menu">
-            <span style={{ ...h.bar, transform: menuOpen ? 'rotate(45deg) translate(5px,5px)' : 'none' }}/>
-            <span style={{ ...h.bar, opacity: menuOpen ? 0 : 1 }}/>
-            <span style={{ ...h.bar, transform: menuOpen ? 'rotate(-45deg) translate(5px,-5px)' : 'none' }}/>
-          </button>
-        </div>
+        <button className="hamburger" style={h.hamburger} onClick={() => setMenuOpen((m) => !m)} aria-label="Toggle menu">
+          <span style={{ ...h.bar, transform: menuOpen ? 'rotate(45deg) translate(5px,5px)' : 'none' }}/>
+          <span style={{ ...h.bar, opacity: menuOpen ? 0 : 1 }}/>
+          <span style={{ ...h.bar, transform: menuOpen ? 'rotate(-45deg) translate(5px,-5px)' : 'none' }}/>
+        </button>
       </div>
 
       {menuOpen && (
@@ -109,10 +85,21 @@ function Header({ onOpenModal, isLoggedIn }) {
               ? <button key={link.to} onClick={() => { setMenuOpen(false); onOpenModal(link.modal); }} style={{ ...h.mobileLink, color: T.ink, background:'none', border:'none', cursor:'pointer', textAlign:'left', width:'100%', borderBottom:'1px solid #E4E5E5', padding:'11px 0' }}>{link.label}</button>
               : <Link key={link.to} to={link.to} style={{ ...h.mobileLink, color: active(link.to) ? T.petrol : T.ink, fontWeight: active(link.to) ? 500 : 400 }}>{link.label}</Link>
           ))}
-          <div style={h.mobileDivider}/>
-          <button style={{ ...h.mobileLink, ...h.mobileLinkBtn, color:T.petrol, fontWeight:500 }} onClick={() => { setMenuOpen(false); onOpenModal('waitlist'); }}>
-            Join the waiting list
-          </button>
+          {isLoggedIn && (<>
+            <Link to="/" style={h.mobileLink} onClick={()=>setMenuOpen(false)}>Configurator</Link>
+            <Link to="/projects" style={h.mobileLink} onClick={()=>setMenuOpen(false)}>Projects</Link>
+            <Link to="/clients" style={h.mobileLink} onClick={()=>setMenuOpen(false)}>Clients</Link>
+            <Link to="/profile" style={h.mobileLink} onClick={()=>setMenuOpen(false)}>Profile</Link>
+            <Link to="/plans" style={h.mobileLink} onClick={()=>setMenuOpen(false)}>My Plan</Link>
+            <div style={h.mobileDivider}/>
+            <button style={{...h.mobileLink,...h.mobileLinkBtn,color:'#cc3300'}} onClick={async()=>{setMenuOpen(false);await supabase.auth.signOut();}}>Sign out</button>
+          </>)}
+          {!isLoggedIn && (<>
+            <div style={h.mobileDivider}/>
+            <button style={{ ...h.mobileLink, ...h.mobileLinkBtn, color:T.petrol, fontWeight:500 }} onClick={() => { setMenuOpen(false); onOpenModal('waitlist'); }}>
+              Join the waiting list
+            </button>
+          </>)}
         </div>
       )}
     </header>
@@ -121,7 +108,7 @@ function Header({ onOpenModal, isLoggedIn }) {
 
 const h = {
   root:{ position:'sticky', top:0, zIndex:200, background:'#F9FAFA', borderBottom:'1px solid #E4E5E5', minHeight:80 },
-  inner:{ display:'flex', alignItems:'center', justifyContent:'space-between', height:80, maxWidth:960, margin:'0 auto', padding:'0 24px' },
+  inner:{ display:'flex', alignItems:'center', justifyContent:'space-between', maxWidth:960, margin:'0 auto', padding:'28px 24px' },
   logoWrap:{ display:'flex', flexDirection:'column', textDecoration:'none', lineHeight:1, gap:2 },
   logoMark:{ display:'none' },
   logoSub:{ display:'none' },
@@ -175,7 +162,7 @@ function Footer() {
 }
 
 const f = {
-  root:{ borderTop:'1px solid #E4E5E5', background:'#F9FAFA', padding:'32px 0' },
+  root:{ borderTop:'1px solid #E4E5E5', background:'#F9FAFA', padding:'0' },
   inner:{ display:'flex', alignItems:'center', justifyContent:'space-between', height:80, maxWidth:960, margin:'0 auto', padding:'0 24px' },
   brand:{ display:'flex', flexDirection:'column', gap:6, alignItems:'flex-start' },
   logoMark:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:20, fontWeight:700, color:'#111111' },
