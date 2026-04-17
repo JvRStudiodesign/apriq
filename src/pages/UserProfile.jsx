@@ -92,19 +92,11 @@ export default function UserProfile() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
-      <div style={{ background: '#F9FAFA', borderBottom: '1px solid #E4E5E5', padding: '0.875rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-          {/* Header handled by Layout */}
-        </div>
-        <span style={{ fontSize: '0.78rem', color: '#979899' }}>User Profile</span>
-      </div>
 
-      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '1.5rem 24px' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'0.25rem' }}>
-          <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', letterSpacing: '-0.01em', fontFamily: "'Roboto', system-ui, sans-serif" }}>Profile</h1>
-        </div>
+
+      <div style={{ maxWidth: '560px', margin: '0 auto', padding: '2rem 1.25rem' }}>
+        <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem', letterSpacing: '-0.01em', fontFamily: "'Roboto', system-ui, sans-serif" }}>Profile</h1>
         <p style={{ fontSize: '0.78rem', color: '#979899', marginBottom: '1.5rem' }}>Your details auto-populate on every PDF export.</p>
-        <div style={{ maxWidth: 560 }}>
 
         {/* Logo */}
         <div style={card}>
@@ -194,7 +186,6 @@ export default function UserProfile() {
           <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#111111', display:'block', marginBottom:'0.5rem' }}>Install app</span>
           <p style={{ fontSize:'0.78rem', color:'#979899', marginBottom:'0.75rem', lineHeight:'1.5' }}>Add AprIQ to your home screen for instant access and limited offline use.</p>
           <InstallPWA />
-        </div>
         </div>
       </div>
     </div>
