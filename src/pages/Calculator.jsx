@@ -121,8 +121,8 @@ const categoryOpts   = CATEGORIES.map(c => ({ value: c.key, label: c.label }));
 const qualityDesc    = { Low: 'Budget spec (×0.85)', Medium: 'Standard spec (×1.0)', High: 'High-end (×1.25)', Premium: 'Luxury spec (×1.6)' };
 
 function InstallPWA() {
-  const [open, setOpen] = React.useState(false);
-  const [device, setDevice] = React.useState('iPhone / iPad');
+  const [open, setOpen] = useState(false);
+  const [device, setDevice] = useState('iPhone / iPad');
   const devices = ['iPhone / iPad','Android','Windows','Mac'];
   const steps = {
     'iPhone / iPad': {
