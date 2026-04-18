@@ -220,6 +220,7 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: contactName, surname: contactSurname, email: contactEmail, message: contactMessage }),
     }).catch(e => console.error('send-contact failed:', e));
+    if (contactEmail) fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'contact_confirm', to: contactEmail, name: contactName }) }).catch(()=>{});
     setContactSaving(false);
     setContactSent(true);
   }
