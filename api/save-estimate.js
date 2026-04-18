@@ -1,5 +1,9 @@
+import { rateLimit, getClientIP } from './_rate-limit.js';
 // api/save-estimate.js — server-side estimate save with auth + validation
 export default async function handler(req, res) {
+  const ip = getClientIP(req);
+  const rl = rateLimit(`save:${ip}`, 10, 60000);
+  if (!rl.allowed) return res.status(429).json({ error: 'Too many requests' });
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;

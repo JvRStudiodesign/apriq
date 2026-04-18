@@ -16,15 +16,15 @@ export default function SharedEstimate() {
 
   useEffect(() => {
     async function load() {
-      const { data, error } = await supabase
-        .from('estimate_snapshots')
-        .select('snapshot_data, expires_at')
-        .eq('share_token', token)
-        .single();
-      if (error || !data)                         { setErr('This estimate link is invalid or has expired.'); setLoad(false); return; }
-      if (new Date(data.expires_at) < new Date()) { setErr('This estimate link has expired.'); setLoad(false); return; }
-      setSnap(data.snapshot_data);
-      setLoad(false);
+      try {
+        const r = await fetch(`/api/get-estimate?token=${encodeURIComponent(token)}`);
+        if (r.status === 429) { setErr('Too many requests. Please try again shortly.'); setLoad(false); return; }
+        if (r.status === 410) { setErr('This estimate link has expired.'); setLoad(false); return; }
+        if (!r.ok) { setErr('This estimate link is invalid or has expired.'); setLoad(false); return; }
+        const data = await r.json();
+        setSnap(data.snapshot_data);
+        setLoad(false);
+      } catch { setErr('Failed to load estimate.'); setLoad(false); }
     }
     load();
   }, [token]);

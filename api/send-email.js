@@ -77,10 +77,19 @@ export default async function handler(req, res) {
   const { type, to, ...data } = req.body || {};
   if (!type || !TEMPLATES[type]) return res.status(400).json({ error: 'Invalid type' });
 
-  // Notification types (contact/feedback/new_*) don't need internal secret — they come from frontend
-  const isNotification = ['contact','feedback','new_user','new_client','new_waitlist'].includes(type);
+  // Notification types rate-limited strictly to prevent inbox spam
+  const isNotification = ['contact','feedback','new_user','new_client','new_waitlist',
+    'waitlist_confirm','feedback_confirm','contact_confirm'].includes(type);
   if (!isNotification && internalSecret && req.headers['x-internal-secret'] !== internalSecret) {
     return res.status(401).json({ error: 'Unauthorized' });
+  }
+  // Notification types: stricter rate limit (5/hour per IP) to prevent spam
+  if (isNotification) {
+    const notifRl = rateLimit(`notif:${ip}`, 5, 3600000);
+    if (!notifRl.allowed) {
+      console.warn('Notification email rate limited:', type, ip);
+      return res.status(429).json({ error: 'Too many requests' });
+    }
   }
 
   const tpl = TEMPLATES[type](data);
