@@ -1,9 +1,11 @@
-import { rateLimit, getClientIP } from './_rate-limit.js';
+const fs = require('fs');
+
+const fixed = `import { rateLimit, getClientIP } from './_rate-limit.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
   const ip = getClientIP(req);
-  const rl = rateLimit(`admin:${ip}`, 30, 60000);
+  const rl = rateLimit(\`admin:\${ip}\`, 30, 60000);
   if (!rl.allowed) return res.status(429).end('Too many requests');
 
   const adminPassword = process.env.ADMIN_PASSWORD;
@@ -18,13 +20,13 @@ export default async function handler(req, res) {
 
   const h = {
     'apikey': serviceKey,
-    'Authorization': `Bearer ${serviceKey}`,
+    'Authorization': \`Bearer \${serviceKey}\`,
     'Content-Type': 'application/json'
   };
 
   async function q(path) {
     try {
-      const r = await fetch(`${url}/rest/v1/${path}`, { headers: h });
+      const r = await fetch(\`\${url}/rest/v1/\${path}\`, { headers: h });
       if (!r.ok) { console.error('Supabase query failed:', path, r.status); return []; }
       const data = await r.json();
       return Array.isArray(data) ? data : [];
@@ -44,8 +46,8 @@ export default async function handler(req, res) {
       q('profiles?tier=eq.trial&select=id,trial_end_date'),
       q('profiles?tier=eq.pro&select=id,created_at'),
       q('estimates?select=id,building_category,building_subtype,created_at'),
-      q(`estimates?created_at=gte.${day}&select=id`),
-      q(`estimates?created_at=gte.${week}&select=id`),
+      q(\`estimates?created_at=gte.\${day}&select=id\`),
+      q(\`estimates?created_at=gte.\${week}&select=id\`),
     ]);
 
     const dailySignups  = allUsers.filter(u => u.created_at >= day).length;
@@ -86,3 +88,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal error', detail: err.message });
   }
 }
+`;
+
+fs.writeFileSync('api/admin-stats.js', fixed, 'utf8');
+console.log('done');
