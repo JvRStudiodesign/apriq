@@ -75,7 +75,7 @@ export default function Clients() {
       await supabase.from('clients').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', editClient.id);
     } else {
       await supabase.from('clients').insert({ user_id: user.id, ...payload });
-      fetch('/api/send-new-client', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: payload.name, email: payload.email, company: payload.company, phone: payload.phone, addedBy: user.email }) }).catch(()=>{});
+      fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: payload.name, email: payload.email, company: payload.company, phone: payload.phone, addedBy: user.email }) }).catch(()=>{});
     }
     setSaving(false);
     setShowForm(false);

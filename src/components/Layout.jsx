@@ -193,7 +193,7 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
     if (!email) return;
     setSaving(true);
     const { error } = await supabase.from('waitlist').insert({ email, name, profession });
-    if (!error) fetch('/api/send-new-waitlist', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, email, profession }) }).catch(()=>{});
+    if (!error) fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, email, profession }) }).catch(()=>{});
     if (error) console.error('Waitlist error:', error);
     setSaving(false);
     setSubmitted(true);
@@ -215,7 +215,7 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
       email: contactEmail, message: contactMessage,
     });
     // Send notification email to apriq@apriq.co.za
-    fetch('/api/send-contact', {
+    fetch('/api/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: contactName, surname: contactSurname, email: contactEmail, message: contactMessage }),

@@ -105,9 +105,9 @@ export default async function handler(req, res) {
     const users = await userRes.json();
     const u = users?.[0];
     if (u?.email && process.env.INTERNAL_API_SECRET) {
-      const emailEndpoint = paymentStatus === 'COMPLETE' ? '/api/send-payment-confirmed'
-                          : paymentStatus === 'CANCELLED' ? '/api/send-cancelled'
-                          : '/api/send-payment-failed';
+      const emailEndpoint = paymentStatus === 'COMPLETE' ? '/api/send-email'
+                          : paymentStatus === 'CANCELLED' ? '/api/send-email'
+                          : '/api/send-email';
       const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://apriq.vercel.app';
       fetch(`${baseUrl}${emailEndpoint}`, {
         method: 'POST',
@@ -115,7 +115,7 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
           'x-internal-secret': process.env.INTERNAL_API_SECRET || 'missing-secret',
         },
-        body: JSON.stringify({ to: u.email, name: u.full_name, amount: body.amount_gross }),
+        body: JSON.stringify({ type: paymentStatus === 'COMPLETE' ? 'payment_confirmed' : paymentStatus === 'CANCELLED' ? 'cancelled' : 'payment_failed', to: u.email, name: u.full_name, amount: body.amount_gross }),
       }).catch(e => console.error('Email send failed:', e));
     }
 
