@@ -29,6 +29,8 @@ export default function Admin() {
         headers: { 'x-admin-password': pw }
       });
       if (r.ok) { pwRef.current = pw; setAuth(true); setPw(''); }
+      else if (r.status === 503) setErr('Server configuration error — check SUPABASE_SERVICE_ROLE_KEY in Vercel');
+      else if (r.status === 429) setErr('Too many attempts — wait 1 minute');
       else setErr('Incorrect password');
     } catch { setErr('Connection error'); }
   }
