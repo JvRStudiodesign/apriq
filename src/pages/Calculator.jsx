@@ -332,7 +332,11 @@ export default function Calculator() {
         numCats, isRenovation,
         _sharedAt: new Date().toISOString(),
       };
-      const { data: snap, error } = await supabase
+      // Mark estimate as shared
+    if (selectedProjectId) {
+      await supabase.from('estimates').update({ shared: true }).eq('project_id', selectedProjectId).eq('user_id', user.id).eq('is_latest', true);
+    }
+    const { data: snap, error } = await supabase
         .from('estimate_snapshots')
         .insert({ user_id: user.id, snapshot_data: snapshotData })
         .select('share_token')
@@ -693,6 +697,7 @@ export default function Calculator() {
       <>
         <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'0.5rem' }} onClick={() => {
                   if (result) {
+                    supabase.from('estimates').update({ pdf_generated: true }).eq('project_id', selectedProjectId || '').eq('user_id', user?.id || '').eq('is_latest', true).then(()=>{});
                     supabase.from('pdf_exports').insert({
                       user_id: user?.id,
                       reference_number: pdfRef_display,
