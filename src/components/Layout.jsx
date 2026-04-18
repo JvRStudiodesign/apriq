@@ -213,6 +213,12 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
       name: contactName, surname: contactSurname,
       email: contactEmail, message: contactMessage,
     });
+    // Send notification email to apriq@apriq.co.za
+    fetch('/api/send-contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: contactName, surname: contactSurname, email: contactEmail, message: contactMessage }),
+    }).catch(() => {});
     setContactSaving(false);
     setContactSent(true);
   }
