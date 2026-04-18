@@ -911,7 +911,8 @@ export default function Calculator() {
               <button onClick={() => setFeedback(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', fontSize: '1.25rem', lineHeight: 1 }}>×</button>
             </div>
             {fbSent ? <p style={{ color: '#27ae60', textAlign: 'center', padding: '1rem 0' }}>Thanks — noted.</p> : (
-              <form onSubmit={e => { e.preventDefault(); supabase.from('feedback').insert({ user_id: user?.id, email: user?.email, topic: fbTopic, message: fbText }).then(()=>{}); setFbSent(true); setTimeout(() => { setFeedback(false); setFbSent(false); setFbText(''); setFbTopic('UI'); }, 2000); }}>
+              <form onSubmit={e => { e.preventDefault(); supabase.from('feedback').insert({ user_id: user?.id, email: user?.email, topic: fbTopic, message: fbText }).then(()=>{});
+              fetch('/api/send-feedback', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: user?.email, topic: fbTopic, message: fbText }) }).catch(()=>{}); setFbSent(true); setTimeout(() => { setFeedback(false); setFbSent(false); setFbText(''); setFbTopic('UI'); }, 2000); }}>
                 <textarea value={fbText} onChange={e => setFbText(e.target.value)} required rows={4} placeholder="What is working? What is missing?"
                   style={{ width: '100%', padding: '0.75rem', border: '1.5px solid #e5e5e3', borderRadius: '10px', fontSize: '0.875rem', resize: 'vertical', boxSizing: 'border-box', marginBottom: '0.75rem', fontFamily: 'inherit' }} />
                 <button type="submit" style={{ width: '100%', padding: '0.625rem', background: '#1a1a18', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'inherit' }}>Send</button>
