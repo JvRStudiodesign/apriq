@@ -46,9 +46,9 @@ export function AuthProvider({ children }) {
       if (email && tier === 'trial' && trialEnd) {
         const daysLeft = Math.ceil((trialEnd - new Date()) / 86400000);
         if (daysLeft <= 2 && daysLeft > 0) {
-          fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ to:email, name }) }).catch(()=>{});
+          fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ type:'trial_warning', to:email, name }) }).catch(()=>{});
         } else if (daysLeft <= 0) {
-          fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ to:email, name }) }).catch(()=>{});
+          fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ type:'trial_expired', to:email, name }) }).catch(()=>{});
         }
       }
     }
