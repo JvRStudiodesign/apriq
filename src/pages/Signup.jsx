@@ -37,7 +37,7 @@ export default function Signup() {
     }
     // Send welcome email
     try {
-      fetch('/api/send-new-user', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, email, profession }) }).catch(()=>{});
+      fetch('/api/send-new-user', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: form.full_name, email: form.email, profession: form.profession }) }).catch(()=>{});
       await fetch('/api/send-welcome', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

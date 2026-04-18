@@ -380,7 +380,7 @@ export default function Calculator() {
       vat_amount: result.vatAmount, total_project_cost: result.totalProjectCost,
       escalated_total: result.escalatedTotal, cost_breakdown: result.elementBreakdown,
     });
-    await supabase.from('project_estimates').delete().eq('project_id', selectedProjectId).eq('user_id', user.id);
+    // Never delete estimates — keep full history
     await supabase.from('project_estimates').insert({
       user_id: user.id, project_id: selectedProjectId,
       client_id: projects.find(p => p.id === selectedProjectId)?.client_id || null,
@@ -691,7 +691,21 @@ export default function Calculator() {
 
     {isPro && result ? (
       <>
-        <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'0.5rem' }}>
+        <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'0.5rem' }} onClick={() => {
+                  if (result) {
+                    supabase.from('pdf_exports').insert({
+                      user_id: user?.id,
+                      reference_number: pdfRef_display,
+                      project_id: selectedProjectId || null,
+                      building_category: inputs.use1Category,
+                      building_subtype: inputs.use1Subtype,
+                      floor_area: inputs.floorArea,
+                      total_project_cost: result.totalProjectCost,
+                      is_mixed_use: numCats > 1,
+                      exported_at: new Date().toISOString(),
+                    }).then(({ error }) => { if (error) console.error('PDF export log error:', error); });
+                  }
+                }}>
           {({loading})=>(
             <button style={{ width:'100%', padding:'0.75rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
               {loading?'Preparing PDF…':'Download PDF'}
