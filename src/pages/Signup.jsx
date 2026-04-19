@@ -37,14 +37,19 @@ export default function Signup() {
     }
     // Send welcome email
     try {
-      fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: form.full_name, email: form.email, profession: form.profession }) }).catch(()=>{});
+      // Notify founder of new signup
+      fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'new_user', name: form.full_name, email: form.email, profession: form.profession }) }).catch(()=>{});
+      // Send welcome email to user
       await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: form.email, name: form.full_name }),
+        body: JSON.stringify({ type:'welcome', to: form.email, name: form.full_name }),
       });
     } catch (e) { console.error('Welcome email error:', e); }
-    navigate('/');
+    // Show email confirmation message instead of navigating
+    setLoading(false);
+    setError('');
+    navigate('/signup-confirm');
   }
 
   async function handleGoogle() {
