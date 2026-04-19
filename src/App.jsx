@@ -43,8 +43,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/signup-confirm" element={<SignupConfirm />} />
-            <Route path="/signup" element={<Signup />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/admin" element={<Admin />} />
           <Route element={<Layout />}>
             <Route path="/" element={<RootRoute />} />
