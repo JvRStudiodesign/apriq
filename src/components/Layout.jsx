@@ -96,6 +96,7 @@ function Header({ onOpenModal, isLoggedIn }) {
           </>)}
           {!isLoggedIn && (<>
             <div style={h.mobileDivider}/>
+            <button style={{ ...h.mobileLink, ...h.mobileLinkBtn, color:T.petrol, fontWeight:500 }} onClick={() => { setMenuOpen(false); onOpenModal('signin'); }}>Sign in</button>
             <button style={{ ...h.mobileLink, ...h.mobileLinkBtn, color:T.petrol, fontWeight:500 }} onClick={() => { setMenuOpen(false); onOpenModal('waitlist'); }}>
               Join the waiting list
             </button>
