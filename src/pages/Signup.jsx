@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 export default function Signup() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '', full_name: '', company: '', profession: '', referral_source: '' });
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -14,8 +15,12 @@ export default function Signup() {
 
   async function handleSignup(e) {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    if (!acceptedLegal) {
+      setError('Please confirm you have read and agree to the Terms of Service and Privacy Policy.');
+      return;
+    }
+    setLoading(true);
 
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
@@ -53,6 +58,11 @@ export default function Signup() {
   }
 
   async function handleGoogle() {
+    setError('');
+    if (!acceptedLegal) {
+      setError('Please confirm you have read and agree to the Terms of Service and Privacy Policy.');
+      return;
+    }
     await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://www.apriq.co.za' } });
   }
 
@@ -92,7 +102,7 @@ export default function Signup() {
           <input type="password" value={form.password} onChange={e => update('password', e.target.value)} required minLength={6} style={{ ...inputStyle, marginBottom: '1rem' }} />
 
           <label style={labelStyle}>How did you hear about us?</label>
-          <select value={form.referral_source} onChange={e => update('referral_source', e.target.value)} style={{ ...inputStyle, marginBottom: '1.5rem' }}>
+          <select value={form.referral_source} onChange={e => update('referral_source', e.target.value)} style={{ ...inputStyle, marginBottom: '1rem' }}>
             <option value="">Select an option</option>
             <option value="shared_estimate">Someone shared an estimate with me</option>
             <option value="linkedin">LinkedIn</option>
@@ -102,14 +112,57 @@ export default function Signup() {
             <option value="other">Other</option>
           </select>
 
-          <button type="submit" disabled={loading}
-            style={{ width: '100%', padding: '0.75rem', background: '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', marginBottom: '0.75rem' }}>
+          <div style={{ background: '#f9f9f7', borderRadius: '10px', padding: '0.75rem 0.875rem', marginBottom: '1.25rem', border: '1.5px solid #E4E5E5' }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', fontSize: '0.78rem', color: '#979899', lineHeight: 1.5 }}>
+              <input
+                type="checkbox"
+                checked={acceptedLegal}
+                onChange={e => setAcceptedLegal(e.target.checked)}
+                required
+                aria-required="true"
+                style={{ cursor: 'pointer', marginTop: '2px', flexShrink: 0, accentColor: '#0F4C5C', colorScheme: 'light' }}
+              />
+              <span style={{ color: '#111111' }}>
+                I have read and agree to the{' '}
+                <Link to="/legal" target="_blank" rel="noopener noreferrer" style={{ color: '#0F4C5C', fontWeight: '600' }} onClick={e => e.stopPropagation()}>
+                  Terms of Service and Privacy Policy
+                </Link>
+                .
+              </span>
+            </label>
+          </div>
+
+          <button type="submit" disabled={loading || !acceptedLegal}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              background: acceptedLegal && !loading ? '#111111' : '#979899',
+              color: '#F9FAFA',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              cursor: acceptedLegal && !loading ? 'pointer' : 'not-allowed',
+              marginBottom: '0.75rem',
+            }}>
             {loading ? 'Creating account...' : 'Start free trial'}
           </button>
         </form>
 
-        <button onClick={handleGoogle}
-          style={{ width: '100%', padding: '0.75rem', background: '#fff', color: '#1a1a18', border: '1.5px solid #E4E5E5', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', marginBottom: '1.5rem' }}>
+        <button type="button" onClick={handleGoogle} disabled={!acceptedLegal}
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            background: '#fff',
+            color: '#1a1a18',
+            border: '1.5px solid #E4E5E5',
+            borderRadius: '12px',
+            fontSize: '0.9rem',
+            fontWeight: '500',
+            cursor: acceptedLegal ? 'pointer' : 'not-allowed',
+            marginBottom: '1.5rem',
+            opacity: acceptedLegal ? 1 : 0.55,
+          }}>
           Continue with Google
         </button>
 
