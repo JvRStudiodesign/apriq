@@ -401,7 +401,7 @@ git add . && git commit -m "descriptive message" && git push
 
 ## 11. Open Issues & Risks
 
-1. **PayFast live mode not active** — FICA documents not submitted. SEVERITY: Blocks paid subscriptions. ACTION: Submit FICA to PayFast → flip `VITE_PAYFAST_SANDBOX` to `false` → redeploy.
+1. **PayFast live mode not active** — FICA documents submitted, awaiting PayFast verification. SEVERITY: Blocks paid subscriptions. ACTION: Wait for PayFast approval → flip `VITE_PAYFAST_SANDBOX` to `false` → redeploy.
 
 2. **Rate limiter is in-memory** — Resets on Vercel cold starts. SEVERITY: Low at current scale, medium at growth. ACTION: Phase 2 — integrate Upstash Redis.
 
@@ -428,7 +428,12 @@ git add . && git commit -m "descriptive message" && git push
 
 ## 12. Recent Work Log
 
-- **Auth redirect fix** — Updated all `redirectTo: 'https://apriq.vercel.app'` to `https://www.apriq.co.za` in Login.jsx and Signup.jsx. Files: `src/pages/Login.jsx`, `src/pages/Signup.jsx`
+- **Mobile sign in fixed** — Sign in button was missing from mobile hamburger menu for unauthenticated users. Added. File: `src/components/Layout.jsx`
+- **Auth modals fully rewritten** — Sign in modal now calls `signInWithPassword` correctly, toggle buttons wired, email type fields fixed, Google OAuth redirectTo fixed. File: `src/components/Layout.jsx`
+- **30-day trial** — All 7-day trial references updated to 30-day across Signup.jsx, SharedEstimate.jsx. Files: `src/pages/Signup.jsx`, `src/pages/SharedEstimate.jsx`
+- **GTM progress** — 7 posts published across 3 platforms, LinkedIn profile updated, SEO blog post written, landing page hero copy published
+- **PayFast FICA** — Documents submitted to PayFast, awaiting verification
+- **QA completed** — Calculations, desktop flows, mobile flows, PDF export, labels all tested and confirmed
 - **Signup flow fix** — Fixed missing `type` field on `welcome` and `new_user` email sends. Disabled email confirmation in Supabase. Files: `src/pages/Signup.jsx`
 - **CSP fix for PDF** — Added `'wasm-unsafe-eval'` to script-src, `worker-src blob: 'self'`, `child-src blob: 'self'` to vercel.json. File: `vercel.json`
 - **Email consolidation** — 11 separate email API files consolidated into single `send-email.js` with `type` routing. Fixes Vercel Hobby 12-function limit. Files: `api/send-email.js` (created), all individual `send-*.js` deleted
@@ -460,15 +465,15 @@ git add . && git commit -m "descriptive message" && git push
 
 ## 14. Next Steps (Prioritised)
 
-1. **Submit PayFast FICA documents** — Unblocks live payments. When approved: set `VITE_PAYFAST_SANDBOX=false` in Vercel → redeploy. No code changes needed.
+1. **Await PayFast FICA verification** — Documents submitted. When approved: set `VITE_PAYFAST_SANDBOX=false` in Vercel → redeploy. No code changes needed.
 
-2. **Fix founder account** — Delete `apriq@apriq.co.za` from Supabase Auth (stuck in unconfirmed state), sign up fresh at `www.apriq.co.za/signup`, then in Supabase SQL Editor: `UPDATE profiles SET tier = 'pro' WHERE id = '<your-user-id>';`
+2. **Fix founder account** — Delete `apriq@apriq.co.za` from Supabase Auth (stuck in unconfirmed state), sign up fresh at `www.apriq.co.za/signup`, then in Supabase SQL Editor: `UPDATE profiles SET tier = 'pro' WHERE id = (SELECT id FROM auth.users WHERE email = 'apriq@apriq.co.za');`
 
-3. **Test full signup → login → estimate → PDF → share flow** — First full end-to-end test on production domain with real account.
+3. **Complete remaining QA** — Test free tier gating, trial expiry flow, PayFast sandbox payment end-to-end, all email triggers, shareable link on unauthenticated browser, Google OAuth, spell-check all copy.
 
-4. **Section 12 — Quality Assurance** — Test all user flows desktop + mobile (iOS + Android). Test free tier gating. Test trial expiry. Test PayFast sandbox payment flow end-to-end. Spell-check all copy.
+4. **Complete GTM** — Identify 50 target architects on LinkedIn, join SA construction WhatsApp groups, join PropTech SA LinkedIn group, send 50 personalised outreach messages, collect 50 waitlist emails.
 
-5. **Section 13 — GTM Preparation** — Build landing page waitlist capture, write 5 LinkedIn posts, identify 50 target architects, join SA construction WhatsApp groups, write first SEO blog post.
+5. **Launch day** — Deploy final build, switch PayFast to live, send launch email to waitlist, publish launch post, monitor admin dashboard.
 
 6. **Phase 2 items (post-launch):**
    - Add Upstash Redis for persistent rate limiting
