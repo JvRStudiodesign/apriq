@@ -120,11 +120,11 @@ export default function Signup() {
                 onChange={e => setAcceptedLegal(e.target.checked)}
                 required
                 aria-required="true"
-                style={{ cursor: 'pointer', marginTop: '2px', flexShrink: 0, accentColor: '#0F4C5C', colorScheme: 'light' }}
+                style={{ cursor: 'pointer', marginTop: '2px', flexShrink: 0, accentColor: '#FF8210', colorScheme: 'light' }}
               />
               <span style={{ color: '#111111' }}>
                 I have read and agree to the{' '}
-                <Link to="/legal" target="_blank" rel="noopener noreferrer" style={{ color: '#0F4C5C', fontWeight: '600' }} onClick={e => e.stopPropagation()}>
+                <Link to="/legal" target="_blank" rel="noopener noreferrer" style={{ color: '#FF8210', fontWeight: '600' }} onClick={e => e.stopPropagation()}>
                   Terms of Service and Privacy Policy
                 </Link>
                 .
@@ -167,7 +167,7 @@ export default function Signup() {
         </button>
 
         <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#888' }}>
-          Already have an account? <Link to="/login" style={{ color: '#0F4C5C', fontWeight: '500' }}>Sign in</Link>
+          Already have an account? <Link to="/login" style={{ color: '#FF8210', fontWeight: '500' }}>Sign in</Link>
         </p>
       </div>
     </div>
