@@ -49,7 +49,7 @@ export default function Signup() {
     // Show email confirmation message instead of navigating
     setLoading(false);
     setError('');
-    navigate('/signup-confirm');
+    navigate('/');
   }
 
   async function handleGoogle() {
