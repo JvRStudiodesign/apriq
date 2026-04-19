@@ -73,7 +73,9 @@ export default function Signup() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA' }}>
       <div style={{ background: '#F9FAFA', padding: '2.5rem', borderRadius: '20px', width: '100%', maxWidth: '420px', boxShadow: '0 1px 12px rgba(0,0,0,0.04)' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem', color: '#111111' }}>Create your account</h1>
-        <p style={{ color: '#979899', marginBottom: '2rem', fontSize: '0.9rem' }}>30-day Pro trial — no card required</p>
+        <p style={{ color: '#979899', marginBottom: '2rem', fontSize: '0.9rem' }}>
+          30-day <span style={{ color: '#FF8210', fontWeight: 600 }}>Pro</span> trial — no card required
+        </p>
 
         {error && <p style={{ color: '#c0392b', marginBottom: '1rem', fontSize: '0.875rem' }}>{error}</p>}
 
@@ -124,7 +126,7 @@ export default function Signup() {
               />
               <span style={{ color: '#111111' }}>
                 I have read and agree to the{' '}
-                <Link to="/legal" target="_blank" rel="noopener noreferrer" style={{ color: '#FF8210', fontWeight: '600' }} onClick={e => e.stopPropagation()}>
+                <Link to="/legal" target="_blank" rel="noopener noreferrer" style={{ color: '#0F4C5C', fontWeight: '600' }} onClick={e => e.stopPropagation()}>
                   Terms of Service and Privacy Policy
                 </Link>
                 .

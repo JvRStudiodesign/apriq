@@ -193,7 +193,9 @@ export default function SharedEstimate() {
         {/* CTA */}
         <div style={{ background:'#111111', borderRadius:'20px', padding:'1.75rem 1.5rem', textAlign:'center', marginBottom:'1.5rem' }}>
           <div style={{ color:'#F9FAFA', fontWeight:'700', fontSize:'1.05rem', marginBottom:'0.375rem' }}>Generate your own estimates</div>
-          <div style={{ color:'#BFD1D6', fontSize:'0.82rem', marginBottom:'1.25rem' }}>AprIQ — construction cost intelligence for South African professionals. 30-day Pro trial, no card required.</div>
+          <div style={{ color:'#BFD1D6', fontSize:'0.82rem', marginBottom:'1.25rem' }}>
+            AprIQ — construction cost intelligence for South African professionals. 30-day <span style={{ color: '#FF8210', fontWeight: 600 }}>Pro</span> trial, no card required.
+          </div>
           <Link to="/signup" style={{ display:'inline-block', padding:'0.75rem 2rem', background:'#F9FAFA', color:'#111111', borderRadius:'12px', textDecoration:'none', fontWeight:'600', fontSize:'0.875rem' }}>
             Try AprIQ free — get unlimited estimates
           </Link>
