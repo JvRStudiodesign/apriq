@@ -48,7 +48,7 @@ export default function Signup() {
   }
 
   async function handleGoogle() {
-    await supabase.auth.signInWithOAuth({ provider: 'google' });
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://www.apriq.co.za' } });
   }
 
   const inputStyle = { width: '100%', padding: '0.625rem 0.75rem', border: '1.5px solid #E4E5E5', borderRadius: '12px', marginBottom: '1rem', fontSize: '0.9rem', boxSizing: 'border-box', background: '#F9FAFA', color: '#111111', colorScheme: 'light' };

@@ -20,13 +20,13 @@ export default function Login() {
   }
 
   async function handleGoogle() {
-    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://apriq.vercel.app' } });
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://www.apriq.co.za' } });
   }
 
   async function handleReset(e) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://apriq.vercel.app' });
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://www.apriq.co.za' });
     setLoading(false);
     if (error) setError(error.message);
     else setResetSent(true);
