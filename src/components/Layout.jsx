@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -179,55 +179,80 @@ const f = {
 };
 
 export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _openModal }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [profession, setProfession] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const navigate = typeof window !== 'undefined' ? (window.__reactNavigate || null) : null;
+  const [currentMode, setCurrentMode] = React.useState(mode);
+  React.useEffect(() => { setCurrentMode(mode); }, [mode]);
+
+  // Waitlist state
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [profession, setProfession] = React.useState('');
+  const [submitted, setSubmitted] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [waitlistError, setWaitlistError] = React.useState('');
+
+  // Signin state
+  const [signEmail, setSignEmail] = React.useState('');
+  const [signPassword, setSignPassword] = React.useState('');
+  const [signError, setSignError] = React.useState('');
+  const [signLoading, setSignLoading] = React.useState(false);
+
+  // Contact state
+  const [contactName, setContactName] = React.useState('');
+  const [contactSurname, setContactSurname] = React.useState('');
+  const [contactEmail, setContactEmail] = React.useState('');
+  const [contactMessage, setContactMessage] = React.useState('');
+  const [contactSent, setContactSent] = React.useState(false);
+  const [contactSaving, setContactSaving] = React.useState(false);
+
+  useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
 
   async function handleGoogle() {
-    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://www.apriq.co.za' } });
   }
 
-  async function handleSubmit() {
+  async function handleSignIn(e) {
+    e && e.preventDefault && e.preventDefault();
+    if (!signEmail || !signPassword) return;
+    setSignLoading(true);
+    setSignError('');
+    const { error } = await supabase.auth.signInWithPassword({ email: signEmail, password: signPassword });
+    if (error) {
+      setSignError(error.message);
+      setSignLoading(false);
+    } else {
+      onClose();
+      window.location.href = '/';
+    }
+  }
+
+  async function handleWaitlist() {
     if (!email) return;
     setSaving(true);
+    setWaitlistError('');
     const { error } = await supabase.from('waitlist').insert({ email, name, profession });
-    if (!error) fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, email, profession }) }).catch(()=>{});
-    if (error) console.error('Waitlist error:', error);
+    if (error) { console.error('Waitlist error:', error); setWaitlistError('Something went wrong. Please try again.'); setSaving(false); return; }
+    fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'new_waitlist', name, email, profession }) }).catch(()=>{});
+    fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'waitlist_confirm', to: email, name }) }).catch(()=>{});
     setSaving(false);
     setSubmitted(true);
   }
 
-  useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
-  const [contactName, setContactName] = useState('');
-  const [contactSurname, setContactSurname] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactMessage, setContactMessage] = useState('');
-  const [contactSent, setContactSent] = useState(false);
-  const [contactSaving, setContactSaving] = useState(false);
-
   async function handleContact() {
     if (!contactEmail || !contactMessage) return;
     setContactSaving(true);
-    await supabase.from('contact_submissions').insert({
-      name: contactName, surname: contactSurname,
-      email: contactEmail, message: contactMessage,
-    });
-    // Send notification email to apriq@apriq.co.za
-    fetch('/api/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: contactName, surname: contactSurname, email: contactEmail, message: contactMessage }),
-    }).catch(e => console.error('send-contact failed:', e));
-    if (contactEmail) fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'contact_confirm', to: contactEmail, name: contactName }) }).catch(()=>{});
+    await supabase.from('contact_submissions').insert({ name: contactName, surname: contactSurname, email: contactEmail, message: contactMessage });
+    fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'contact', name: contactName, surname: contactSurname, email: contactEmail, message: contactMessage }) }).catch(()=>{});
+    fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'contact_confirm', to: contactEmail, name: contactName }) }).catch(()=>{});
     setContactSaving(false);
     setContactSent(true);
   }
 
   if (!open) return null;
-  const isWaitlist = mode === 'waitlist';
-  const isContact = mode === 'contact';
+  const isWaitlist = currentMode === 'waitlist';
+  const isContact = currentMode === 'contact';
+  const isSignin = currentMode === 'signin';
+
   return (
     <div style={m.overlay} onClick={(e) => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true">
       <div style={m.panel}>
@@ -239,6 +264,7 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
         <span style={m.brand}>AprIQ</span>
         <h2 style={m.title}>{isContact ? 'Contact us' : isWaitlist ? 'Join the waiting list' : 'Sign in to AprIQ'}</h2>
         <p style={m.sub}>{isContact ? 'Send us a message and we will get back to you.' : isWaitlist ? 'Be among the first to access AprIQ when we launch.' : 'Welcome back. Enter your details below.'}</p>
+
         {isContact && (
           <div style={m.form}>
             {contactSent
@@ -255,31 +281,43 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
             }
           </div>
         )}
-        {!isContact && <div style={m.form}>
-          {isWaitlist && <input type="text" placeholder="Full name" value={name} onChange={e => setName(e.target.value)} style={m.input}/>}
-          <input type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} style={m.input}/>
-          {isWaitlist ? (
-            <select value={profession} onChange={e => setProfession(e.target.value)} style={m.input}>
-              <option value="">Select your profession</option>
-              <option>Architect</option>
-              <option>Quantity Surveyor</option>
-              <option>Developer</option>
-              <option>Contractor</option>
-              <option>Other</option>
-            </select>
-          ) : (
-            <input type="password" placeholder="Password" style={m.input}/>
-          )}
-          {!isContact && submitted && isWaitlist
-            ? <p style={{fontFamily:"'Roboto',system-ui,sans-serif",fontSize:13,color:'#0F4C5C',textAlign:'center',marginTop:8}}>You are on the list. We will be in touch.</p>
-            : <button onClick={handleSubmit} disabled={saving} style={{...m.submit,opacity:saving?0.6:1}}>{saving ? 'Saving...' : isWaitlist ? 'Join the waiting list' : 'Sign in'}</button>
-          }
-        </div>}
-        {!isContact && !submitted && (<div style={m.dividerRow}><span style={m.dividerLine}/><span style={m.dividerText}>or</span><span style={m.dividerLine}/></div>)}
-        {!isContact && !submitted && (<button onClick={handleGoogle} style={m.googleBtn}>Continue with Google</button>)}
-        {!isContact && <p style={m.toggle}>
-          {isWaitlist ? <>Already have access?&nbsp;<button style={m.toggleLink}>Sign in</button></> : <>Don't have an account?&nbsp;<button style={m.toggleLink}>Join the waiting list</button></>}
-        </p>}
+
+        {isWaitlist && (
+          <div style={m.form}>
+            {submitted
+              ? <p style={{fontFamily:"'Roboto',system-ui,sans-serif",fontSize:13,color:'#0F4C5C',textAlign:'center',padding:'12px 0'}}>You are on the list. We will be in touch.</p>
+              : <>
+                  {waitlistError && <p style={{fontSize:12,color:'#c0392b',margin:'0 0 4px'}}>{waitlistError}</p>}
+                  <input type="text" placeholder="Full name" value={name} onChange={e=>setName(e.target.value)} style={m.input}/>
+                  <input type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)} style={m.input}/>
+                  <select value={profession} onChange={e=>setProfession(e.target.value)} style={m.input}>
+                    <option value="">Select your profession</option>
+                    <option>Architect</option>
+                    <option>Quantity Surveyor</option>
+                    <option>Developer</option>
+                    <option>Contractor</option>
+                    <option>Other</option>
+                  </select>
+                  <button onClick={handleWaitlist} disabled={saving} style={{...m.submit,opacity:saving?0.6:1}}>{saving?'Saving...':'Join the waiting list'}</button>
+                </>
+            }
+            <div style={m.dividerRow}><span style={m.dividerLine}/><span style={m.dividerText}>or</span><span style={m.dividerLine}/></div>
+            <button onClick={handleGoogle} style={m.googleBtn}>Continue with Google</button>
+            <p style={m.toggle}>Already have an account?&nbsp;<button style={m.toggleLink} onClick={() => setCurrentMode('signin')}>Sign in</button></p>
+          </div>
+        )}
+
+        {isSignin && (
+          <div style={m.form}>
+            {signError && <p style={{fontSize:12,color:'#c0392b',margin:'0 0 4px'}}>{signError}</p>}
+            <input type="email" placeholder="Email address" value={signEmail} onChange={e=>setSignEmail(e.target.value)} style={m.input}/>
+            <input type="password" placeholder="Password" value={signPassword} onChange={e=>setSignPassword(e.target.value)} style={m.input} onKeyDown={e=>e.key==='Enter'&&handleSignIn()}/>
+            <button onClick={handleSignIn} disabled={signLoading} style={{...m.submit,opacity:signLoading?0.6:1}}>{signLoading?'Signing in...':'Sign in'}</button>
+            <div style={m.dividerRow}><span style={m.dividerLine}/><span style={m.dividerText}>or</span><span style={m.dividerLine}/></div>
+            <button onClick={handleGoogle} style={m.googleBtn}>Continue with Google</button>
+            <p style={m.toggle}>No account?&nbsp;<a href="/signup" onClick={onClose} style={{...m.toggleLink,textDecoration:'none'}}>Start free trial</a>&nbsp;&middot;&nbsp;<a href="/login" onClick={onClose} style={{...m.toggleLink,textDecoration:'none'}}>Forgot password?</a></p>
+          </div>
+        )}
       </div>
     </div>
   );

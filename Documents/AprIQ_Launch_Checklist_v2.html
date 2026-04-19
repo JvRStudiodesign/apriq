@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AprIQ — Launch Checklist v2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f5f4f0; --bg3: #eeede8;
+    --text: #1a1a18; --text2: #5f5e5a; --text3: #888780;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+    --blue-bg: #e6f1fb; --blue-text: #0c447c; --blue-border: #185fa5;
+    --green-bg: #eaf3de; --green-text: #27500a; --green-border: #3b6d11;
+    --amber-bg: #faeeda; --amber-text: #633806; --amber-border: #854f0b;
+    --teal: #0F4C5C; --orange: #FF8210;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a; --bg2: #242422; --bg3: #2c2c2a;
+      --text: #e8e6de; --text2: #b4b2a9; --text3: #888780;
+      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
+      --blue-bg: #0c447c; --blue-text: #b5d4f4; --blue-border: #378add;
+      --green-bg: #27500a; --green-text: #c0dd97; --green-border: #639922;
+      --amber-bg: #633806; --amber-text: #fac775; --amber-border: #ba7517;
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; }
+  .page { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  .header { margin-bottom: 2rem; }
+  .header h1 { font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .header p { font-size: 13px; color: var(--text3); }
+  .progress-wrap { background: var(--bg2); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; border: 0.5px solid var(--border); }
+  .progress-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .progress-count { font-size: 13px; color: var(--text2); }
+  .progress-pct { font-size: 20px; font-weight: 500; color: var(--text); }
+  .bar-track { background: var(--border); border-radius: 4px; height: 6px; }
+  .bar-fill { height: 6px; border-radius: 4px; background: var(--teal); transition: width .3s; }
+  .controls { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .btn { font-size: 12px; padding: 5px 14px; border-radius: 20px; border: 0.5px solid var(--border2); background: var(--bg); color: var(--text2); cursor: pointer; font-family: inherit; }
+  .btn:hover { background: var(--bg2); }
+  .btn.primary { background: var(--blue-bg); color: var(--blue-text); border-color: transparent; font-weight: 500; }
+  .section { background: var(--bg); border: 0.5px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.1rem; cursor: pointer; user-select: none; }
+  .section-header:hover { background: var(--bg2); }
+  .section-left { display: flex; align-items: center; gap: 10px; }
+  .section-num { font-size: 11px; font-weight: 500; color: var(--text3); min-width: 20px; }
+  .section-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .section-right { display: flex; align-items: center; gap: 10px; }
+  .section-count { font-size: 12px; color: var(--text3); }
+  .chevron { font-size: 10px; color: var(--text3); transition: transform .2s; }
+  .chevron.open { transform: rotate(180deg); }
+  .section-body { border-top: 0.5px solid var(--border); }
+  .section-body.collapsed { display: none; }
+  .item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 1.1rem; border-bottom: 0.5px solid var(--border); cursor: pointer; transition: background .1s; }
+  .item:last-child { border-bottom: none; }
+  .item:hover { background: var(--bg2); }
+  .item.done .item-text { color: var(--text3); text-decoration: line-through; }
+  .checkbox { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border2); flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+  .checkbox.checked { background: var(--teal); border-color: var(--teal); }
+  .checkbox.checked::after { content: ''; display: block; width: 9px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translate(1px, -1px); }
+  .item-num { font-size: 11px; color: var(--text3); min-width: 24px; margin-top: 3px; }
+  .item-text { font-size: 13px; color: var(--text2); line-height: 1.5; flex: 1; }
+  .note-tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+  .note-done { background: var(--green-bg); color: var(--green-text); }
+  .note-pending { background: var(--amber-bg); color: var(--amber-text); }
+  .note-na { background: var(--bg3); color: var(--text3); }
+  .footer { text-align: center; font-size: 12px; color: var(--text3); margin-top: 2rem; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>AprIQ — Launch Checklist</h1>
+    <p>Approximate + IQ · Construction Cost Intelligence · Updated April 2026</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-count" id="progressCount">0 of 0 complete</span>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" onclick="expandAll()">Expand all</button>
+    <button class="btn" onclick="collapseAll()">Collapse all</button>
+    <button class="btn" onclick="resetAll()">Reset checklist</button>
+  </div>
+
+  <div id="checklist"></div>
+
+  <div class="footer">AprIQ · apriq.co.za · Confidential — not for distribution · v2 April 2026</div>
+</div>
+
+<script>
+const SECTIONS = [
+  {
+    title: "Business & legal foundations",
+    items: [
+      { text: "Product name confirmed as AprIQ — all Instimate references retired", done: true },
+      { text: "Business entity — JvRStudio Pty Ltd confirmed as trading entity for AprIQ", done: true },
+      { text: "CIPC registration confirmed clear", done: true },
+      { text: "Business bank account confirmed (JvRStudio)", done: true },
+      { text: "Domain apriq.co.za registered at Afrihost", done: true },
+      { text: "Business email apriq@apriq.co.za set up via Zoho", done: true },
+      { text: "DNS pointing to Vercel — www.apriq.co.za live with SSL", done: true },
+      { text: "Terms of Service drafted with ROM disclaimer language", done: true },
+      { text: "Privacy Policy drafted — POPIA compliant with Information Officer designation", done: true },
+      { text: "Legal page live at /legal — footer link added to calculator", done: true },
+    ]
+  },
+  {
+    title: "Account setup — all services",
+    items: [
+      { text: "GitHub account — JvRStudiodesign", done: true },
+      { text: "Vercel account connected to GitHub — Hobby plan", done: true },
+      { text: "Supabase account and project — cocugdgelatgjzgkyhpz (eu-west-1)", done: true },
+      { text: "Resend account — apriq.co.za domain verified", done: true },
+      { text: "PayFast merchant account created — sandbox active", done: true },
+      { text: "FICA documents submitted to PayFast for live mode", done: false, tag: "pending", tagLabel: "Pending" },
+      { text: "PayFast flipped from sandbox to live (VITE_PAYFAST_SANDBOX=false)", done: false, tag: "pending", tagLabel: "After FICA" },
+      { text: "PostHog set up for product analytics — EU cloud", done: true },
+      { text: "Zoho email configured — apriq@apriq.co.za", done: true },
+    ]
+  },
+  {
+    title: "Supabase — database & auth",
+    items: [
+      { text: "profiles table — tier, trial_end_date, logo_url, last_active_at", done: true },
+      { text: "users table — name, email, company, profession, referral_source", done: true },
+      { text: "clients table — all fields, deleted_by_user flag, RLS blocks delete", done: true },
+      { text: "projects table — all fields, deleted_by_user flag, RLS blocks delete", done: true },
+      { text: "estimates table — full data, pdf_generated, shared, deleted_by_user flags, RLS blocks delete", done: true },
+      { text: "project_estimates table — full estimate, RLS blocks delete", done: true },
+      { text: "estimate_snapshots table — share_token, snapshot_data, expires_at, RLS blocks delete", done: true },
+      { text: "saved_estimates table — full structure, RLS blocks delete", done: true },
+      { text: "pdf_exports table — every PDF tracked, RLS blocks delete", done: true },
+      { text: "feedback table — user_id, topic, message, email", done: true },
+      { text: "contact_submissions table — name, surname, email, message", done: true },
+      { text: "waitlist table — email, name, profession", done: true },
+      { text: "Supabase Auth — email/password signup (confirmation disabled)", done: true },
+      { text: "Supabase Auth — Google OAuth configured", done: true },
+      { text: "Row-level security (RLS) policies on all tables", done: true },
+      { text: "userTier flag (free / pro / trial) in profiles", done: true },
+      { text: "Trial expiry logic — 30 days from signup", done: true },
+      { text: "Site URL set to https://www.apriq.co.za", done: true },
+      { text: "Redirect URLs include www.apriq.co.za/**", done: true },
+    ]
+  },
+  {
+    title: "Core calculation engine",
+    items: [
+      { text: "Base rate table — all building types and rates, attributed to AprIQ only", done: true },
+      { text: "Multiplier logic — quality, site access, project type, complexity", done: true },
+      { text: "Weighted base rate formula for mixed-use (up to 3 types)", done: true },
+      { text: "Full financial stack: construction → land → contingency → profit → fees → VAT → total", done: true },
+      { text: "Earthworks isolation — slope multiplier applies to earthworks only", done: true },
+      { text: "11-element cost breakdown with default percentages", done: true },
+      { text: "Escalation input — estimated start date + annual escalation rate (default 7%)", done: true },
+      { text: "Element percentages always total exactly 100%", done: true },
+      { text: "Mixed-use allocation always totals exactly 100%", done: true },
+      { text: "Unit tests for calculation logic", done: false, tag: "pending", tagLabel: "Phase 2" },
+    ]
+  },
+  {
+    title: "Frontend — UI build",
+    items: [
+      { text: "React + Vite project deployed to Vercel", done: true },
+      { text: "Responsive layout — mobile-first, desktop fluid", done: true },
+      { text: "Signup flow — name, email, password, profession, company, Google OAuth", done: true },
+      { text: "Login flow — email/password + Google OAuth + password reset", done: true },
+      { text: "Calculator — building type selector (category + subtype)", done: true },
+      { text: "Calculator — floor area input", done: true },
+      { text: "Calculator — multiplier controls (quality, site access, project type, complexity)", done: true },
+      { text: "Calculator — land model inputs (land type, area, slope)", done: true },
+      { text: "Calculator — financial inputs (contingency, profit, fees, VAT)", done: true },
+      { text: "Calculator — results display (total cost, full 11-element breakdown)", done: true },
+      { text: "Calculator — mixed-use mode (up to 3 building types with allocation %)", done: true },
+      { text: "Calculator — escalation input and output display", done: true },
+      { text: "Calculator — base rate ±30% adjustment (Pro)", done: true },
+      { text: "Calculator — renovation area split logic", done: true },
+      { text: "Calculator — reset all button", done: true },
+      { text: "Free vs Pro gating — locked features visible and greyed out", done: true },
+      { text: "30-day trial state — all Pro features unlocked, no card required", done: true },
+      { text: "Trial expiry notifications — in-app warning and lockout", done: true },
+      { text: "Feedback form — visible to all users", done: true },
+      { text: "PWA install instructions modal", done: true },
+      { text: "Landing page, Features, About, How it works, FAQ pages", done: true },
+      { text: "Legal page at /legal — public route", done: true },
+    ]
+  },
+  {
+    title: "PDF export",
+    items: [
+      { text: "react-pdf library set up", done: true },
+      { text: "PDF template — logo, company details, client name, project name", done: true },
+      { text: "PDF — project parameters summary section", done: true },
+      { text: "PDF — full 11-element cost breakdown", done: true },
+      { text: "PDF — financial stack (construction, land, contingency, profit, fees, VAT, total)", done: true },
+      { text: "PDF — escalation section (if start date entered)", done: true },
+      { text: "PDF — estimate date and auto-generated reference number", done: true },
+      { text: "PDF — ROM disclaimer text", done: true },
+      { text: "PDF — footer: Report generated by AprIQ — apriq.co.za", done: true },
+      { text: "CSP updated for WebAssembly (wasm-unsafe-eval, worker-src blob:)", done: true },
+      { text: "PDF download tracked in pdf_exports table", done: true },
+      { text: "Cross-device testing — desktop and mobile browsers", done: false, tag: "pending", tagLabel: "QA" },
+      { text: "Confirmed presentation-ready with zero post-editing required", done: false, tag: "pending", tagLabel: "QA" },
+    ]
+  },
+  {
+    title: "Saved estimates & sharing",
+    items: [
+      { text: "Save estimate — writes full input and output state to Supabase", done: true },
+      { text: "Estimates stored in estimates + project_estimates tables — never deleted", done: true },
+      { text: "Estimate reload — user can reopen and re-export any saved estimate", done: true },
+      { text: "Shareable link — unique URL generated per saved estimate", done: true },
+      { text: "Public estimate view — read-only, accessible to anyone with link", done: true },
+      { text: "Shared estimate served via rate-limited API endpoint", done: true },
+      { text: "Shared flag set on estimate when shared", done: true },
+      { text: "Try AprIQ free CTA on public estimate view", done: true },
+      { text: "Referral source tracking (PDF footer, shared link, direct, social)", done: true },
+    ]
+  },
+  {
+    title: "User profile",
+    items: [
+      { text: "Profile page — name, email, company, profession, contact number", done: true },
+      { text: "Company logo upload — stored to Supabase storage (Pro only)", done: true },
+      { text: "Company address and contact details fields", done: true },
+      { text: "Logo and details auto-populate on all PDF exports", done: true },
+      { text: "Account settings — change password and update profile", done: true },
+    ]
+  },
+  {
+    title: "Payments — PayFast integration",
+    items: [
+      { text: "Pro Monthly product in PayFast at R79/month", done: true },
+      { text: "Upgrade screen — plan shown, PayFast integration", done: true },
+      { text: "PayFast payment flow integrated in React app", done: true },
+      { text: "Webhook — on successful payment, upgrade tier to Pro in Supabase", done: true },
+      { text: "Webhook — on payment failure or cancellation, revert to Free", done: true },
+      { text: "Grace period logic — 3-day grace before lockout on payment failure", done: true },
+      { text: "PayFast ITN signature verification implemented server-side", done: true },
+      { text: "Rate limiting on PayFast ITN endpoint (20/min)", done: true },
+      { text: "Billing management page — current plan, cancel option", done: true },
+      { text: "FICA documents submitted to PayFast", done: false, tag: "pending", tagLabel: "Required" },
+      { text: "Test full payment flow end-to-end in PayFast sandbox", done: false, tag: "pending", tagLabel: "QA" },
+      { text: "Flip VITE_PAYFAST_SANDBOX to false in Vercel after FICA approval", done: false, tag: "pending", tagLabel: "After FICA" },
+    ]
+  },
+  {
+    title: "Email flows — Resend",
+    items: [
+      { text: "All emails consolidated into single send-email.js endpoint with type routing", done: true },
+      { text: "Welcome email — signup, confirms 30-day Pro trial", done: true },
+      { text: "Trial warning email — trial ends in 2 days (day 28)", done: true },
+      { text: "Trial expiry email — trial ended, upgrade prompt", done: true },
+      { text: "Payment confirmation email", done: true },
+      { text: "Payment failure email", done: true },
+      { text: "Cancellation confirmation email", done: true },
+      { text: "Waitlist confirmation email — user receives on joining waitlist", done: true },
+      { text: "Contact confirmation email — user receives after sending message", done: true },
+      { text: "Feedback confirmation email — user receives after submitting feedback", done: true },
+      { text: "Founder notification — new user signup", done: true },
+      { text: "Founder notification — new client added", done: true },
+      { text: "Founder notification — new waitlist signup", done: true },
+      { text: "Founder notification — contact form submission", done: true },
+      { text: "Founder notification — feedback submission", done: true },
+      { text: "Notification emails rate-limited (5/hour per IP)", done: true },
+      { text: "Test all email flows end-to-end in production", done: false, tag: "pending", tagLabel: "QA" },
+    ]
+  },
+  {
+    title: "Founder analytics dashboard",
+    items: [
+      { text: "/admin route — password-protected, server-side auth", done: true },
+      { text: "Admin password in Vercel ADMIN_PASSWORD env var (not frontend)", done: true },
+      { text: "Admin rate-limited (30/min)", done: true },
+      { text: "Total registered users", done: true },
+      { text: "Daily and weekly new signups", done: true },
+      { text: "Active trial users", done: true },
+      { text: "Total Pro subscribers — monthly vs annual split", done: true },
+      { text: "Trial-to-paid conversion rate", done: true },
+      { text: "Estimates generated — daily, weekly, total", done: true },
+      { text: "MRR and ARR", done: true },
+      { text: "Most popular building types", done: true },
+      { text: "Referral source breakdown", done: true },
+    ]
+  },
+  {
+    title: "Security hardening",
+    items: [
+      { text: "All secrets in Vercel env vars — nothing hardcoded in source", done: true },
+      { text: "Security headers in vercel.json — CSP, HSTS, X-Frame-Options, Referrer-Policy", done: true },
+      { text: "CSP includes wasm-unsafe-eval for react-pdf WebAssembly", done: true },
+      { text: "INTERNAL_API_SECRET gates all internal API calls", done: true },
+      { text: "SUPABASE_SERVICE_ROLE_KEY server-side only", done: true },
+      { text: "Admin password never stored client-side", done: true },
+      { text: "localStorage tier cache removed — tier loaded from server only", done: true },
+      { text: "RLS delete blocks on all key tables (estimates, projects, clients, profiles, snapshots, pdf_exports)", done: true },
+      { text: "save-estimate API validates auth + ownership + input server-side", done: true },
+      { text: "save-estimate rate-limited (10/min per IP)", done: true },
+      { text: "Shared estimate via rate-limited API endpoint (30/min per IP)", done: true },
+      { text: "PayFast ITN MD5 signature verification", done: true },
+      { text: "All fix scripts removed from root directory", done: true },
+    ]
+  },
+  {
+    title: "Quality assurance",
+    items: [
+      { text: "Test all calculation outputs against source spreadsheet", done: false },
+      { text: "Test full signup → login → estimate → PDF → share flow on production", done: false },
+      { text: "Test all user flows on desktop browser", done: false },
+      { text: "Test all user flows on mobile — iOS and Android", done: false },
+      { text: "Test free tier — confirm locked features visible but inaccessible", done: false },
+      { text: "Test 30-day trial flow end-to-end", done: false },
+      { text: "Test trial expiry and downgrade flow", done: false },
+      { text: "Test PayFast payment, subscription and cancellation in sandbox", done: false },
+      { text: "Test all email triggers", done: false },
+      { text: "Test PDF export on multiple devices", done: false },
+      { text: "Test shareable link on unauthenticated browser", done: false },
+      { text: "Test Google OAuth signup and login", done: false },
+      { text: "Review all labels and tooltips for clarity", done: false },
+      { text: "Spell-check and proofread all copy in app and PDF", done: false },
+    ]
+  },
+  {
+    title: "Pre-launch GTM preparation",
+    items: [
+      { text: "Waitlist capture working on landing page", done: true },
+      { text: "Write and publish landing page hero copy and value proposition", done: false },
+      { text: "Write 5 LinkedIn posts scheduled for launch week", done: false },
+      { text: "Identify and list 50 target architects on LinkedIn for direct outreach", done: false },
+      { text: "Join 2–3 active SA property and construction WhatsApp groups", done: false },
+      { text: "Join PropTech SA and relevant SA property LinkedIn groups", done: false },
+      { text: "Update founder LinkedIn profile to reference AprIQ", done: false },
+      { text: "Write first SEO blog post — What does it cost to build in South Africa in 2026", done: false },
+      { text: "Send 50 personalised architect outreach messages", done: false },
+      { text: "Collect 50 waitlist email addresses before launch day", done: false },
+    ]
+  },
+  {
+    title: "Launch day",
+    items: [
+      { text: "Deploy final build to Vercel production", done: false },
+      { text: "Confirm www.apriq.co.za domain pointing correctly", done: true },
+      { text: "Switch PayFast from sandbox to live mode", done: false },
+      { text: "Send launch email to full waitlist", done: false },
+      { text: "Publish launch LinkedIn post", done: false },
+      { text: "Share in WhatsApp groups", done: false },
+      { text: "Monitor /admin dashboard hourly on day 1", done: false },
+      { text: "Respond personally to every signup in first 48 hours", done: false },
+      { text: "Log all bugs and feedback from first 10 users", done: false },
+    ]
+  },
+  {
+    title: "Post-launch — week 1",
+    items: [
+      { text: "Call or voice note first 10 active users — collect honest feedback", done: false },
+      { text: "Fix top 3 friction points from first-user feedback", done: false },
+      { text: "Confirm all email flows triggering correctly in production", done: false },
+      { text: "Confirm PayFast webhooks firing and tier updating correctly", done: false },
+      { text: "Check referral source tracking recording accurately", done: false },
+      { text: "Publish second LinkedIn content post", done: false },
+      { text: "Send 20 additional architect outreach messages", done: false },
+      { text: "Review trial-to-paid conversion rate at day 7", done: false },
+    ]
+  },
+];
+
+const KEY = 'apriq_checklist_v2';
+
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } }
+function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {} }
+
+let state = load();
+
+function getGlobalNum(si, ii) {
+  let n = 1;
+  for (let s = 0; s < si; s++) n += SECTIONS[s].items.length;
+  return n + ii;
+}
+
+function render() {
+  let total = 0, done = 0;
+  let html = '';
+
+  SECTIONS.forEach((section, si) => {
+    const sk = 's' + si;
+    const collapsed = state[sk + '_c'] === true;
+    const sTotal = section.items.length;
+    const sDone = section.items.filter((item, ii) => state[sk + '_' + ii] !== undefined ? state[sk + '_' + ii] : item.done).length;
+    total += sTotal; done += sDone;
+
+    html += `<div class="section">
+      <div class="section-header" onclick="toggleSection('${sk}')">
+        <div class="section-left">
+          <span class="section-num">${si + 1}.</span>
+          <span class="section-name">${section.title}</span>
+        </div>
+        <div class="section-right">
+          <span class="section-count">${sDone}/${sTotal}</span>
+          <span class="chevron ${collapsed ? '' : 'open'}">▼</span>
+        </div>
+      </div>
+      <div class="section-body ${collapsed ? 'collapsed' : ''}">`;
+
+    section.items.forEach((item, ii) => {
+      const ik = sk + '_' + ii;
+      const checked = state[ik] !== undefined ? state[ik] : item.done;
+      const num = getGlobalNum(si, ii);
+      const tag = item.tag ? `<span class="note-tag note-${item.tag}">${item.tagLabel}</span>` : '';
+      html += `<div class="item ${checked ? 'done' : ''}" onclick="toggleItem('${ik}', ${!!item.done})">
+        <div class="checkbox ${checked ? 'checked' : ''}"></div>
+        <span class="item-num">${num}.</span>
+        <span class="item-text">${item.text}${tag}</span>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  document.getElementById('checklist').innerHTML = html;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('barFill').style.width = pct + '%';
+  document.getElementById('progressCount').textContent = `${done} of ${total} complete`;
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+function toggleItem(key, defaultDone) {
+  const current = state[key] !== undefined ? state[key] : defaultDone;
+  state[key] = !current;
+  save(state); render();
+}
+
+function toggleSection(key) {
+  state[key + '_c'] = !state[key + '_c'];
+  save(state); render();
+}
+
+function expandAll() {
+  SECTIONS.forEach((_, si) => { state['s' + si + '_c'] = false; });
+  save(state); render();
+}
+
+function collapseAll() {
+  SECTIONS.forEach((_, si) => { state['s' + si + '_c'] = true; });
+  save(state); render();
+}
+
+function resetAll() {
+  if (confirm('Reset all checkboxes? Pre-completed items will remain checked.')) {
+    const preserved = {};
+    SECTIONS.forEach((section, si) => {
+      section.items.forEach((item, ii) => {
+        if (item.done) preserved['s' + si + '_' + ii] = true;
+      });
+    });
+    state = preserved;
+    save(state); render();
+  }
+}
+
+render();
+</script>
+</body>
+</html>
