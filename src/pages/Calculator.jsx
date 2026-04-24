@@ -605,7 +605,7 @@ export default function Calculator() {
         fontWeight: 500,
         cursor: 'pointer',
         fontFamily: 'inherit',
-        marginTop: '12px',
+        marginTop: '1rem', marginBottom: '1rem',
         width: '100%',
       }}
     >
