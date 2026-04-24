@@ -599,7 +599,6 @@ export default function Calculator() {
         padding: '10px 18px',
         borderRadius: '8px',
         background: '#F9FAFA', border: '1px solid #FF8210',
-        border: 'none',
         color: '#111111',
         fontSize: '13px',
         fontWeight: 500,
