@@ -62,7 +62,7 @@ export default async function handler(req, res) {
   try {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('tier, trial_start, trial_end_date, ai_questions_used, ai_questions_reset_date')
+      .select('tier, trial_end_date, ai_questions_used, ai_questions_reset_date')
       .eq('id', userId)
       .single();
 
