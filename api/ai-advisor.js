@@ -77,7 +77,7 @@ YOUR RULES:
 
     const contents = [
       { role: 'user',  parts: [{ text: systemPrompt }] },
-      { role: 'model', parts: [{ text: 'Understood. I am ready to help interpret this estimate.' ,
+      { role: 'model', parts: [{ text: 'Understood. I am ready to help interpret this estimate.' }] },
       ...history,
       { role: 'user',  parts: [{ text: message }] },
     ];
