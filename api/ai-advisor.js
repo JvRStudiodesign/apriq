@@ -68,7 +68,7 @@ YOUR RULES:
 - Never mention AECOM, competitor products, or external pricing guides.
 - If asked about something outside construction cost estimation, politely redirect.
 - Respond in the same language the user writes in.
-- Never use markdown formatting — plain text only.`;
+- CRITICAL: Never use markdown. No headers, no asterisks, no bullet points, no bold, no italic. Write in plain sentences and paragraphs only.`;
 
     const history = (conversationHistory || []).map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
@@ -89,7 +89,7 @@ YOUR RULES:
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents,
-          generationConfig: { maxOutputTokens: 400, temperature: 0.4 },
+          generationConfig: { maxOutputTokens: 600, temperature: 0.3 },
         }),
       }
     );
