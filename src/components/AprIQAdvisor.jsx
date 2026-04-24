@@ -114,7 +114,7 @@ export default function AprIQAdvisor({ estimateState, onClose }) {
           </a>
         </div>
         <div style={s.trialBar}>Your 30-day trial includes 7 days of AprIQ advisor access.</div>
-      </div    </div>
+      </div></div>
   );
 
   if (stage === 'prompt') return (
