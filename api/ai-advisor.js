@@ -137,7 +137,7 @@ YOUR RULES:
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
+          system_instruction: { parts: [{ text: systemPrompt }] },
           contents,
           generationConfig: {
             maxOutputTokens: 400,
