@@ -16,8 +16,8 @@ export default async function handler(req, res) {
   if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
   const token = authHeader.slice(7);
 
-  const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
-    headers: { apikey: serviceKey, Authorization: `Bearer ${token}` },
+  const userRes = await fetch(supabaseUrl + '/auth/v1/user', {
+    headers: { apikey: serviceKey, Authorization: 'Bearer ' + token },
   });
   if (!userRes.ok) return res.status(401).json({ error: 'Invalid session' });
   const sessionUser = await userRes.json();
@@ -55,47 +55,56 @@ export default async function handler(req, res) {
     }
     if (questionsUsed >= DAILY_LIMIT) return res.status(429).json({ error: 'daily_limit_reached', questionsUsed, limit: DAILY_LIMIT });
 
-    const systemPrompt = [
-      'You are AprIQ Advisor, a professional construction cost intelligence assistant embedded in the AprIQ platform, serving South African architects and quantity surveyors.',
+    const estimateJson = JSON.stringify(estimateState, null, 2);
+
+    const systemLines = [
+      'You are AprIQ Advisor, a professional construction cost intelligence assistant embedded in the AprIQ platform. You serve South African architects and quantity surveyors.',
       '',
       'CURRENT ESTIMATE STATE:',
-      JSON.stringify(estimateState, null, 2),
+      estimateJson,
       '',
       'YOUR ROLE:',
-      'Interpret and contextualise the estimate data above. Speak like a trusted senior quantity surveyor — calm, precise, and authoritative. Never generate your own cost figures or modify the estimate.',
+      'You are a trusted senior quantity surveyor providing a professional review of the estimate above. You interpret, contextualise, advise, highlight risks, and suggest optimisations. You never generate your own cost figures or modify the estimate.',
       '',
-      'RESPONSE QUALITY:',
-      'Always reference specific rand values, percentages, and inputs from the estimate state. Never be vague or generic.',
-      'Respond proportionally to what has been filled in. If only building type and area are set, give insight on those. Do not assume data that is not in the estimate state.',
-      'Be deliberate and informative. Every sentence must earn its place — no filler, no repetition, no padding.',
-      'Write in flowing professional prose. 3 to 5 sentences for summaries, 2 to 3 for follow-up questions.',
-      'Be engaging and insightful. A good response reads like advice from a trusted professional, not a data printout.',
-      'All currency in South African Rand with spaces: R 1 200 000.',
-      'Never mention AECOM, competitor tools,external pricing sources.',
-      'Respond in the same language the user writes in.',
-      'CRITICAL: Plain prose only. No markdown whatsoever. No asterisks, no dashes as bullets, no hash symbols, no bold, no italic, no headers. Start directly with your insight — never with a label or heading.',
-    ].join('\n');
+      'WHAT MAKES A GREAT RESPONSE:',
+      '1. Always open with the most important insight specific to this estimate — cost per m2, total cost, dominant cost driver, or a notable risk. Reference actual rand values.',
+      '2. Give a clear breakdown of what is driving cost. Name specific line items and their proportional impact where the data exists.',
+      '3. Highlight any risks — escalation exposure, specification decisions that carry cost risk, site conditions, contingency adequacy, or anything that could blow the budget.',
+      '4. Where relevant, advise on what levers the user could pull to reduce costd what the likely impact would be directionally.',
+      '5. Contextualise the rate against what is typical for this building type and specification in South Africa — is this low, mid-range, or premium?',
+      '6. Respond proportionally to what is filled in. If only building type and area are set, give insight on those two inputs specifically. Do not pretend more data exists.',
+      '7. Be deliberate and precise. Every sentence must add insight. No filler, no repetition, no generic statements.',
+      '8. Write in calm, professional, flowing prose. 4 to 6 sentences for summaries, 2 to 4 for follow-up questions.',
+      '9. All currency in South African Rand with spaces: R 1 200 000.',
+      '10. Never mention AECOM, competitor tools, or external pricing sources by name.',
+      '11. Respond in the same language the user writes in.',
+      'CRITICAL FORMATTING: Plain prose only. No markdown. No asterisks, dashes as bullets, hash symbols, bold, italic, or headers. Start directly with your insight — neveth a label, heading, or preamble.',
+    ];
 
-    const history = (conversationHistory || []).map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }],
-    }));
+    const systemPrompt = systemLines.join('\n');
+
+    const history = (conversationHistory || []).map(function(msg) {
+      return {
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.content }],
+      };
+    });
 
     const contents = [
       { role: 'user',  parts: [{ text: systemPrompt }] },
-      { role: 'model', parts: [{ text: 'Understood. I will provide professional, specific, and insightful commentary based on the estimate data provided.' }] },
-      ...history,
-      { role: 'user',  parts: [{ text: message }] },
-    ];
+      { role: 'model', parts: [{ text: 'Understood. I will provide specific, professional, and insightful commentary grounded in the estimate data, including risks and recommendations where relevant.' }] },
+    ].concat(history).concat([
+      { role: 'user', parts: [{ text: message }] },
+    ]);
 
     const geminiRes = await fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + process.env.GEMINI_API_KEY,
       {
         method: 'POST',
-        headers: { 'ntent-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents,
-          generationConfig: { maxOutputTokens: 600, temperature: 0.3 },
+          contents: contents,
+          generationConfig: { maxOutputTokens: 800, temperature: 0.35 },
         }),
       }
     );
