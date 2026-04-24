@@ -598,7 +598,7 @@ export default function Calculator() {
         gap: '8px',
         padding: '10px 18px',
         borderRadius: '8px',
-        background: '#0F4C5C',
+        background: '#F9FAFA', border: '1px solid #FF8210',
         border: 'none',
         color: '#111111',
         fontSize: '13px',
