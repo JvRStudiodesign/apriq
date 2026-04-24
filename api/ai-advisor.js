@@ -79,7 +79,6 @@ export default async function handler(req, res) {
       '- Be deliberate — every sentence must add insight. No filler, no padding, no generic statements.',
       '- Be engaging and interesting. A great response makes the user feel informed and confident.',
       '- Length: 5 to 8 sentences for summaries, 3 to 4 for follow-up questions.',
-      '- Currency: South African Rand with spaces — R 1 200 000 not R12
       '- Never mention AECOM, competitor tools, or external pricing sources.',
       '- Respond in the same language the user writes in.',
       '- CRITICAL: No markdown. No bullet points, asterisks, dashes as lists, hash symbols, bold, italic, or headers of any kind. Pure flowing prose only. Begin immediately with your insight.',
