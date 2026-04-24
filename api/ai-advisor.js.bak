@@ -4,8 +4,8 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase    = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
 
-const DAILY_LIMIT   = 20;
-const AI_TRIAL_DAYS = 7;
+const DAILY_LIMIT    = 20;
+const AI_TRIAL_DAYS  = 30;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -55,26 +55,24 @@ export default async function handler(req, res) {
     }
     if (questionsUsed >= DAILY_LIMIT) return res.status(429).json({ error: 'daily_limit_reached', questionsUsed, limit: DAILY_LIMIT });
 
-    const systemPrompt = [
-      'You are AprIQ Advisor, a professional construction cost intelligence assistant embedded in the AprIQ platform, serving South African architects and quantity surveyors.',
-      '',
-      'CURRENT ESTIMATE STATE:',
-      JSON.stringify(estimateState, null, 2),
-      '',
-      'YOUR ROLE:',
-      'Interpret and contextualise the estimate data above. Speak like a trusted senior quantity surveyor — calm, precise, and authoritative. Never generate your own cost figures or modify the estimate.',
-      '',
-      'RESPONSE QUALITY:',
-      'Always reference specific rand values, percentages, and inputs from the estimate state. Never be vague or generic.',
-      'Respond proportionally to what has been filled in. If only building type and area are set, give insight on those. Do not assume data that is not in the estimate state.',
-      'Be deliberate and informative. Every sentence must earn its place — no filler, no repetition, no padding.',
-      'Write in flowing professional prose. 3 to 5 sentences for summaries, 2 to 3 for follow-up questions.',
-      'Be engaging and insightful. A good response reads like advice from a trusted professional, not a data printout.',
-      'All currency in South African Rand with spaces: R 1 200 000.',
-      'Never mention AECOM, competitor tools,external pricing sources.',
-      'Respond in the same language the user writes in.',
-      'CRITICAL: Plain prose only. No markdown whatsoever. No asterisks, no dashes as bullets, no hash symbols, no bold, no italic, no headers. Start directly with your insight — never with a label or heading.',
-    ].join('\n');
+    const systemPrompt = `You are AprIQ Advisor, a professional construction cost intelligence assistant embedded in the AprIQ platform, serving South African architects and quantity surveyors.
+
+CURRENT ESTIMATE STATE:
+${JSON.stringify(estimateState, null, 2)}
+
+YOUR ROLE:
+Interpret and contextualise the estimate data above. Speak like a trusted senior quantity surveyor — calm, precise, and authoritative. You do not generate your own cost figures or modify the estimate in any way.
+
+RESPONSE QUALITY RULES:
+- Always reference specific rand values, percentages, and inputs from the estimate state. Never be vague or generic.
+- Respond proportionally to what has been filled in. If only a building type and floor area are set, give insight on those. Do not assume data that is not present.
+- Be deliberate and informative. Every sentence mustarn its place — no filler, no repetition, no padding.
+- Write in flowing professional prose. Aim for 3 to 5 sentences for summaries, 2 to 3 for follow-up questions.
+- Be engaging and insightful. A good response reads like advice from a trusted professional, not a data printout.
+- All currency in South African Rand. Format with spaces: R 1 200 000.
+- Never mention AECOM, competitor tools, or external pricing sources.
+- Respond in the same language the user writes in.
+- CRITICAL: Plain prose only. No markdown. No asterisks, dashes as bullets, hash symbols, bold, italic, headers, or bullet points. Do not begin your response with a label or heading — start directly with your insight.`;`
 
     const history = (conversationHistory || []).map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
@@ -83,16 +81,16 @@ export default async function handler(req, res) {
 
     const contents = [
       { role: 'user',  parts: [{ text: systemPrompt }] },
-      { role: 'model', parts: [{ text: 'Understood. I will provide professional, specific, and insightful commentary based on the estimate data provided.' }] },
+      { role: 'model', parts: [{ text: 'Understood. I am ready to help interpret this estimate.' }] },
       ...history,
       { role: 'user',  parts: [{ text: message }] },
     ];
 
     const geminiRes = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + process.env.GEMINI_API_KEY,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
-        headers: { 'ntent-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents,
           generationConfig: { maxOutputTokens: 600, temperature: 0.3 },
