@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { calculate } from '../engine/calculator';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { EstimatePDF } from '../components/EstimatePDF';
+import AprIQAdvisor from '../components/AprIQAdvisor';
 import {
   CATEGORIES, QUALITY, SITE_ACCESS, PROJECT_TYPE,
   RENOVATION_COMPLEXITY, COMPLEXITY, LAND_PROCUREMENT, LAND_SLOPE, BREAKDOWN_ELEMENTS,
@@ -232,6 +233,7 @@ export default function Calculator() {
   const [newProjForm, setNewProjForm] = useState({ project_name:'', reference_number:'', address:'', client_id:'' });
   const [newClientNameCalc, setNewClientNameCalc] = useState('');
   const [savingNewProj, setSavingNewProj] = useState(false);
+  const [showAdvisor, setShowAdvisor] = useState(false);
 
   const tier     = profile?.tier || 'free';
   const trialEnd = profile?.trial_end_date ? new Date(profile.trial_end_date) : null;
@@ -439,6 +441,60 @@ export default function Calculator() {
   const pdfFilename     = `APRIQ-${pdfRef_display}-${_ds}-${_ts}.pdf`;
   const isRenovation   = inputs.projectTypeKey === 'Renovation';
 
+  const estimateState = result
+    ? {
+        buildingType: inputs.use1Category,
+        buildingSubtype: inputs.use1Subtype,
+        floorArea: inputs.floorArea,
+        isRenovation,
+        renovationArea: inputs.renovationArea,
+        newBuildArea: result.newArea,
+        isMixedUse: numCats > 1,
+        mixedUseAllocations: numCats > 1
+          ? {
+              use1: { category: inputs.use1Category, subtype: inputs.use1Subtype, allocation: inputs.use1Allocation },
+              use2: numCats >= 2 ? { category: inputs.use2Category, subtype: inputs.use2Subtype, allocation: inputs.use2Allocation } : null,
+              use3: numCats >= 3 ? { category: inputs.use3Category, subtype: inputs.use3Subtype, allocation: inputs.use3Allocation } : null,
+            }
+          : null,
+        qualityKey: inputs.qualityKey,
+        siteAccessKey: inputs.siteAccessKey,
+        projectTypeKey: inputs.projectTypeKey,
+        complexityKey: inputs.complexityKey,
+        renovationComplexityKey: inputs.renovationComplexityKey,
+        qualityMultiplier: result.qualityMultiplier,
+        siteAccessMultiplier: result.siteMultiplier,
+        projectTypeMultiplier: result.projectTypeMultiplier,
+        complexityMultiplier: result.complexityMultiplier,
+        renovationMultiplier: result.renovationMultiplier,
+        baseRate: result.weightedBaseRate,
+        adjustedBaseRate: result.totalAdjustedBaseRate,
+        landType: inputs.landProcurementType,
+        landArea: inputs.landArea,
+        landSlopeKey: inputs.landSlopeKey,
+        slopeMultiplier: result.earthworksMultiplier,
+        contingencyPct: inputs.contingencyPct,
+        contractorProfitPct: inputs.profitPct,
+        preliminariesPct: inputs.preliminariesPct,
+        professionalFeesPct: inputs.feesPct,
+        vatPct: inputs.vatPct,
+        escalationRate: inputs.escalationRate,
+        includeEscalation: inputs.includeEscalation,
+        estimatedStartDate: inputs.estimatedStartDate,
+        escalationYears: result.escalationYears,
+        escalatedTotal: result.escalatedTotal,
+        constructionCost: result.constructionCost,
+        landCost: result.landProcurementCost,
+        contingency: result.contingencyAmount,
+        contractorProfit: result.contractorProfit,
+        preliminaries: result.preliminaries,
+        professionalFees: result.professionalFees,
+        vat: result.vatAmount,
+        totalCost: result.totalProjectCost,
+        elementBreakdown: result.elementBreakdown,
+      }
+    : null;
+
   const Summary = () => !result ? null : (<>
     {/* ── Total project cost hero ── */}
     <div style={{ background: '#111111', borderRadius: '14px', padding: '1.5rem', marginBottom: '0.75rem', color: '#F9FAFA' }}>
@@ -531,6 +587,34 @@ export default function Calculator() {
         <span style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.totalProjectCost)}</span>
       </div>
     </div>
+
+    <button
+      type="button"
+      onClick={() => setShowAdvisor(true)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        padding: '10px 18px',
+        borderRadius: '8px',
+        background: '#0F4C5C',
+        border: 'none',
+        color: '#111111',
+        fontSize: '13px',
+        fontWeight: 500,
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        marginTop: '12px',
+        width: '100%',
+      }}
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+        stroke="#FF8210" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+      AprIQ advisor
+    </button>
 
     {/* ── Escalation ── */}
     {showEscalation && (
@@ -946,6 +1030,13 @@ export default function Calculator() {
       <div style={{ maxWidth:'1140px', margin:'0 auto', padding:'0 1.25rem 2.5rem' }}>
         <InstallPWA />
       </div>
+
+      {showAdvisor && estimateState && (
+        <AprIQAdvisor
+          estimateState={estimateState}
+          onClose={() => setShowAdvisor(false)}
+        />
+      )}
     </div>
   );
 }
