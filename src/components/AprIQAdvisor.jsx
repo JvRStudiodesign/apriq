@@ -175,7 +175,7 @@ export default function AprIQAdvisor({ estimateState, onClose }) {
           )}
         </div>
         <div style={s.footer}>
-          <input style={s.input} placeholder={atLimit?'Daily limit reached — resets tomorrow':'Ask anything about your estimate...'} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={handleyDown} disabled={loading||atLimit}/>
+          <input style={s.input} placeholder={atLimit?'Daily limit reached — resets tomorrow':'Ask anything about your estimate...'} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={handleKeyDown} disabled={loading||atLimit}/>
           <button style={s.sendBtn(loading||atLimit||!input.trim())} onClick={()=>sendMessage()} disabled={loading||atLimit||!input.trim()}><SendIcon/></button>
         </div>
       </div>
