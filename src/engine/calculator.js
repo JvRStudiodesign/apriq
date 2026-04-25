@@ -3,6 +3,11 @@ import {
   RENOVATION_COMPLEXITY, COMPLEXITY, LAND_PROCUREMENT, LAND_SLOPE, BREAKDOWN_ELEMENTS,
 } from './rates.js';
 
+function asNumber(v) {
+  const n = typeof v === 'string' ? parseFloat(v) : Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export function calculate(inputs) {
   const {
     use1Category = null, use1Subtype = null, use1Allocation = 1,
