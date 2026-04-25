@@ -1233,7 +1233,7 @@ export default function Calculator() {
                     value={inputs.estimatedStartDate || ''}
                     onChange={e => isPro && upd('estimatedStartDate', e.target.value || null)}
                     disabled={!isPro}
-                    style={{ flex: 1, minWidth: 0, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#111111', background: isPro ? '#F9FAFA' : '#F9FAFA', colorScheme: 'light' }}
+                    style={{ flex: 1, minWidth: 0, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#111111', WebkitTextFillColor: '#111111', background: isPro ? '#F9FAFA' : '#F9FAFA', colorScheme: 'light' }}
                   />
                   <button
                     type="button"
@@ -1245,7 +1245,7 @@ export default function Calculator() {
                       if (typeof el.showPicker === 'function') el.showPicker();
                       else el.focus();
                     }}
-                    style={{ padding: '0.6rem 0.875rem', background: '#E4E5E5', border: 'none', borderLeft: '1px solid #E4E5E5', cursor: isPro ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ padding: '0.6rem 0.875rem', background: 'transparent', border: 'none', cursor: isPro ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF8210" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="4" width="18" height="18" rx="2"/>

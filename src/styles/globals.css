@@ -120,6 +120,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   filter: none !important;
 }
 
+/* Ensure iOS keeps date text visible */
+input[type="date"] {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
 /* ── Footer mobile responsive ── */
 @media (max-width: 700px) {
   .footer-inner {
