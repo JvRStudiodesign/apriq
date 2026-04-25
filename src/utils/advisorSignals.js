@@ -21,12 +21,54 @@ export function getRatePosition(adjustedRate, baseRate) {
   return 'aligned';
 }
 
-export function getLocationType(location) {
+export function getLocationType(location, siteAccessKey) {
   const loc = normKey(location);
-  if (loc.includes('cape town') || loc.includes('ballito') || loc.includes('durban')) return 'coastal';
-  if (loc.includes('pretoria') || loc.includes('johannesburg')) return 'metro';
-  if (loc.includes('bloemfontein')) return 'regional';
-  if (loc.includes('cederberg') || loc.includes('clanwilliam')) return 'remote';
+  const site = normKey(siteAccessKey);
+
+  // Use site-access as a strong proxy when location text is vague.
+  // (This keeps behaviour scalable across SA without hard-coding towns only.)
+  if (site.includes('rural') || site.includes('exurban') || site.includes('specialized')) return 'remote';
+  if (site.includes('peri-urban')) return 'regional';
+
+  // Major SA metros (contractor competition, supply chain depth).
+  const metroKeywords = [
+    'johannesburg', 'pretoria', 'tshwane', 'sandton', 'randburg',
+    'cape town', 'durban', 'ethekwini',
+    'gqeberha', 'port elizabeth', 'east london',
+  ];
+  if (metroKeywords.some((k) => loc.includes(k))) return 'metro';
+
+  // Coastal cues: provinces and common coastal towns/suburbs (premium + exposure).
+  const coastalProvinceCues = [
+    'western cape', 'eastern cape', 'kwazulu-natal', 'kzn',
+    'garden route', 'overberg', 'west coast',
+  ];
+  const coastalTownCues = [
+    'ballito', 'umhlanga', 'salt rock', 'simons town', 'hout bay', 'camps bay',
+    'muizenberg', 'stellenbosch', 'somerset west', 'strand', 'hermanus',
+    'knysna', 'plettenberg', 'plettenberg bay', 'mossel bay', 'jeffreys bay',
+    'st francis', 'st francis bay', 'port alfred', 'richards bay', 'margate',
+  ];
+  const coastalWordCues = ['bay', 'beach', 'coast', 'seaview', 'harbour', 'harbor', 'lagoon'];
+  if (
+    coastalProvinceCues.some((k) => loc.includes(k)) ||
+    coastalTownCues.some((k) => loc.includes(k)) ||
+    coastalWordCues.some((k) => loc.includes(k))
+  ) return 'coastal';
+
+  // Explicit remote cues (logistics / access constraints).
+  const remoteCues = [
+    'cederberg', 'clanwilliam', 'karoo', 'kalahari', 'bushveld', 'reserve',
+    'farm', 'game farm', 'game reserve', 'lodge', 'ranch', 'mountain', 'pass',
+    'gravel', 'dirt road',
+  ];
+  if (remoteCues.some((k) => loc.includes(k))) return 'remote';
+
+  // Inland regional centres (default when not metro/coastal/remote).
+  // Examples only; this is a non-exhaustive hint list.
+  const regionalCues = ['bloemfontein', 'polokwane', 'nelspruit', 'mbombela', 'kimberley', 'rustenburg'];
+  if (regionalCues.some((k) => loc.includes(k))) return 'regional';
+
   return 'regional';
 }
 
@@ -113,7 +155,8 @@ export function buildAdvisorSignals(estimateState) {
   const ratePosition = getRatePosition(adjustedRate, baseRate);
 
   const address = estimateState?.projectLocation?.address || '';
-  const locationType = getLocationType(address);
+  const siteAccessKey = estimateState?.siteAccessKey || '';
+  const locationType = getLocationType(address, siteAccessKey);
 
   const projectType = estimateState?.projectTypeKey || '';
   const complexity = estimateState?.complexityKey || '';
