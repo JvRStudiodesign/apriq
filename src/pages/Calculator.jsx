@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useDeferredValue } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -59,18 +59,64 @@ function BtnGroup({ label, value, onChange, options, locked, cols, getDesc }) {
 }
 
 function Slider({ label, value, min, max, step, onChange, fmtFn, locked }) {
-  const pct = Math.round(((value - min) / (max - min)) * 100);
+  const [localValue, setLocalValue] = useState(value);
+  const rafRef = useRef(null);
+  const pendingRef = useRef(value);
+  const draggingRef = useRef(false);
+
+  useEffect(() => {
+    if (locked) return;
+    // Only sync from parent when user is not actively dragging,
+    // otherwise reversing direction can "stick" due to delayed parent updates.
+    if (!draggingRef.current) setLocalValue(value);
+  }, [value, locked]);
+
+  const emit = (next) => {
+    pendingRef.current = next;
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      if (!locked) onChange(pendingRef.current);
+    });
+  };
+
+  const flush = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    if (!locked) onChange(pendingRef.current);
+  };
+
+  const pct = Math.round(((localValue - min) / (max - min)) * 100);
   return (
     <div style={{ marginBottom: '1.1rem', opacity: locked ? 0.4 : 1 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.5rem' }}>
         {label && <label style={{ ...lbl, marginBottom: 0 }}>{label}{locked && PRO_BADGE}</label>}
-        <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1a1a18' }}>{fmtFn ? fmtFn(value) : value}</span>
+        <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1a1a18' }}>{fmtFn ? fmtFn(localValue) : localValue}</span>
       </div>
       <div style={{ position: 'relative', height: '28px', display: 'flex', alignItems: 'center' }}>
         <div style={{ position: 'absolute', left: 0, right: 0, height: '4px', background: '#eee', borderRadius: '4px' }} />
         <div style={{ position: 'absolute', left: 0, width: pct + '%', height: '4px', background: locked ? '#ddd' : '#1a1a18', borderRadius: '4px' }} />
         <div style={{ position: 'absolute', left: `calc(${pct}% - 10px)`, width: '20px', height: '20px', background: '#fff', border: `2px solid ${locked ? '#ddd' : '#1a1a18'}`, borderRadius: '50%', pointerEvents: 'none', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', zIndex: 1 }} />
-        <input type="range" min={min} max={max} step={step} value={value} disabled={locked} onChange={e => !locked && onChange(parseFloat(e.target.value))}
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={localValue}
+          disabled={locked}
+          onPointerDown={() => { draggingRef.current = true; }}
+          onPointerUp={() => { draggingRef.current = false; flush(); }}
+          onPointerCancel={() => { draggingRef.current = false; flush(); }}
+          onTouchEnd={() => { draggingRef.current = false; flush(); }}
+          onMouseUp={() => { draggingRef.current = false; flush(); }}
+          onChange={(e) => {
+            if (locked) return;
+            const next = parseFloat(e.target.value);
+            setLocalValue(next);
+            emit(next);
+          }}
           style={{ position: 'absolute', width: '100%', opacity: 0, height: '28px', cursor: locked ? 'not-allowed' : 'pointer', margin: 0, zIndex: 2 }} />
       </div>
     </div>
@@ -242,6 +288,22 @@ const DEFAULT = {
   adjustRate3: false, rate3Adjustment: 0,
 };
 
+function useDebouncedValue(value, delayMs) {
+  const [debounced, setDebounced] = useState(value);
+  const latest = useRef(value);
+  latest.current = value;
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      // Ensure we commit the latest value, even if changes occurred during delay.
+      setDebounced(latest.current);
+    }, delayMs);
+    return () => clearTimeout(t);
+  }, [value, delayMs]);
+
+  return debounced;
+}
+
 export default function Calculator() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
@@ -282,9 +344,10 @@ export default function Calculator() {
   const isPro    = tier === 'pro' || trialOk;
   const daysLeft = trialEnd ? Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)) : 0;
 
-  // Defer heavy recalculation work so typing/sliders stay responsive.
-  const deferredInputs = useDeferredValue(inputs);
-  const proResult = useMemo(() => (isPro ? calculate(deferredInputs) : null), [isPro, deferredInputs]);
+  // Debounce heavy recalculation work so typing/sliders stay responsive.
+  // UI inputs update immediately; only the calculated output is slightly delayed.
+  const debouncedInputs = useDebouncedValue(inputs, 80);
+  const proResult = useMemo(() => (isPro ? calculate(debouncedInputs) : null), [isPro, debouncedInputs]);
   const result = isPro ? proResult : manualResult;
 
   useEffect(() => {
