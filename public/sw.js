@@ -1,6 +1,6 @@
-// Break-glass SW: stop caching app shell to prevent blank screens
-// from stale index.html referencing missing asset hashes.
-const CACHE_NAME = 'apriq-v3';
+// Break-glass SW: unregister itself to stop client-side caching issues.
+// This removes a major source of "flash then white screen" caused by stale app shell.
+const CACHE_NAME = 'apriq-v4';
 
 self.addEventListener('install', (e) => {
   e.waitUntil(self.skipWaiting());
@@ -10,6 +10,9 @@ self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
+      .then(() => self.registration.unregister())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then((clients) => Promise.all(clients.map((c) => c.navigate(c.url))))
   );
 });
 
