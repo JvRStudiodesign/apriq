@@ -1256,6 +1256,9 @@ export default function Calculator() {
               </div>
             ) : <Summary />}
           </div>
+          <div style={{ marginTop: '0.75rem' }}>
+            <InstallPWA />
+          </div>
         </div>
 
         {/* ── Right column ── */}
@@ -1265,9 +1268,6 @@ export default function Calculator() {
               <p style={{ color: '#ccc', fontSize: '0.875rem' }}>{isPro ? 'Adjust any input to see a live estimate.' : 'Fill in inputs and click Calculate estimate.'}</p>
             </div>
           ) : <Summary />}
-          <div style={{ marginTop: '0.75rem' }}>
-            <InstallPWA />
-          </div>
         </div>
       </div>
 
