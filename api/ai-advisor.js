@@ -163,6 +163,10 @@ You must explain:
 
 Even if all numbers are identical, location MUST change your reasoning.
 
+DISTINCTION RULE (URBAN-IN-TOWN VS REGIONAL LOGISTICS):
+If siteAccess is "Urban" but the address/location context is regional/remote, explain the distinction clearly:
+"The site may be urban within the town, but the broader regional logistics/supply chain context still matters."
+
 ---
 
 RATE POSITION RULE
@@ -208,6 +212,8 @@ If escalationExposure > 0:
 
 If no escalation:
 - explicitly flag exposure
+- Do NOT call escalation risk "low" in this case. Say:
+  "Escalation is not allowed for, so the exposure is unquantified rather than low."
 
 ---
 
@@ -221,12 +227,20 @@ Explain WHY they matter, not just WHAT they are.
 
 OUTPUT STRUCTURE
 
-1. Summary
-2. Market Position
-3. Location Interpretation
-4. Cost Drivers
-5. Risk & Sensitivity
-6. Practical Guidance
+Use short headings and keep each section brief:
+
+Summary
+Market position
+Location interpretation
+Cost drivers
+Risk & sensitivity
+Practical guidance
+
+FORMAT RULES:
+- Use headings as plain text lines (no #, no bullets, no markdown).
+- Keep the default response between 250 and 400 words unless the user explicitly asks for a detailed analysis.
+- Each section should be 2–4 short sentences max.
+- Do not overuse “market-aligned”. Use that phrase at most once, and only if supported by the signals/context.
 
 ---
 
@@ -248,6 +262,39 @@ Your explanation MUST be different.
 
 If it is not, your answer is incorrect.
 `.trim();
+
+function buildLocationProfileHint(estimateState, advisorSignals) {
+  const addr = String(estimateState?.projectLocation?.address || '').toLowerCase();
+  const site = String(estimateState?.siteAccessKey || '').toLowerCase();
+  const locType = advisorSignals?.locationType || 'regional';
+
+  const notes = [];
+
+  // Examples only — used as hints, never as exclusive cases.
+  if (addr.includes('sandton')) notes.push('premium metro node (finish/spec expectations can creep)');
+  if (addr.includes('cape town') && (addr.includes('cbd') || addr.includes('central') || addr.includes('city'))) {
+    notes.push('constrained premium metro (urban logistics/laydown/traffic constraints)');
+  }
+  if (addr.includes('ballito') || addr.includes('umhlanga') || addr.includes('north coast')) {
+    notes.push('coastal premium / high-growth residential node (finish expectations + coastal detailing)');
+  }
+  if (addr.includes('bloemfontein')) notes.push('inland regional centre (specialist trade depth can be thinner than metros)');
+  if (addr.includes('pretoria') || addr.includes('tshwane')) notes.push('major metro (stable contractor market + supply chain depth)');
+  if (addr.includes('cederberg') || addr.includes('clanwilliam')) notes.push('logistics-led regional / remote-adjacent (transport + availability risk)');
+
+  if (!notes.length) {
+    if (locType === 'remote') notes.push('logistics-led context (contractor availability + transport + programme risk)');
+    if (locType === 'coastal') notes.push('coastal context (corrosion/moisture detailing + finish expectations)');
+    if (locType === 'metro') notes.push('metro context (competition + supply chain depth; urban constraints may apply)');
+    if (locType === 'regional') notes.push('regional context (moderate stability; specialist trades may be constrained)');
+  }
+
+  if (site.includes('urban') && (locType === 'regional' || locType === 'remote')) {
+    notes.push('site access may be urban within the town, but broader regional logistics still matter');
+  }
+
+  return notes.join('; ');
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -304,6 +351,7 @@ export default async function handler(req, res) {
     const estimateJson = JSON.stringify(estimateState, null, 2);
     const advisorSignals = buildAdvisorSignals(estimateState);
     const signalsJson = JSON.stringify(advisorSignals, null, 2);
+    const locationProfileHint = buildLocationProfileHint(estimateState, advisorSignals);
 
     const prompt = [
       APRIQ_INTELLIGENCE_PROMPT,
@@ -313,6 +361,9 @@ export default async function handler(req, res) {
       '',
       'DERIVED ADVISOR SIGNALS (you MUST use these):',
       signalsJson,
+      '',
+      'LOCATION PROFILE HINTS (use as context, do not treat as a fact list):',
+      locationProfileHint || 'none',
     ].join('\n');
 
     const history = (conversationHistory || []).map(function(msg) {
@@ -331,7 +382,7 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: contents,
-          generationConfig: { maxOutputTokens: 2500, temperature: 0.42 },
+          generationConfig: { maxOutputTokens: 1100, temperature: 0.35 },
         }),
       }
     );

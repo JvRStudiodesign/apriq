@@ -44,7 +44,7 @@ export function getLocationType(location, siteAccessKey) {
     'garden route', 'overberg', 'west coast',
   ];
   const coastalTownCues = [
-    'ballito', 'umhlanga', 'salt rock', 'simons town', 'hout bay', 'camps bay',
+    'ballito', 'umhlanga', 'north coast', 'salt rock', 'simons town', 'hout bay', 'camps bay',
     'muizenberg', 'stellenbosch', 'somerset west', 'strand', 'hermanus',
     'knysna', 'plettenberg', 'plettenberg bay', 'mossel bay', 'jeffreys bay',
     'st francis', 'st francis bay', 'port alfred', 'richards bay', 'margate',
