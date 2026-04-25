@@ -306,6 +306,7 @@ function useDebouncedValue(value, delayMs) {
 export default function Calculator() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const estimatedStartDateRef = useRef(null);
   const [inputs, setInputs]   = useState(DEFAULT);
   const [numCats, setNumCats] = useState(1);
   const [manualResult, setManualResult] = useState(null);
@@ -1225,8 +1226,35 @@ export default function Calculator() {
               <Slider label="Escalation rate" value={inputs.escalationRate} min={0} max={20} step={1} onChange={v => isPro && upd('escalationRate', v)} fmtFn={v => v + '% p.a.'} locked={!isPro} />
               <div style={{ opacity: isPro ? 1 : 0.5 }}>
                 <label style={lbl}>Estimated start date</label>
-                <input type="date" value={inputs.estimatedStartDate || ''} onChange={e => isPro && upd('estimatedStartDate', e.target.value || null)} disabled={!isPro}
-                  style={{ width: '100%', maxWidth: '100%', minWidth: 0, display: 'block', overflow: 'hidden', padding: '0.6rem 2.5rem 0.6rem 0.875rem', border: '1.5px solid #e5e5e3', borderRadius: '10px', fontSize: '0.875rem', boxSizing: 'border-box', background: isPro ? '#fff' : '#f9f9f9', cursor: isPro ? 'auto' : 'not-allowed', fontFamily: 'inherit', color: '#1a1a18', colorScheme: 'light' }} />
+                <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #E4E5E5', borderRadius: '12px', overflow: 'hidden', width: '100%', maxWidth: '100%' }}>
+                  <input
+                    ref={estimatedStartDateRef}
+                    type="date"
+                    value={inputs.estimatedStartDate || ''}
+                    onChange={e => isPro && upd('estimatedStartDate', e.target.value || null)}
+                    disabled={!isPro}
+                    style={{ flex: 1, minWidth: 0, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#111111', background: isPro ? '#F9FAFA' : '#F9FAFA', colorScheme: 'light' }}
+                  />
+                  <button
+                    type="button"
+                    aria-label="Select date"
+                    disabled={!isPro}
+                    onClick={() => {
+                      const el = estimatedStartDateRef.current;
+                      if (!el) return;
+                      if (typeof el.showPicker === 'function') el.showPicker();
+                      else el.focus();
+                    }}
+                    style={{ padding: '0.6rem 0.875rem', background: '#E4E5E5', border: 'none', borderLeft: '1px solid #E4E5E5', cursor: isPro ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF8210" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
               {isPro && inputs.includeEscalation && inputs.estimatedStartDate && result && result.yearsToStart < 1 && (
                 <p style={{ fontSize: '0.72rem', color: '#e67e22', marginTop: '0.5rem' }}>Select a date more than 1 year away to see escalation breakdown.</p>

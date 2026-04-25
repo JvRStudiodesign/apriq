@@ -116,7 +116,7 @@ input, select, textarea, input[type="date"], input[type="number"], input[type="t
 
 /* Keep date picker icon visible and consistent with light mode */
 input[type="date"]::-webkit-calendar-picker-indicator {
-  opacity: 0.85;
+  opacity: 0 !important;
   filter: none !important;
 }
 
