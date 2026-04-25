@@ -677,7 +677,7 @@ export default function Calculator() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '8px',
+        gap: '16px',
         padding: '10px 18px',
         borderRadius: '8px',
         background: '#F9FAFA', border: '1px solid #FF8210',

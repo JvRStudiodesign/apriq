@@ -141,8 +141,16 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
 
 if (stage === 'locked') return (
-    <div style={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div style={s.panel}>
+    <div className="apriq-advisor-overlay" style={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="apriq-advisor-panel" style={s.panel}>
+        <style>{`
+          .apriq-advisor-overlay { padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+          .apriq-advisor-panel { max-height: calc(100dvh - 32px); }
+          @media (max-width: 480px) {
+            .apriq-advisor-overlay { padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+            .apriq-advisor-panel { max-width: 100%; max-height: calc(100dvh - 24px); }
+          }
+        `}</style>
         <div style={s.header}>
           <div style={s.titleWrap}><div style={s.dot(false)}/><span style={s.title}>AprIQ advisor</span></div>
           <button style={s.closeBtn} onClick={onClose}><XIcon/></button>
@@ -163,8 +171,16 @@ if (stage === 'locked') return (
   );
 
   if (stage === 'prompt') return (
-    <div style={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div style={s.panel}>
+    <div className="apriq-advisor-overlay" style={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="apriq-advisor-panel" style={s.panel}>
+        <style>{`
+          .apriq-advisor-overlay { padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+          .apriq-advisor-panel { max-height: calc(100dvh - 32px); }
+          @media (max-width: 480px) {
+            .apriq-advisor-overlay { padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+            .apriq-advisor-panel { max-width: 100%; max-height: calc(100dvh - 24px); }
+          }
+        `}</style>
         <div style={s.header}>
           <div style={s.titleWrap}><div style={s.dot(true)}/><span style={s.title}>AprIQ advisor</span></div>
           <div style={s.metaWrap}>
@@ -197,8 +213,16 @@ if (stage === 'locked') return (
   );
 
   return (
-    <div style={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div style={s.panel}>
+    <div className="apriq-advisor-overlay" style={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="apriq-advisor-panel" style={s.panel}>
+        <style>{`
+          .apriq-advisor-overlay { padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+          .apriq-advisor-panel { max-height: calc(100dvh - 32px); }
+          @media (max-width: 480px) {
+            .apriq-advisor-overlay { padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+            .apriq-advisor-panel { max-width: 100%; max-height: calc(100dvh - 24px); }
+          }
+        `}</style>
         <div style={s.header}>
           <div style={s.titleWrap}><div style={s.dot(true)}/><span style={s.title}>AprIQ advisor</span></div>
           <div style={s.metaWrap}>
