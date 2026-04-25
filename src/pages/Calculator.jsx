@@ -31,6 +31,11 @@ function fmtZARRate(n) {
   return 'R' + v.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 function pctFmt(p) { return (p * 100).toFixed(1) + '%'; }
+function fmtX(n) {
+  const v = Number(n);
+  if (!v || isNaN(v)) return '(x 1.00)';
+  return `(x ${v.toFixed(2)})`;
+}
 
 function BtnGroup({ label, value, onChange, options, locked, cols, getDesc }) {
   const desc = getDesc ? getDesc(value) : options.find(o => o.value === value)?.desc || null;
@@ -117,11 +122,31 @@ function RateRow({ rawRate, adjustedRate, adjustField, toggleField, adjValue, ad
 }
 
 const qualityOpts    = Object.entries(QUALITY).map(([k, v]) => ({ value: k, label: v.label }));
-const projectOpts    = [{ value: 'New', label: 'New', desc: 'Full new construction on a clear site' }, { value: 'Renovation', label: 'Renovation', desc: 'Works to existing structure' }, { value: 'Addition', label: 'Addition', desc: 'Adding to existing building (×1.15)' }];
+const projectOpts    = [
+  { value: 'New', label: `New ${fmtX(PROJECT_TYPE['New']?.multiplier ?? 1)}`, desc: 'Full new construction on a clear site' },
+  { value: 'Renovation', label: `Renovation ${fmtX(PROJECT_TYPE['Renovation']?.multiplier ?? 1)}`, desc: 'Works to existing structure' },
+  { value: 'Addition', label: `Addition ${fmtX(PROJECT_TYPE['Addition']?.multiplier ?? 1)}`, desc: 'Adding to existing building' },
+];
 const renovOpts      = Object.entries(RENOVATION_COMPLEXITY).map(([k, v]) => ({ value: k, label: v.label, desc: v.description }));
-const complexityOpts = [{ value: 'Low Complexity', label: 'Low', desc: 'Simple, functional, low-tech' }, { value: 'Medium Complexity', label: 'Medium', desc: 'Standard structural works' }, { value: 'High Complexity', label: 'High', desc: 'Complex structural requirements' }];
-const siteOpts       = [{ value: 'Urban Setting', label: 'Urban', desc: '0–10 km from city' }, { value: 'Suburban Setting', label: 'Suburban', desc: '10–30 km from city' }, { value: 'Peri-Urban Setting', label: 'Peri-Urban', desc: '30–60 km from city' }, { value: 'Rural Setting', label: 'Rural', desc: '60–150 km from city' }, { value: 'Exurban Setting', label: 'Exurban', desc: '150–300 km from city' }, { value: 'Specialized/Natural Setting', label: 'Specialized', desc: 'Remote or restricted access' }];
-const slopeOpts      = [{ value: 'Flat Land (0-5%)', label: 'Flat', desc: '0–5% slope' }, { value: 'Moderately Sloped Land (5-15%)', label: 'Moderate', desc: '5–15% slope' }, { value: 'Steep / Hilly Land (15%+)', label: 'Steep', desc: '15%+ slope' }, { value: 'Irregular / Constrained Land', label: 'Irregular', desc: 'Rocky or constrained' }];
+const complexityOpts = [
+  { value: 'Low Complexity', label: `Low ${fmtX(COMPLEXITY['Low Complexity']?.multiplier ?? 1)}`, desc: 'Simple, functional, low-tech' },
+  { value: 'Medium Complexity', label: `Medium ${fmtX(COMPLEXITY['Medium Complexity']?.multiplier ?? 1)}`, desc: 'Standard structural works' },
+  { value: 'High Complexity', label: `High ${fmtX(COMPLEXITY['High Complexity']?.multiplier ?? 1)}`, desc: 'Complex structural requirements' },
+];
+const siteOpts       = [
+  { value: 'Urban Setting', label: `Urban ${fmtX(SITE_ACCESS['Urban Setting']?.multiplier ?? 1)}`, desc: '0–10 km from city' },
+  { value: 'Suburban Setting', label: `Suburban ${fmtX(SITE_ACCESS['Suburban Setting']?.multiplier ?? 1)}`, desc: '10–30 km from city' },
+  { value: 'Peri-Urban Setting', label: `Peri-Urban ${fmtX(SITE_ACCESS['Peri-Urban Setting']?.multiplier ?? 1)}`, desc: '30–60 km from city' },
+  { value: 'Rural Setting', label: `Rural ${fmtX(SITE_ACCESS['Rural Setting']?.multiplier ?? 1)}`, desc: '60–150 km from city' },
+  { value: 'Exurban Setting', label: `Exurban ${fmtX(SITE_ACCESS['Exurban Setting']?.multiplier ?? 1)}`, desc: '150–300 km from city' },
+  { value: 'Specialized/Natural Setting', label: `Specialized ${fmtX(SITE_ACCESS['Specialized/Natural Setting']?.multiplier ?? 1)}`, desc: 'Remote or restricted access' },
+];
+const slopeOpts      = [
+  { value: 'Flat Land (0-5%)', label: `Flat — 0–5% slope ${fmtX(LAND_SLOPE['Flat Land (0-5%)']?.multiplier ?? 1)}`, desc: '0–5% slope' },
+  { value: 'Moderately Sloped Land (5-15%)', label: `Moderate — 5–15% slope ${fmtX(LAND_SLOPE['Moderately Sloped Land (5-15%)']?.multiplier ?? 1)}`, desc: '5–15% slope' },
+  { value: 'Steep / Hilly Land (15%+)', label: `Steep — 15%+ slope ${fmtX(LAND_SLOPE['Steep / Hilly Land (15%+)']?.multiplier ?? 1)}`, desc: '15%+ slope' },
+  { value: 'Irregular / Constrained Land', label: `Irregular — constrained site ${fmtX(LAND_SLOPE['Irregular / Constrained Land']?.multiplier ?? 1)}`, desc: 'Rocky or constrained' },
+];
 const landOpts       = Object.entries(LAND_PROCUREMENT).map(([k, v]) => ({ value: k, label: v.label }));
 const categoryOpts   = CATEGORIES.map(c => ({ value: c.key, label: c.label }));
 const qualityDesc    = { Low: 'Budget spec (×0.85)', Medium: 'Standard spec (×1.0)', High: 'High-end (×1.25)', Premium: 'Luxury spec (×1.6)' };
@@ -623,13 +648,17 @@ export default function Calculator() {
       <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1rem' }}>Land</span>
       {[
         { label: 'Land procurement', value: result.landProcurementCost || 0 },
-        { label: 'Land development', value: result.landDevelopmentCost || 0 },
+        { label: `Land development allowance (${((result.landDevelopmentMultiplier || 0) * 100).toFixed(0)}%)`, value: result.landDevelopmentCost || 0 },
       ].map(r => (
         <div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={rowVal}>{fmtZAR(r.value)}</span></div>
       ))}
+      <div style={rowStyle}>
+        <span style={rowLbl}>Land type / slope {fmtX(result.earthworksMultiplier || 1)}</span>
+        <span style={rowVal}>{''}</span>
+      </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid #E4E5E5', fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>
         <span>Total land cost</span>
-        <span>{fmtZAR((result.landProcurementCost || 0) + (result.landDevelopmentCost || 0))}</span>
+        <span>{fmtZAR(result.totalLandCost ?? ((result.landProcurementCost || 0) + (result.landDevelopmentCost || 0)))}</span>
       </div>
     </div>
 
@@ -1011,14 +1040,13 @@ export default function Calculator() {
                 const landRate = isManual ? (inputs.customLandRatePerM2 || 0) : (LAND_PROCUREMENT[inputs.landProcurementType]?.ratePerM2 || 0);
                 const devMult = isManual ? (inputs.manualLandDevelopmentPct || 0) : (LAND_PROCUREMENT[inputs.landProcurementType]?.developmentMultiplier || 0);
                 const landArea = inputs.landArea || 0;
-                const totalConst = result?.totalConstructionCost || 0;
                 const approx = (inputs.landProcurementType === 'N/A' || !landArea)
                   ? 0
-                  : landRate + ((totalConst * devMult) / landArea);
+                  : landRate + ((landRate * landArea * (LAND_SLOPE[inputs.landSlopeKey]?.multiplier ?? 1) * devMult) / landArea);
                 return (
                   <>
                     <span style={{ display: 'block' }}>Land cost: {fmtZARRate(landRate)}/m²</span>
-                    <span style={{ display: 'block' }}>Land development multiplier: {(devMult * 100).toFixed(0)}%</span>
+                    <span style={{ display: 'block' }}>Land development allowance: {(devMult * 100).toFixed(0)}%</span>
                     <span style={{ display: 'block' }}>Approximate land cost: {fmtZARRate(approx)}/m²</span>
                   </>
                 );
@@ -1036,7 +1064,7 @@ export default function Calculator() {
               {inputs.landProcurementType === 'Manual Input' && (
                 <>
                   <NumBox label="Custom land rate" value={inputs.customLandRatePerM2} onChange={v => isPro && upd('customLandRatePerM2', v)} suffix="R/m²" />
-                  <Slider label="Land development" value={Math.round((inputs.manualLandDevelopmentPct || 0) * 100)} min={0} max={40} step={1} onChange={v => isPro && upd('manualLandDevelopmentPct', v / 100)} fmtFn={v => v + '%'} locked={!isPro} />
+                  <Slider label="Land development allowance" value={Math.round((inputs.manualLandDevelopmentPct || 0) * 100)} min={0} max={40} step={1} onChange={v => isPro && upd('manualLandDevelopmentPct', v / 100)} fmtFn={v => v + '%'} locked={!isPro} />
                 </>
               )}
               <NumBox label="Land area" value={inputs.landArea} onChange={v => upd('landArea', v)} suffix="m²" />

@@ -5,6 +5,18 @@ function fmt(n) {
   return 'R ' + Math.round(n).toLocaleString('en-ZA');
 }
 
+function fmtX(n) {
+  const v = Number(n);
+  if (!v || isNaN(v)) return '(x 1.00)';
+  return `(x ${v.toFixed(2)})`;
+}
+
+function fmtRate(n) {
+  const v = Number(n);
+  if (!v || isNaN(v) || v === 0) return 'R0.00';
+  return 'R' + v.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 const s = StyleSheet.create({
   page: { fontFamily: 'Helvetica', fontSize: 9, color: '#111111', paddingTop: 36, paddingBottom: 52, paddingHorizontal: 40, backgroundColor: '#FAFAFA' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, paddingBottom: 14, borderBottomWidth: 1.5, borderBottomColor: '#111111', borderBottomStyle: 'solid' },
@@ -59,14 +71,22 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
     inputs.projectTypeKey === 'Addition' ? { label: 'Addition factor (x1.15)', uplift: base * (result?.qualityMultiplier || 1) * (result?.siteMultiplier || 1) * (result?.complexityMultiplier || 1) * ((result?.projectTypeMultiplier || 1) - 1) } : null,
   ].filter(Boolean);
 
+  const landRate = result?.landProcurementRatePerM2 || 0;
+  const landAllowancePct = (result?.landDevelopmentMultiplier || 0) * 100;
+  const landSlopeMult = result?.earthworksMultiplier || 1;
   const financialRows = [
     { label: 'Construction cost', value: result?.constructionCost },
-    result?.landProcurementCost > 0 ? { label: 'Land cost', value: result?.landProcurementCost } : null,
     { label: `Contingency (${Math.round((inputs.contingencyPct || 0) * 100)}%)`, value: result?.contingencyAmount },
     { label: `Contractor profit (${Math.round((inputs.profitPct || 0) * 100)}%)`, value: result?.contractorProfit },
     { label: `Preliminaries (${Math.round((inputs.preliminariesPct || 0) * 100)}%)`, value: result?.preliminaries },
     { label: `Professional fees (${Math.round((inputs.feesPct || 0) * 100)}%)`, value: result?.professionalFees },
     { label: `VAT (${Math.round((inputs.vatPct || 0) * 100)}%)`, value: result?.vatAmount },
+    (inputs.landProcurementType && inputs.landProcurementType !== 'N/A') ? { label: `Land procurement rate`, value: null, meta: `${fmtRate(landRate)}/m²` } : null,
+    (inputs.landProcurementType && inputs.landProcurementType !== 'N/A') ? { label: `Land development allowance`, value: null, meta: `${Math.round(landAllowancePct)}%` } : null,
+    (inputs.landProcurementType && inputs.landProcurementType !== 'N/A') ? { label: `Land type / slope`, value: null, meta: fmtX(landSlopeMult) } : null,
+    result?.landProcurementCost > 0 ? { label: 'Land procurement cost', value: result?.landProcurementCost } : null,
+    result?.landDevelopmentCost > 0 ? { label: 'Land development allowance amount', value: result?.landDevelopmentCost } : null,
+    (result?.totalLandCost ?? 0) > 0 ? { label: 'Total land cost', value: result?.totalLandCost } : null,
   ].filter(Boolean);
 
   const uses = [
@@ -146,15 +166,37 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
                 </View>
               </View>
             ))}
-            {inputs.projectTypeKey && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Project type</Text><Text style={s.rowVal}>{inputs.projectTypeKey}</Text></View></View>}
+            {inputs.projectTypeKey && (
+              <View style={s.paramHalf}>
+                <View style={s.row}>
+                  <Text style={s.rowLabel}>Project type</Text>
+                  <Text style={s.rowVal}>{inputs.projectTypeKey} {fmtX(result?.projectTypeMultiplier || 1)}</Text>
+                </View>
+              </View>
+            )}
             {inputs.floorArea > 0 && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Floor area</Text><Text style={s.rowVal}>{inputs.floorArea} m²</Text></View></View>}
             {isRenovation && inputs.renovationArea > 0 && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Renovation area</Text><Text style={s.rowVal}>{inputs.renovationArea} m²</Text></View></View>}
             {inputs.qualityKey && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Quality</Text><Text style={s.rowVal}>{inputs.qualityKey}</Text></View></View>}
-            {inputs.siteAccessKey && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Site access</Text><Text style={s.rowVal}>{inputs.siteAccessKey.replace(' Setting', '')}</Text></View></View>}
-            {inputs.complexityKey && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Complexity</Text><Text style={s.rowVal}>{inputs.complexityKey.replace(' Complexity', '')}</Text></View></View>}
+            {inputs.siteAccessKey && (
+              <View style={s.paramHalf}>
+                <View style={s.row}>
+                  <Text style={s.rowLabel}>Site access</Text>
+                  <Text style={s.rowVal}>{inputs.siteAccessKey.replace(' Setting', '')} {fmtX(result?.siteMultiplier || 1)}</Text>
+                </View>
+              </View>
+            )}
+            {inputs.complexityKey && (
+              <View style={s.paramHalf}>
+                <View style={s.row}>
+                  <Text style={s.rowLabel}>Complexity</Text>
+                  <Text style={s.rowVal}>{inputs.complexityKey.replace(' Complexity', '')} {fmtX(result?.complexityMultiplier || 1)}</Text>
+                </View>
+              </View>
+            )}
             {inputs.landProcurementType && inputs.landProcurementType !== 'N/A' && <>
               <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Land type</Text><Text style={s.rowVal}>{inputs.landProcurementType}</Text></View></View>
               {inputs.landArea > 0 && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Land area</Text><Text style={s.rowVal}>{inputs.landArea} m²</Text></View></View>}
+              {inputs.landSlopeKey && <View style={s.paramHalf}><View style={s.row}><Text style={s.rowLabel}>Land type / slope</Text><Text style={s.rowVal}>{fmtX(result?.earthworksMultiplier || 1)}</Text></View></View>}
             </>}
           </View>
         </View>
@@ -212,10 +254,10 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
         {/* Financial stack */}
         <View style={s.section} wrap={false}>
           <Text style={s.sectionTitle}>Financial Stack</Text>
-          {financialRows.map(r => (
+          {financialRows.map((r) => (
             <View key={r.label} style={s.row}>
               <Text style={s.rowLabel}>{r.label}</Text>
-              <Text style={s.rowVal}>{fmt(r.value)}</Text>
+              <Text style={s.rowVal}>{r.meta ? r.meta : fmt(r.value)}</Text>
             </View>
           ))}
         </View>

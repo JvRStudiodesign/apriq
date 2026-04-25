@@ -88,13 +88,13 @@ export function calculate(inputs) {
   const constructionCost      = baseConstructionCostNew + baseConstructionCostRenovation;
   const totalConstructionCost = constructionCost;
 
-  // Land procurement is calculated separately (site slope/earthworks remains a land-side uplift)
+  // Land procurement (slope multiplier is a land-side uplift)
   const landProcurementCostBase = landProcurementRatePerM2 * landArea;
   const earthworksCost          = landProcurementCostBase * (earthworksMultiplier - 1);
-  const landProcurementCost     = landProcurementCostBase + earthworksCost;
+  const landProcurementCost     = landProcurementCostBase * earthworksMultiplier;
 
-  // Land development must be based on construction cost only
-  const landDevelopmentCost   = constructionCost * landDevelopmentMultiplier;
+  // Land development allowance is based on land procurement cost (after slope uplift)
+  const landDevelopmentCost   = landProcurementCost * landDevelopmentMultiplier;
 
   // Financial additions must apply ONLY to construction cost
   const contingencyAmount  = constructionCost * contingencyPct;
