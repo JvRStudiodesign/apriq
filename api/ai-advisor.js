@@ -7,6 +7,77 @@ const supabase    = supabaseUrl && serviceKey ? createClient(supabaseUrl, servic
 const DAILY_LIMIT   = 20;
 const AI_TRIAL_DAYS = 7;
 
+function asNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function fmtRand(value) {
+  const n = Math.round(asNumber(value));
+  return 'R ' + n.toLocaleString('en-ZA').replace(/,/g, ' ');
+}
+
+function fmtPct(value) {
+  return Math.round(asNumber(value) * 100) + '%';
+}
+
+function topDrivers(estimateState) {
+  return [
+    ['Construction cost', estimateState.constructionCost],
+    ['Land cost', estimateState.landCost],
+    ['Contingency', estimateState.contingency],
+    ['Contractor profit', estimateState.contractorProfit],
+    ['Preliminaries', estimateState.preliminaries],
+    ['Professional fees', estimateState.professionalFees],
+    ['VAT', estimateState.vat],
+  ]
+    .map(([label, value]) => ({ label, value: asNumber(value) }))
+    .filter((item) => item.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 4);
+}
+
+function buildAdvisorFacts(estimateState) {
+  const floorArea = asNumber(estimateState.floorArea);
+  const totalCost = asNumber(estimateState.totalCost);
+  const constructionCost = asNumber(estimateState.constructionCost);
+  const adjustedBaseRate = asNumber(estimateState.adjustedBaseRate);
+  const totalRate = floorArea > 0 ? totalCost / floorArea : 0;
+  const constructionRate = floorArea > 0 ? constructionCost / floorArea : 0;
+  const escalationExposure = Math.max(0, asNumber(estimateState.escalatedTotal) - totalCost);
+  const drivers = topDrivers(estimateState);
+
+  return {
+    project: `${estimateState.projectTypeKey || 'Project'} ${estimateState.buildingType || ''} / ${estimateState.buildingSubtype || ''}`.trim(),
+    floorArea: floorArea ? `${Math.round(floorArea)} m2` : 'not provided',
+    totalCost: fmtRand(totalCost),
+    totalRatePerM2: totalRate ? `${fmtRand(totalRate)} /m2` : 'not available',
+    constructionCost: fmtRand(constructionCost),
+    constructionRatePerM2: constructionRate ? `${fmtRand(constructionRate)} /m2` : 'not available',
+    adjustedBaseRate: adjustedBaseRate ? `${fmtRand(adjustedBaseRate)} /m2` : 'not available',
+    dominantDrivers: drivers.map((d) => `${d.label}: ${fmtRand(d.value)}`).join('; '),
+    allowances: [
+      `contingency ${fmtPct(estimateState.contingencyPct)} (${fmtRand(estimateState.contingency)})`,
+      `contractor profit ${fmtPct(estimateState.contractorProfitPct)} (${fmtRand(estimateState.contractorProfit)})`,
+      `preliminaries ${fmtPct(estimateState.preliminariesPct)} (${fmtRand(estimateState.preliminaries)})`,
+      `professional fees ${fmtPct(estimateState.professionalFeesPct)} (${fmtRand(estimateState.professionalFees)})`,
+      `VAT ${fmtPct(estimateState.vatPct)} (${fmtRand(estimateState.vat)})`,
+    ].join('; '),
+    specificationSignals: [
+      `quality ${estimateState.qualityKey || 'not provided'} x${asNumber(estimateState.qualityMultiplier).toFixed(2)}`,
+      `complexity ${estimateState.complexityKey || 'not provided'} x${asNumber(estimateState.complexityMultiplier).toFixed(2)}`,
+      `site access ${estimateState.siteAccessKey || 'not provided'} x${asNumber(estimateState.siteAccessMultiplier).toFixed(2)}`,
+      estimateState.isRenovation ? `renovation area ${Math.round(asNumber(estimateState.renovationArea))} m2 x${asNumber(estimateState.renovationMultiplier).toFixed(2)}` : null,
+    ].filter(Boolean).join('; '),
+    escalation: estimateState.includeEscalation
+      ? `${asNumber(estimateState.escalationRate)}% p.a.; exposure ${fmtRand(escalationExposure)}; escalated total ${fmtRand(estimateState.escalatedTotal)}`
+      : 'not included',
+    land: asNumber(estimateState.landCost) > 0
+      ? `${estimateState.landType || 'Land'} on ${Math.round(asNumber(estimateState.landArea))} m2: ${fmtRand(estimateState.landCost)}`
+      : 'no land cost included',
+  };
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!supabase)             return res.status(503).json({ error: 'Server not configured' });
@@ -55,21 +126,27 @@ export default async function handler(req, res) {
     }
     if (questionsUsed >= DAILY_LIMIT) return res.status(429).json({ error: 'daily_limit_reached', questionsUsed, limit: DAILY_LIMIT });
 
+    const advisorFacts = buildAdvisorFacts(estimateState);
     const estimateJson = JSON.stringify(estimateState, null, 2);
+    const factsJson = JSON.stringify(advisorFacts, null, 2);
 
     const prompt = [
       'You are AprIQ Advisor. Your personality is that of a senior South African quantity surveyor who has worked on hundreds of projects across South Africa. You are calm, confident, direct, and you treat the user as a professional peer. You do not hedge unnecessarily. You give the real picture: what the numbers mean, what the risks are, and what the user should think about.',
+      '',
+      'QS FACTS TO USE FIRST:',
+      factsJson,
       '',
       'ESTIMATE DATA:',
       estimateJson,
       '',
       'WHAT YOU MUST DO:',
       'Do not just read back numbers. Interpret them.',
-      'Every sentence must be grounded in the estimate data above.',
-      'Use the actual rand values and rates in the estimate. You may calculate simple derived figures from the supplied estimate, such as cost per square metre, differences between rates, percentages, and exposure amounts. Do not invent new cost figures, new market rates, or unseen inputs.',
+      'Start with the strongest commercial insight, not with "This estimate indicates".',
+      'Every sentence must be grounded in the QS facts or estimate data above.',
+      'Use the formatted rand values from QS FACTS wherever possible. Do not output decimals for rands.',
       'Name the dominant cost drivers by actual rand value and explain why they matter in this context.',
       'Contextualise the rate from the data AprIQ has supplied. If the estimate shows high quality, high complexity, difficult site access, renovation work, land cost, escalation, or thin allowances, say what that means. Do not cite or imply external pricing guides.',
-      'Identify real risks: escalation exposure in rands where the estimate provides escalation, whether contingency is adequate for this project type, specification decisions that carry cost risk, and budget pressure points.',
+      'Identify real risks: escalation exposure in rands where provided, whether contingency is adequate for this project type, specification decisions that carry cost risk, and budget pressure points.',
       'Suggest practical levers. State the single most impactful thing the user could change to reduce cost or manage risk, and describe the directional impact without recalculating a replacement estimate.',
       '',
       'BE PROPORTIONAL:',
@@ -79,7 +156,7 @@ export default async function handler(req, res) {
       'Confident, calm, precise. Speak like a trusted senior colleague in a professional consultation, not a chatbot reading back data.',
       '',
       'LENGTH:',
-      'For a summary, write 5 to 8 sentences. For a follow-up answer, write 2 to 4 sentences. Keep each answer complete and never end mid-thought.',
+      'For a summary, write 5 to 7 sentences and no more than 140 words. For a follow-up answer, write 2 to 4 sentences and no more than 90 words. Keep each answer complete and never end mid-thought.',
       '',
       'FORMAT:',
       'Flowing professional prose only. No bullet points. No numbered lists. No dashes as lists. No headers. No bold. No italic. No markdown of any kind. Begin immediately with the insight.',
@@ -107,7 +184,7 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: contents,
-          generationConfig: { maxOutputTokens: 1500, temperature: 0.25 },
+          generationConfig: { maxOutputTokens: 2500, temperature: 0.35 },
         }),
       }
     );
@@ -119,7 +196,14 @@ export default async function handler(req, res) {
     }
 
     const geminiData = await geminiRes.json();
-    const aiReply    = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const candidate = geminiData?.candidates?.[0];
+    if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
+      console.warn('Gemini finish reason:', candidate.finishReason);
+    }
+    const aiReply = candidate?.content?.parts
+      ?.map((part) => part.text || '')
+      .join('')
+      .trim();
     if (!aiReply) return res.status(502).json({ error: 'Empty response from AI' });
 
     const newCount = questionsUsed + 1;
