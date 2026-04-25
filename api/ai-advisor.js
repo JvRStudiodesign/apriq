@@ -23,6 +23,24 @@ function fmtPct(value) {
   return Math.round(asNumber(value) * 100) + '%';
 }
 
+function stripAiFormatting(text) {
+  const raw = String(text || '');
+  // Remove common markdown-ish formatting that renders poorly in plain text bubbles.
+  // Keep the words; remove the decoration.
+  return raw
+    .replace(/\r\n/g, '\n')
+    .replace(/^\s*```[\s\S]*?^\s*```\s*$/gm, '') // fenced code blocks
+    .replace(/^\s*#{1,6}\s+/gm, '')              // headings
+    .replace(/^\s*---+\s*$/gm, '')               // hr
+    .replace(/^\s*[-*•]\s+/gm, '')               // bullets
+    .replace(/\*\*(.*?)\*\*/g, '$1')             // bold
+    .replace(/__(.*?)__/g, '$1')                 // bold alt
+    .replace(/\*(.*?)\*/g, '$1')                 // italics
+    .replace(/_(.*?)_/g, '$1')                   // italics alt
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 const APRIQ_INTELLIGENCE_PROMPT = `
 You are AprIQ Intelligence.
 
@@ -334,6 +352,8 @@ export default async function handler(req, res) {
       .join('')
       .trim();
     if (!aiReply) return res.status(502).json({ error: 'Empty response from AI' });
+    const cleanedReply = stripAiFormatting(aiReply);
+    if (!cleanedReply) return res.status(502).json({ error: 'Empty response from AI' });
 
     const newCount = hasUnlimitedAi ? 0 : (questionsUsed + 1);
     if (!hasUnlimitedAi) {
@@ -341,7 +361,7 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({
-      reply: aiReply,
+      reply: cleanedReply,
       questionsUsed: newCount,
       questionsRemaining: hasUnlimitedAi ? DAILY_LIMIT : (DAILY_LIMIT - newCount),
       limit: DAILY_LIMIT,

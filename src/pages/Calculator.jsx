@@ -1226,7 +1226,7 @@ export default function Calculator() {
               <div style={{ opacity: isPro ? 1 : 0.5 }}>
                 <label style={lbl}>Estimated start date</label>
                 <input type="date" value={inputs.estimatedStartDate || ''} onChange={e => isPro && upd('estimatedStartDate', e.target.value || null)} disabled={!isPro}
-                  style={{ width: '100%', padding: '0.6rem 0.875rem', border: '1.5px solid #e5e5e3', borderRadius: '10px', fontSize: '0.875rem', boxSizing: 'border-box', background: isPro ? '#fff' : '#f9f9f9', cursor: isPro ? 'auto' : 'not-allowed', fontFamily: 'inherit', color: '#1a1a18', colorScheme: 'light' }} />
+                  style={{ width: '100%', maxWidth: '100%', minWidth: 0, padding: '0.6rem 0.875rem', border: '1.5px solid #e5e5e3', borderRadius: '10px', fontSize: '0.875rem', boxSizing: 'border-box', background: isPro ? '#fff' : '#f9f9f9', cursor: isPro ? 'auto' : 'not-allowed', fontFamily: 'inherit', color: '#1a1a18', colorScheme: 'light' }} />
               </div>
               {isPro && inputs.includeEscalation && inputs.estimatedStartDate && result && result.yearsToStart < 1 && (
                 <p style={{ fontSize: '0.72rem', color: '#e67e22', marginTop: '0.5rem' }}>Select a date more than 1 year away to see escalation breakdown.</p>

@@ -55,6 +55,21 @@ function extractManualLocation(messages) {
   return locationMsg?.content?.replace(/^Project location:\s*/i, '').trim() || '';
 }
 
+function stripAiFormatting(text) {
+  const raw = String(text || '');
+  return raw
+    .replace(/\r\n/g, '\n')
+    .replace(/^\s*#{1,6}\s+/gm, '')
+    .replace(/^\s*---+\s*$/gm, '')
+    .replace(/^\s*[-*•]\s+/gm, '')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/_(.*?)_/g, '$1')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 export default function AprIQAdvisor({ estimateState, messages, setMessages, onClose }) {
   const { user, profile } = useAuth();
   const hasUnlimitedAi = (profile?.email || '').toLowerCase() === UNLIMITED_AI_EMAIL;
@@ -63,6 +78,7 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
   const [loading, setLoading] = useState(false);
   const [questionsUsed, setQuestionsUsed] = useState(hasUnlimitedAi ? 0 : (profile?.ai_questions_used || 0));
   const bodyRef = useRef(null);
+  const assistantAnchorRef = useRef(0);
   const configuredLocation = estimateState?.projectLocation?.address?.trim() || '';
   const manualLocation = extractManualLocation(messages);
   const activeLocation = configuredLocation || manualLocation;
@@ -86,7 +102,18 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
   const nearLimit = questionsRemaining <= 4 && questionsRemaining > 0;
 
   useEffect(() => { if (isLocked || isTrialAiExpired) setStage('locked'); }, [isLocked, isTrialAiExpired]);
-  useEffect(() => { if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight; }, [messages, loading]);
+  useEffect(() => {
+    if (!bodyRef.current) return;
+    // If we just appended an assistant reply after a user action, keep the scroll
+    // at the *start* of that new assistant message (not the bottom).
+    if (assistantAnchorRef.current) {
+      bodyRef.current.scrollTop = assistantAnchorRef.current;
+      assistantAnchorRef.current = 0;
+      return;
+    }
+    // Default behaviour: keep latest message in view while typing/loading.
+    if (loading) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [messages, loading]);
 
   const requestLocation = () => {
     setStage('chat');
@@ -104,6 +131,9 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
     if (!userMsg || loading || atLimit) return;
     setInput('');
     setStage('chat');
+    // Record the scroll height before the assistant reply arrives,
+    // so we can anchor the view to the start of the next assistant message.
+    assistantAnchorRef.current = bodyRef.current?.scrollHeight || 0;
     const isLocationReply = needsLocation && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content?.includes('what is the project location');
     const userMessage = isLocationReply
       ? { role: 'user', content: `Project location: ${userMsg}`, type: 'location' }
@@ -136,7 +166,7 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
       }
       if (!res.ok) { setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong. Please try again in a moment.' }]); return; }
       setQuestionsUsed(hasUnlimitedAi ? 0 : data.questionsUsed);
-      setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: stripAiFormatting(data.reply) }]);
     } catch { setMessages(prev => [...prev, { role: 'assistant', content: 'Unable to connect. Please check your connection and try again.' }]); }
     finally { setLoading(false); }
   };
