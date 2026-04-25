@@ -227,7 +227,7 @@ function InstallPWA() {
   const panel = { background:'#fff', borderRadius:20, padding:'32px 28px 24px', width:'100%', maxWidth:420, position:'relative', maxHeight:'90vh', overflowY:'auto' };
   return (
     <>
-      <div style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:'1.25rem 1.5rem', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+      <div style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:'1.25rem 1.5rem', display:'flex', alignItems:'center', justifyContent:'space-between', flex:1 }}>
         <div>
           <p style={{ fontSize:'0.85rem', fontWeight:600, color:'#111111', marginBottom:2, fontFamily:"'Roboto',system-ui,sans-serif" }}>Install app</p>
           <p style={{ fontSize:'0.75rem', color:'#979899', fontFamily:"'Roboto',system-ui,sans-serif" }}>Add AprIQ to your home screen for instant access and limited offline use.</p>
@@ -1055,8 +1055,8 @@ export default function Calculator() {
       {/* Nav handled by Layout */}
 
       {/* ── Main grid ── */}
-      <div className="desktop-grid" style={{ maxWidth: '1140px', margin: '0 auto', padding: '1.5rem 1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
-        <div>
+      <div className="desktop-grid" style={{ maxWidth: '1140px', margin: '0 auto', padding: '1.5rem 1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* ── Building card ── */}
           <div style={card}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
@@ -1256,7 +1256,7 @@ export default function Calculator() {
               </div>
             ) : <Summary />}
           </div>
-          <div style={{ marginTop: '0.75rem' }}>
+          <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <InstallPWA />
           </div>
         </div>
