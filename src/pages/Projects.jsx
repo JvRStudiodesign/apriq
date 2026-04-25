@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import { EstimatePDF } from '../components/EstimatePDF';
 
 const FREE_LIMIT = 3;
 const PRO_LIMIT = 30;
@@ -64,20 +62,58 @@ function PDFBtn({ estimate, project, profile, userEmail }) {
   const inputs = estimate.inputs_json ? (typeof estimate.inputs_json === 'string' ? JSON.parse(estimate.inputs_json) : estimate.inputs_json) : {};
   const result = estimate.result_json ? (typeof estimate.result_json === 'string' ? JSON.parse(estimate.result_json) : estimate.result_json) : null;
   if (!result) return null;
+  const [downloading, setDownloading] = useState(false);
   const now = new Date();
   const ref = project.reference_number || 'APRIQ';
   const filename = `APRIQ-${ref}-${now.toISOString().slice(0,10)}-${now.toTimeString().slice(0,5).replace(':','-')}.pdf`;
   const numCats = [inputs.use1Category, inputs.use2Category, inputs.use3Category].filter(Boolean).length || 1;
+
+  async function handleDownload() {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const [{ pdf }, { EstimatePDF: EstimatePDFComponent }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('../components/EstimatePDF'),
+      ]);
+      const doc = (
+        <EstimatePDFComponent
+          inputs={inputs}
+          result={result}
+          userDetails={{ ...profile, email: userEmail }}
+          project={project}
+          client={project.clients || null}
+          reference={ref}
+          numCats={numCats}
+          isRenovation={inputs.projectTypeKey === 'Renovation'}
+        />
+      );
+      const blob = await pdf(doc).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('PDF export failed:', e);
+      alert('Unable to generate PDF right now. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
-    <PDFDownloadLink
-      document={<EstimatePDF inputs={inputs} result={result} userDetails={{ ...profile, email: userEmail }} project={project} client={project.clients || null} reference={ref} numCats={numCats} isRenovation={inputs.projectTypeKey === 'Renovation'} />}
-      fileName={filename} style={{ textDecoration:'none' }}>
-      {({ loading }) => (
-        <button style={{ padding:'6px 12px', borderRadius:'9px', border:'none', background:'#111111', color:'#F9FAFA', fontSize:'0.78rem', fontWeight:'500', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
-          {loading ? 'Preparing...' : 'Export PDF'}
-        </button>
-      )}
-    </PDFDownloadLink>
+    <button
+      type="button"
+      onClick={handleDownload}
+      disabled={downloading}
+      style={{ padding:'6px 12px', borderRadius:'9px', border:'none', background:'#111111', color:'#F9FAFA', fontSize:'0.78rem', fontWeight:'500', cursor:downloading?'wait':'pointer', fontFamily:'inherit', opacity: downloading ? 0.9 : 1 }}
+    >
+      {downloading ? 'Preparing...' : 'Export PDF'}
+    </button>
   );
 }
 

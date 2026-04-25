@@ -1,4 +1,5 @@
 import { useFadeIn } from '../hooks/useFadeIn';
+import AprIQIntelligence from '../components/AprIQIntelligence';
 
 const STEPS = ['Add Project\n& Client info','Add project\nareas','Select all\ncost factors','Generate\nSummary','Export and\nshare'];
 const JOURNEY = [
@@ -54,6 +55,7 @@ export default function HowItWorksPage() {
           ))}
         </div>
       </div></section>
+      <AprIQIntelligence />
     </div>
   );
 }

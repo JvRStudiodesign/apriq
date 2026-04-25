@@ -1,15 +1,14 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { calculate } from '../engine/calculator';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import { EstimatePDF } from '../components/EstimatePDF';
-import AprIQAdvisor from '../components/AprIQAdvisor';
 import {
   CATEGORIES, QUALITY, SITE_ACCESS, PROJECT_TYPE,
   RENOVATION_COMPLEXITY, COMPLEXITY, LAND_PROCUREMENT, LAND_SLOPE, BREAKDOWN_ELEMENTS,
 } from '../engine/rates';
+
+const AprIQAdvisor = lazy(() => import('../components/AprIQAdvisor'));
 
 const card    = { background: '#F9FAFA', borderRadius: '16px', padding: '1.5rem', border: '1px solid #E4E5E5', marginBottom: '1rem' };
 const lbl     = { display: 'block', fontSize: '0.7rem', fontWeight: '600', color: '#979899', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' };
@@ -328,6 +327,7 @@ export default function Calculator() {
   const [newClientNameCalc, setNewClientNameCalc] = useState('');
   const [savingNewProj, setSavingNewProj] = useState(false);
   const [showAdvisor, setShowAdvisor] = useState(false);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
   const [advisorMessages, setAdvisorMessages] = useState(() => {
     try {
       const raw = sessionStorage.getItem('apriqAdvisorSession');
@@ -346,7 +346,7 @@ export default function Calculator() {
 
   // Debounce heavy recalculation work so typing/sliders stay responsive.
   // UI inputs update immediately; only the calculated output is slightly delayed.
-  const debouncedInputs = useDebouncedValue(inputs, 80);
+  const debouncedInputs = useDebouncedValue(inputs, 140);
   const proResult = useMemo(() => (isPro ? calculate(debouncedInputs) : null), [isPro, debouncedInputs]);
   const result = isPro ? proResult : manualResult;
 
@@ -559,6 +559,62 @@ export default function Calculator() {
       // Session persistence is a convenience; the advisor still works without it.
     }
   }, [advisorMessages]);
+
+  async function handlePdfDownload() {
+    if (!result || pdfDownloading) return;
+    setPdfDownloading(true);
+    try {
+      // Log export intent (unchanged behaviour vs previous PDFDownloadLink onClick)
+      if (result) {
+        supabase.from('estimates').update({ pdf_generated: true }).eq('project_id', selectedProjectId || '').eq('user_id', user?.id || '').eq('is_latest', true).then(()=>{});
+        supabase.from('pdf_exports').insert({
+          user_id: user?.id,
+          reference_number: pdfRef_display,
+          project_id: selectedProjectId || null,
+          building_category: inputs.use1Category,
+          building_subtype: inputs.use1Subtype,
+          floor_area: inputs.floorArea,
+          total_project_cost: result.totalProjectCost,
+          is_mixed_use: numCats > 1,
+          exported_at: new Date().toISOString(),
+        }).then(({ error }) => { if (error) console.error('PDF export log error:', error); });
+      }
+
+      const [{ pdf }, { EstimatePDF: EstimatePDFComponent }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('../components/EstimatePDF'),
+      ]);
+
+      const doc = (
+        <EstimatePDFComponent
+          inputs={inputs}
+          result={result}
+          userDetails={userDetails}
+          project={selectedProject}
+          client={selectedClient}
+          reference={pdfRef_display}
+          numCats={numCats}
+          isRenovation={isRenovation}
+          advisorSummary={includeAdvisorSummaryInPdf ? advisorSummary : ''}
+        />
+      );
+
+      const blob = await pdf(doc).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = pdfFilename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('PDF download failed:', e);
+      alert('Unable to generate PDF right now. Please try again.');
+    } finally {
+      setPdfDownloading(false);
+    }
+  }
 
   const estimateState = result
     ? {
@@ -965,28 +1021,14 @@ export default function Calculator() {
             </span>
           </label>
         )}
-        <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation} advisorSummary={includeAdvisorSummaryInPdf ? advisorSummary : ''}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'0.5rem' }} onClick={() => {
-                  if (result) {
-                    supabase.from('estimates').update({ pdf_generated: true }).eq('project_id', selectedProjectId || '').eq('user_id', user?.id || '').eq('is_latest', true).then(()=>{});
-                    supabase.from('pdf_exports').insert({
-                      user_id: user?.id,
-                      reference_number: pdfRef_display,
-                      project_id: selectedProjectId || null,
-                      building_category: inputs.use1Category,
-                      building_subtype: inputs.use1Subtype,
-                      floor_area: inputs.floorArea,
-                      total_project_cost: result.totalProjectCost,
-                      is_mixed_use: numCats > 1,
-                      exported_at: new Date().toISOString(),
-                    }).then(({ error }) => { if (error) console.error('PDF export log error:', error); });
-                  }
-                }}>
-          {({loading})=>(
-            <button style={{ width:'100%', padding:'0.75rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:loading?'wait':'pointer', fontFamily:'inherit' }}>
-              {loading?'Preparing PDF…':'Download PDF'}
-            </button>
-          )}
-        </PDFDownloadLink>
+        <button
+          type="button"
+          onClick={handlePdfDownload}
+          disabled={pdfDownloading}
+          style={{ width:'100%', padding:'0.75rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.875rem', fontWeight:'600', cursor:pdfDownloading?'wait':'pointer', fontFamily:'inherit', marginBottom:'0.5rem', opacity: pdfDownloading ? 0.9 : 1 }}
+        >
+          {pdfDownloading ? 'Preparing PDF…' : 'Download PDF'}
+        </button>
         <div style={{ display:'flex', gap:'0.5rem', marginBottom:'0.75rem' }}>
           <button onClick={handleSave} disabled={saving || saved || !selectedProjectId}
             style={{ flex:1, padding:'0.75rem', background:saved?'#0F4C5C':selectedProjectId?'#F9FAFA':'#F9FAFA', color:saved?'#F9FAFA':selectedProjectId?'#111111':'#979899', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.82rem', fontWeight:'500', cursor:selectedProjectId?'pointer':'not-allowed', fontFamily:'inherit' }}>
@@ -1254,12 +1296,14 @@ export default function Calculator() {
       </div>
 
       {showAdvisor && estimateState && (
-        <AprIQAdvisor
-          estimateState={estimateState}
-          messages={advisorMessages}
-          setMessages={setAdvisorMessages}
-          onClose={() => setShowAdvisor(false)}
-        />
+        <Suspense fallback={null}>
+          <AprIQAdvisor
+            estimateState={estimateState}
+            messages={advisorMessages}
+            setMessages={setAdvisorMessages}
+            onClose={() => setShowAdvisor(false)}
+          />
+        </Suspense>
       )}
     </div>
   );

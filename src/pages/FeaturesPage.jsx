@@ -1,4 +1,5 @@
 import { useFadeIn } from '../hooks/useFadeIn';
+import AprIQIntelligence from '../components/AprIQIntelligence';
 
 const BENEFIT_PILLS = ['Faster Early Decisions','Structured Cost Guidance','Instant Cost Breakdown','Clearer Feasibility Planning','ROM Estimates','Feasibility Planning'];
 const FEATURE_PILLS = ['Building Types','Project Types','Cost Adjustments','Element Breakdowns','Rate Summaries'];
@@ -137,6 +138,7 @@ export default function FeaturesPage() {
           ))}
         </div>
       </div></div></section>
+      <AprIQIntelligence />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useFadeIn } from '../hooks/useFadeIn';
+import AprIQIntelligence from '../components/AprIQIntelligence';
 
 const VALUES = [
   { label:'Clarity',              desc:'AprIQ is built to make cost information easier to understand and communicate.' },
@@ -54,6 +55,7 @@ export default function AboutPage() {
           <p style={s.refText}>Reference: AACE International, 18R-97: Cost Estimate Classification System</p>
         </div>
       </div></div></section>
+      <AprIQIntelligence />
     </div>
   );
 }
