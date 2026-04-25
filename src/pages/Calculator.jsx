@@ -208,6 +208,8 @@ const DEFAULT = {
   projectTypeKey: 'New', renovationArea: 0, renovationComplexityKey: 'Low', qualityKey: 'Medium',
   contingencyPct: 0.10, profitPct: 0.10, preliminariesPct: 0.05, feesPct: 0.12, vatPct: 0.15,
   landProcurementType: 'N/A', landArea: 0, landSlopeKey: 'Flat Land (0-5%)',
+  customLandRatePerM2: 0,
+  manualLandDevelopmentPct: 0.10,
   escalationRate: 7, estimatedStartDate: null, includeEscalation: false,
   useCustomSplit: false, customElementPcts: DEFAULT_PCTS,
   adjustRate1: false, rate1Adjustment: 0,
@@ -995,12 +997,17 @@ export default function Calculator() {
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Land</span>
             <label style={lbl}>Procurement type</label>
             <select value={inputs.landProcurementType} onChange={e => upd('landProcurementType', e.target.value)} style={{ ...sel, marginBottom: '0.35rem' }}>
-              {landOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {landOpts.map(o => (
+                <option key={o.value} value={o.value} style={o.value === 'Manual Input' ? { color: '#FF8210' } : undefined}>
+                  {o.label}
+                </option>
+              ))}
             </select>
             <p style={{ fontSize: '0.72rem', color: '#aaa', marginTop: '0.4rem', marginBottom: '1.1rem' }}>
               {(() => {
-                const landRate = LAND_PROCUREMENT[inputs.landProcurementType]?.ratePerM2 || 0;
-                const devMult = LAND_PROCUREMENT[inputs.landProcurementType]?.developmentMultiplier || 0;
+                const isManual = inputs.landProcurementType === 'Manual Input';
+                const landRate = isManual ? (inputs.customLandRatePerM2 || 0) : (LAND_PROCUREMENT[inputs.landProcurementType]?.ratePerM2 || 0);
+                const devMult = isManual ? (inputs.manualLandDevelopmentPct || 0) : (LAND_PROCUREMENT[inputs.landProcurementType]?.developmentMultiplier || 0);
                 const landArea = inputs.landArea || 0;
                 const totalConst = result?.totalConstructionCost || 0;
                 const approx = (inputs.landProcurementType === 'N/A' || !landArea)
@@ -1015,7 +1022,21 @@ export default function Calculator() {
                 );
               })()}
             </p>
+            {inputs.landProcurementType === 'Manual Input' && !isPro && (
+              <div style={{ background:'#111111', borderRadius:'12px', padding:'0.85rem 1rem', marginBottom:'0.75rem' }}>
+                <div style={{ color:'#F9FAFA', fontSize:'0.82rem', fontWeight:'600', marginBottom:'0.25rem' }}>Manual input is Pro</div>
+                <div style={{ color:'#aaa', fontSize:'0.72rem', lineHeight:1.5 }}>
+                  Manual land procurement inputs are available on AprIQ Pro. Upgrade to enter your own land rate and development allowance.
+                </div>
+              </div>
+            )}
             {inputs.landProcurementType !== 'N/A' && (<>
+              {inputs.landProcurementType === 'Manual Input' && (
+                <>
+                  <NumBox label="Custom land rate" value={inputs.customLandRatePerM2} onChange={v => isPro && upd('customLandRatePerM2', v)} suffix="R/m²" />
+                  <Slider label="Land development" value={Math.round((inputs.manualLandDevelopmentPct || 0) * 100)} min={0} max={40} step={1} onChange={v => isPro && upd('manualLandDevelopmentPct', v / 100)} fmtFn={v => v + '%'} locked={!isPro} />
+                </>
+              )}
               <NumBox label="Land area" value={inputs.landArea} onChange={v => upd('landArea', v)} suffix="m²" />
               <BtnGroup label="Land type / slope" value={inputs.landSlopeKey} onChange={v => upd('landSlopeKey', v)} options={slopeOpts} cols={2} getDesc={v => slopeOpts.find(o => o.value === v)?.desc} />
             </>)}

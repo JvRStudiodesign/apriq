@@ -67,8 +67,17 @@ export function calculate(inputs) {
     baseConstructionCostNew = totalAdjustedBaseRate * projectTypeMultiplier * floorArea;
   }
 
-  const landProcurementRatePerM2 = LAND_PROCUREMENT[landProcurementType]?.ratePerM2 ?? 0;
-  const landDevelopmentMultiplier = LAND_PROCUREMENT[landProcurementType]?.developmentMultiplier ?? 0;
+  const isManualLand = landProcurementType === 'Manual Input';
+  const manualLandRatePerM2 = asNumber(inputs.customLandRatePerM2);
+  const manualLandDevPct = asNumber(inputs.manualLandDevelopmentPct);
+
+  const landProcurementRatePerM2 = isManualLand
+    ? manualLandRatePerM2
+    : (LAND_PROCUREMENT[landProcurementType]?.ratePerM2 ?? 0);
+
+  const landDevelopmentMultiplier = isManualLand
+    ? manualLandDevPct
+    : (LAND_PROCUREMENT[landProcurementType]?.developmentMultiplier ?? 0);
   const landProcurementCost      = landProcurementRatePerM2 * landArea;
   const earthworksMultiplier     = LAND_SLOPE[landSlopeKey]?.multiplier ?? 1;
   const earthworksCost           = landProcurementCost * earthworksMultiplier;

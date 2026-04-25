@@ -233,6 +233,7 @@ export const LAND_PROCUREMENT = {
   'Fully Serviced Land':     { label: 'Fully Serviced Land',     ratePerM2: 1100, developmentMultiplier: 0.00, description: 'High land cost, low services required, fast rollout' },
   'Partially Serviced Land': { label: 'Partially Serviced Land', ratePerM2: 650,  developmentMultiplier: 0.15, description: 'Medium land cost, partial services, moderate development required' },
   'Unserviced Land':         { label: 'Unserviced Land',         ratePerM2: 300,  developmentMultiplier: 0.30, description: 'Low land cost, high services required, slow rollout' },
+  'Manual Input':            { label: 'Manual Input',            ratePerM2: 0,    developmentMultiplier: 0.00, description: 'Enter your own land rate and development allowance' },
   'N/A':                     { label: 'N/A',                     ratePerM2: 0,    developmentMultiplier: 0.00, description: 'No land cost included' },
 };
 
