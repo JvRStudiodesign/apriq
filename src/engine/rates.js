@@ -211,7 +211,7 @@ export const SITE_ACCESS = {
 
 export const PROJECT_TYPE = {
   'New':        { label: 'New',        multiplier: 1.00 },
-  'Renovation': { label: 'Renovation', multiplier: 1.00 },
+  'Renovation': { label: 'Renovation', multiplier: 1.10 },
   'Addition':   { label: 'Addition',   multiplier: 1.15 },
 };
 
