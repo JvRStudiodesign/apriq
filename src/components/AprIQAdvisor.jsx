@@ -14,6 +14,7 @@ const s = {
   title: { fontSize:15, fontWeight:500, color:'#111111', fontFamily:FONT },
   metaWrap: { display:'flex', alignItems:'center', gap:8, flexShrink:0 },
   counter: (warn) => ({ fontSize:11, color: warn ? '#FF8210' : '#979899', padding:'3px 10px', borderRadius:20, border:`1px solid ${warn ? '#FF8210' : '#E4E5E5'}`, background:'#F9FAFA', whiteSpace:'nowrap', fontFamily:FONT }),
+  resetBtn: { padding:'6px 10px', borderRadius:'10px', border:'1px solid #E4E5E5', background:'#F9FAFA', cursor:'pointer', fontFamily:FONT, fontSize:'11px', color:'#979899', lineHeight:1, flexShrink:0 },
   closeBtn: { width:30, height:30, minWidth:30, minHeight:30, maxWidth:30, maxHeight:30, borderRadius:10, border:'1px solid #E4E5E5', background:'#F9FAFA', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, padding:0 },
   body: { flex:1, overflowY:'auto', padding:'20px 24px', display:'flex', flexDirection:'column', gap:12, background:'#F9FAFA' },
   promptCard: { background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:'20px 20px 16px', display:'flex', flexDirection:'column', gap:14 },
@@ -64,6 +65,12 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
   const manualLocation = extractManualLocation(messages);
   const activeLocation = configuredLocation || manualLocation;
   const needsLocation = !activeLocation;
+  const resetChat = () => {
+    setMessages([]);
+    setInput('');
+    setLoading(false);
+    setStage('prompt');
+  };
 
   const tier = profile?.tier;
   const trialEnd = profile?.trial_end_date ? new Date(profile.trial_end_date) : null;
@@ -162,6 +169,9 @@ if (stage === 'locked') return (
           <div style={s.titleWrap}><div style={s.dot(true)}/><span style={s.title}>AprIQ advisor</span></div>
           <div style={s.metaWrap}>
             <span style={s.counter(false)}>{questionsRemaining} of {DAILY_LIMIT} remaining today</span>
+            <button style={s.resetBtn} onClick={resetChat} disabled={messages.length === 0 || loading} aria-disabled={messages.length === 0 || loading} title="Clear and restart this chat">
+              Reset
+            </button>
             <button style={s.closeBtn} onClick={onClose}><XIcon/></button>
           </div>
         </div>
@@ -193,6 +203,9 @@ if (stage === 'locked') return (
           <div style={s.titleWrap}><div style={s.dot(true)}/><span style={s.title}>AprIQ advisor</span></div>
           <div style={s.metaWrap}>
             <span style={s.counter(nearLimit || atLimit)}>{questionsRemaining} of {DAILY_LIMIT} remaining today</span>
+            <button style={s.resetBtn} onClick={resetChat} disabled={messages.length === 0 || loading} aria-disabled={messages.length === 0 || loading} title="Clear and restart this chat">
+              Reset
+            </button>
             <button style={s.closeBtn} onClick={onClose}><XIcon/></button>
           </div>
         </div>

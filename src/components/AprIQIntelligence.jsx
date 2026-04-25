@@ -37,7 +37,6 @@ const s = {
   avatar: { width: '36px', height: '36px', minWidth: '36px', borderRadius: '10px', border: '1.5px solid #FF8210', background: '#F9FAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   title: { fontSize: '13px', fontWeight: 500, color: '#111111', fontFamily: FONT },
   sub: { fontSize: '11px', color: '#979899', marginTop: '1px', fontFamily: FONT },
-  resetBtn: { padding: '6px 10px', borderRadius: '10px', border: '1px solid #E4E5E5', background: '#F9FAFA', cursor: 'pointer', fontFamily: FONT, fontSize: '11px', color: '#979899', lineHeight: 1, flexShrink: 0 },
   xbtn: { marginLeft: 'auto', width: '30px', height: '30px', minWidth: '30px', maxWidth: '30px', minHeight: '30px', maxHeight: '30px', borderRadius: '10px', border: '1px solid #E4E5E5', background: '#F9FAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, flexShrink: 0 },
   body: { padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', background: '#F9FAFA', maxHeight: '260px', overflowY: 'auto' },
   aiBubble: { background: '#F9FAFA', border: '1px solid #E4E5E5', borderRadius: '16px', borderBottomLeftRadius: '4px', padding: '10px 13px', fontSize: '12px', color: '#111111', lineHeight: 1.6, maxWidth: '95%', fontFamily: FONT },
@@ -87,11 +86,6 @@ export default function AprIQIntelligence() {
   const atLimit = questionsUsed >= Q_LIMIT;
   const remaining = Q_LIMIT - questionsUsed;
   const chatStarted = messages.length > 0;
-  const resetChat = () => {
-    setMessages([]);
-    setInput('');
-    setLoading(false);
-  };
 
   useEffect(() => {
     if (!hasAutoOpened.current) {
@@ -150,9 +144,6 @@ export default function AprIQIntelligence() {
             <div style={s.title}>AprIQ Intelligence</div>
             <div style={s.sub}>Construction cost advisor</div>
           </div>
-          <button style={s.resetBtn} onClick={resetChat} disabled={!chatStarted || loading} aria-disabled={!chatStarted || loading} title="Clear and restart this chat">
-            Reset
-          </button>
           <button style={s.xbtn} onClick={() => setOpen(false)}><XIcon/></button>
         </div>
 

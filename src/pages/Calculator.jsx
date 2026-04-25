@@ -657,9 +657,10 @@ export default function Calculator() {
         width: '100%',
       }}
     >
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-        stroke="#FF8210" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <svg width="18" height="18" viewBox="0 0 24 24" style={{ display: 'block' }}>
+        <circle cx="9" cy="10" r="1.4" fill="#FF8210"/>
+        <circle cx="15" cy="10" r="1.4" fill="#FF8210"/>
+        <path d="M8 14.5c1.2 1.8 6 1.8 8 0" fill="none" stroke="#FF8210" strokeWidth="1.6" strokeLinecap="round"/>
       </svg>
       AprIQ advisor
     </button>
