@@ -123,29 +123,29 @@ function RateRow({ rawRate, adjustedRate, adjustField, toggleField, adjValue, ad
 
 const qualityOpts    = Object.entries(QUALITY).map(([k, v]) => ({ value: k, label: v.label }));
 const projectOpts    = [
-  { value: 'New', label: `New ${fmtX(PROJECT_TYPE['New']?.multiplier ?? 1)}`, desc: 'Full new construction on a clear site' },
-  { value: 'Renovation', label: `Renovation ${fmtX(PROJECT_TYPE['Renovation']?.multiplier ?? 1)}`, desc: 'Works to existing structure' },
-  { value: 'Addition', label: `Addition ${fmtX(PROJECT_TYPE['Addition']?.multiplier ?? 1)}`, desc: 'Adding to existing building' },
+  { value: 'New', label: 'New', desc: `Full new construction on a clear site ${fmtX(PROJECT_TYPE['New']?.multiplier ?? 1)}` },
+  { value: 'Renovation', label: 'Renovation', desc: `Existing building upgrade / alteration ${fmtX(PROJECT_TYPE['Renovation']?.multiplier ?? 1)}` },
+  { value: 'Addition', label: 'Addition', desc: `Extension to existing building ${fmtX(PROJECT_TYPE['Addition']?.multiplier ?? 1)}` },
 ];
 const renovOpts      = Object.entries(RENOVATION_COMPLEXITY).map(([k, v]) => ({ value: k, label: v.label, desc: v.description }));
 const complexityOpts = [
-  { value: 'Low Complexity', label: `Low ${fmtX(COMPLEXITY['Low Complexity']?.multiplier ?? 1)}`, desc: 'Simple, functional, low-tech' },
-  { value: 'Medium Complexity', label: `Medium ${fmtX(COMPLEXITY['Medium Complexity']?.multiplier ?? 1)}`, desc: 'Standard structural works' },
-  { value: 'High Complexity', label: `High ${fmtX(COMPLEXITY['High Complexity']?.multiplier ?? 1)}`, desc: 'Complex structural requirements' },
+  { value: 'Low Complexity', label: 'Low', desc: `Low complexity ${fmtX(COMPLEXITY['Low Complexity']?.multiplier ?? 1)}` },
+  { value: 'Medium Complexity', label: 'Medium', desc: `Medium complexity ${fmtX(COMPLEXITY['Medium Complexity']?.multiplier ?? 1)}` },
+  { value: 'High Complexity', label: 'High', desc: `High complexity ${fmtX(COMPLEXITY['High Complexity']?.multiplier ?? 1)}` },
 ];
 const siteOpts       = [
-  { value: 'Urban Setting', label: `Urban ${fmtX(SITE_ACCESS['Urban Setting']?.multiplier ?? 1)}`, desc: '0–10 km from city' },
-  { value: 'Suburban Setting', label: `Suburban ${fmtX(SITE_ACCESS['Suburban Setting']?.multiplier ?? 1)}`, desc: '10–30 km from city' },
-  { value: 'Peri-Urban Setting', label: `Peri-Urban ${fmtX(SITE_ACCESS['Peri-Urban Setting']?.multiplier ?? 1)}`, desc: '30–60 km from city' },
-  { value: 'Rural Setting', label: `Rural ${fmtX(SITE_ACCESS['Rural Setting']?.multiplier ?? 1)}`, desc: '60–150 km from city' },
-  { value: 'Exurban Setting', label: `Exurban ${fmtX(SITE_ACCESS['Exurban Setting']?.multiplier ?? 1)}`, desc: '150–300 km from city' },
-  { value: 'Specialized/Natural Setting', label: `Specialized ${fmtX(SITE_ACCESS['Specialized/Natural Setting']?.multiplier ?? 1)}`, desc: 'Remote or restricted access' },
+  { value: 'Urban Setting', label: 'Urban', desc: `Urban setting ${fmtX(SITE_ACCESS['Urban Setting']?.multiplier ?? 1)}` },
+  { value: 'Suburban Setting', label: 'Suburban', desc: `Suburban setting ${fmtX(SITE_ACCESS['Suburban Setting']?.multiplier ?? 1)}` },
+  { value: 'Peri-Urban Setting', label: 'Peri-Urban', desc: `Peri-Urban setting ${fmtX(SITE_ACCESS['Peri-Urban Setting']?.multiplier ?? 1)}` },
+  { value: 'Rural Setting', label: 'Rural', desc: `Rural setting ${fmtX(SITE_ACCESS['Rural Setting']?.multiplier ?? 1)}` },
+  { value: 'Exurban Setting', label: 'Exurban', desc: `Exurban setting ${fmtX(SITE_ACCESS['Exurban Setting']?.multiplier ?? 1)}` },
+  { value: 'Specialized/Natural Setting', label: 'Specialized', desc: `Specialized / natural setting ${fmtX(SITE_ACCESS['Specialized/Natural Setting']?.multiplier ?? 1)}` },
 ];
 const slopeOpts      = [
-  { value: 'Flat Land (0-5%)', label: `Flat — 0–5% slope ${fmtX(LAND_SLOPE['Flat Land (0-5%)']?.multiplier ?? 1)}`, desc: '0–5% slope' },
-  { value: 'Moderately Sloped Land (5-15%)', label: `Moderate — 5–15% slope ${fmtX(LAND_SLOPE['Moderately Sloped Land (5-15%)']?.multiplier ?? 1)}`, desc: '5–15% slope' },
-  { value: 'Steep / Hilly Land (15%+)', label: `Steep — 15%+ slope ${fmtX(LAND_SLOPE['Steep / Hilly Land (15%+)']?.multiplier ?? 1)}`, desc: '15%+ slope' },
-  { value: 'Irregular / Constrained Land', label: `Irregular — constrained site ${fmtX(LAND_SLOPE['Irregular / Constrained Land']?.multiplier ?? 1)}`, desc: 'Rocky or constrained' },
+  { value: 'Flat Land (0-5%)', label: 'Flat', desc: `0–5% slope ${fmtX(LAND_SLOPE['Flat Land (0-5%)']?.multiplier ?? 1)}` },
+  { value: 'Moderately Sloped Land (5-15%)', label: 'Moderate', desc: `5–15% slope ${fmtX(LAND_SLOPE['Moderately Sloped Land (5-15%)']?.multiplier ?? 1)}` },
+  { value: 'Steep / Hilly Land (15%+)', label: 'Steep', desc: `15%+ slope ${fmtX(LAND_SLOPE['Steep / Hilly Land (15%+)']?.multiplier ?? 1)}` },
+  { value: 'Irregular / Constrained Land', label: 'Irregular', desc: `Constrained site ${fmtX(LAND_SLOPE['Irregular / Constrained Land']?.multiplier ?? 1)}` },
 ];
 const landOpts       = Object.entries(LAND_PROCUREMENT).map(([k, v]) => ({ value: k, label: v.label }));
 const categoryOpts   = CATEGORIES.map(c => ({ value: c.key, label: c.label }));
