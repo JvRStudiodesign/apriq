@@ -83,22 +83,30 @@ export function calculate(inputs) {
   const landDevelopmentMultiplier = isManualLand
     ? manualLandDevPct
     : (LAND_PROCUREMENT[landProcurementType]?.developmentMultiplier ?? 0);
-  const landProcurementCost      = landProcurementRatePerM2 * landArea;
   const earthworksMultiplier     = LAND_SLOPE[landSlopeKey]?.multiplier ?? 1;
-  const earthworksCost           = landProcurementCost * earthworksMultiplier;
 
   const constructionCost      = baseConstructionCostNew + baseConstructionCostRenovation;
-  const totalConstructionCost = constructionCost + earthworksCost;
-  const landDevelopmentCost   = totalConstructionCost * landDevelopmentMultiplier;
+  const totalConstructionCost = constructionCost;
 
-  const contingencyAmount  = totalConstructionCost * contingencyPct;
-  const contractorProfit   = (totalConstructionCost + contingencyAmount) * profitPct;
-  const preliminaries      = (totalConstructionCost + contingencyAmount + contractorProfit) * preliminariesPct;
-  const subtotalBeforeFees = totalConstructionCost + contingencyAmount + contractorProfit + preliminaries;
+  // Land procurement is calculated separately (site slope/earthworks remains a land-side uplift)
+  const landProcurementCostBase = landProcurementRatePerM2 * landArea;
+  const earthworksCost          = landProcurementCostBase * (earthworksMultiplier - 1);
+  const landProcurementCost     = landProcurementCostBase + earthworksCost;
+
+  // Land development must be based on construction cost only
+  const landDevelopmentCost   = constructionCost * landDevelopmentMultiplier;
+
+  // Financial additions must apply ONLY to construction cost
+  const contingencyAmount  = constructionCost * contingencyPct;
+  const contractorProfit   = (constructionCost + contingencyAmount) * profitPct;
+  const preliminaries      = (constructionCost + contingencyAmount + contractorProfit) * preliminariesPct;
+  const subtotalBeforeFees = constructionCost + contingencyAmount + contractorProfit + preliminaries;
   const professionalFees   = subtotalBeforeFees * feesPct;
   const subtotalExVAT      = subtotalBeforeFees + professionalFees;
   const vatAmount          = subtotalExVAT * vatPct;
-  const totalProjectCost   = subtotalExVAT + vatAmount + landProcurementCost + landDevelopmentCost;
+  const totalFinancialAdditions = contingencyAmount + contractorProfit + preliminaries + professionalFees + vatAmount;
+  const totalLandCost = landProcurementCost + landDevelopmentCost;
+  const totalProjectCost = constructionCost + totalFinancialAdditions + totalLandCost;
 
   // Hidden backend weights — influence Rand distribution only, never exposed in UI
   const ELEMENT_WEIGHTS = [0.55, 0.90, 1.25, 1.05, 1.30, 0.95, 1.45, 1.35, 0.70, 1.40, 0.80];
@@ -152,9 +160,17 @@ export function calculate(inputs) {
     newArea, renovArea,
     baseConstructionCostNew, baseConstructionCostRenovation,
     constructionCost, totalConstructionCost,
-    landProcurementRatePerM2, landProcurementCost, landDevelopmentMultiplier, landDevelopmentCost, earthworksMultiplier, earthworksCost,
+    landProcurementRatePerM2,
+    landProcurementCost,
+    landDevelopmentMultiplier,
+    landDevelopmentCost,
+    totalLandCost,
+    earthworksMultiplier,
+    earthworksCost,
     contingencyAmount, contractorProfit, preliminaries,
-    subtotalBeforeFees, professionalFees, subtotalExVAT, vatAmount, totalProjectCost,
+    subtotalBeforeFees, professionalFees, subtotalExVAT, vatAmount,
+    totalFinancialAdditions,
+    totalProjectCost,
     escalatedTotal, escalationYears,
     monthsToStart: Math.round(monthsToStart), yearsToStart,
     elementBreakdown, customPctTotal, customPctOk,
