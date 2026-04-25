@@ -100,10 +100,24 @@ input, select, textarea {
   touch-action: manipulation;
 }
 
+/* Enforce >=16px computed size on mobile to prevent focus-zoom,
+   even when inline styles set smaller rem-based sizes. */
+@media (max-width: 900px) {
+  input, select, textarea, button {
+    font-size: 16px !important;
+  }
+}
+
 /* ── Force all inputs to always use light color scheme ── */
 /* This prevents iOS/Android/Chrome dark mode from making inputs black */
 input, select, textarea, input[type="date"], input[type="number"], input[type="text"], input[type="email"], input[type="password"] {
   color-scheme: light !important;
+}
+
+/* Keep date picker icon visible and consistent with light mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.85;
+  filter: none !important;
 }
 
 /* ── Footer mobile responsive ── */
