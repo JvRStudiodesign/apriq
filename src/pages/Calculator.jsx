@@ -1265,6 +1265,9 @@ export default function Calculator() {
               <p style={{ color: '#ccc', fontSize: '0.875rem' }}>{isPro ? 'Adjust any input to see a live estimate.' : 'Fill in inputs and click Calculate estimate.'}</p>
             </div>
           ) : <Summary />}
+          <div style={{ marginTop: '0.75rem' }}>
+            <InstallPWA />
+          </div>
         </div>
       </div>
 
@@ -1290,10 +1293,7 @@ export default function Calculator() {
         </div>
       )}
 
-      {/* How to install AprIQ */}
-      <div style={{ maxWidth:'1140px', margin:'0 auto', padding:'0 1.25rem 2.5rem' }}>
-        <InstallPWA />
-      </div>
+
 
       {showAdvisor && estimateState && (
         <Suspense fallback={null}>
