@@ -128,7 +128,7 @@ export default function AprIQIntelligence() {
     return (
       <div style={s.wrap}>
         <button style={s.fab} onClick={() => setOpen(true)}>
-          <FaceIcon size={32}/>
+          <FaceIcon size={40}/>
           <div style={s.ping}/>
         </button>
       </div>
@@ -201,7 +201,7 @@ export default function AprIQIntelligence() {
         )}
       </div>
       <button style={s.fab} onClick={() => setOpen(false)}>
-        <FaceIcon size={32}/>
+        <FaceIcon size={40}/>
       </button>
     </div>
   );
