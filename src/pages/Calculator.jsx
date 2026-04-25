@@ -608,6 +608,25 @@ export default function Calculator() {
       ].map(r => (
         <div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={rowVal}>{fmtZAR(r.value)}</span></div>
       ))}
+      <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid #E4E5E5', fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>
+        <span>Total financial additions</span>
+        <span>{fmtZAR((result.contingencyAmount || 0) + (result.contractorProfit || 0) + (result.preliminaries || 0) + (result.professionalFees || 0) + (result.vatAmount || 0))}</span>
+      </div>
+    </div>
+
+    {/* ── Land ── */}
+    <div style={card}>
+      <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1rem' }}>Land</span>
+      {[
+        { label: 'Land procurement', value: result.landProcurementCost || 0 },
+        { label: 'Land development', value: result.landDevelopmentCost || 0 },
+      ].map(r => (
+        <div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={rowVal}>{fmtZAR(r.value)}</span></div>
+      ))}
+      <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid #E4E5E5', fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>
+        <span>Total land cost</span>
+        <span>{fmtZAR((result.landProcurementCost || 0) + (result.landDevelopmentCost || 0))}</span>
+      </div>
     </div>
 
     {/* ── Total project cost ── */}
