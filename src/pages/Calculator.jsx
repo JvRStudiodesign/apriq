@@ -657,7 +657,12 @@ export default function Calculator() {
         width: '100%',
       }}
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" style={{ display: 'block' }}>
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        style={{ display: 'block', transform: 'scale(3)', transformOrigin: 'center' }}
+      >
         <circle cx="9" cy="10" r="1.4" fill="#FF8210"/>
         <circle cx="15" cy="10" r="1.4" fill="#FF8210"/>
         <path d="M8 14.5c1.2 1.8 6 1.8 8 0" fill="none" stroke="#FF8210" strokeWidth="1.6" strokeLinecap="round"/>

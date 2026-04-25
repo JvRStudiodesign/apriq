@@ -29,7 +29,7 @@ function incrementUsed() {
 }
 
 const s = {
-  wrap: { position: 'fixed', bottom: '24px', right: '24px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', zIndex: 9999, colorScheme: 'light' },
+  wrap: { position: 'fixed', bottom: 'calc(24px + env(safe-area-inset-bottom))', right: 'calc(24px + env(safe-area-inset-right))', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', zIndex: 9999, colorScheme: 'light' },
   fab: { width: '48px', height: '48px', minWidth: '48px', minHeight: '48px', borderRadius: '10px', border: '1.5px solid #FF8210', background: '#F9FAFA', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0, padding: 0 },
   ping: { position: 'absolute', top: '-3px', right: '-3px', width: '11px', height: '11px', borderRadius: '50%', background: '#FF8210', border: '2px solid #F9FAFA' },
   panel: { background: '#F9FAFA', border: '1px solid #E4E5E5', borderRadius: '20px', width: '320px', overflow: 'hidden', colorScheme: 'light' },
