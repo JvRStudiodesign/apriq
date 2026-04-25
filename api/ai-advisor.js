@@ -29,7 +29,6 @@ function topDrivers(estimateState) {
     ['Contractor profit', estimateState.contractorProfit],
     ['Preliminaries', estimateState.preliminaries],
     ['Professional fees', estimateState.professionalFees],
-    ['VAT', estimateState.vat],
   ]
     .map(([label, value]) => ({ label, value: asNumber(value) }))
     .filter((item) => item.value > 0)
@@ -41,11 +40,24 @@ function buildAdvisorFacts(estimateState) {
   const floorArea = asNumber(estimateState.floorArea);
   const totalCost = asNumber(estimateState.totalCost);
   const constructionCost = asNumber(estimateState.constructionCost);
+  const baseRate = asNumber(estimateState.baseRate);
   const adjustedBaseRate = asNumber(estimateState.adjustedBaseRate);
   const totalRate = floorArea > 0 ? totalCost / floorArea : 0;
   const constructionRate = floorArea > 0 ? constructionCost / floorArea : 0;
   const escalationExposure = Math.max(0, asNumber(estimateState.escalatedTotal) - totalCost);
   const drivers = topDrivers(estimateState);
+  const specUpliftPerM2 = adjustedBaseRate && baseRate ? adjustedBaseRate - baseRate : 0;
+
+  const qualityKey = estimateState.qualityKey || '';
+  const ratePosition = qualityKey === 'Low'
+    ? 'conservative'
+    : qualityKey === 'Medium'
+      ? 'market-rate'
+      : qualityKey === 'High'
+        ? 'premium'
+        : qualityKey === 'Premium'
+          ? 'high-end premium'
+          : 'not classified';
 
   return {
     project: `${estimateState.projectTypeKey || 'Project'} ${estimateState.buildingType || ''} / ${estimateState.buildingSubtype || ''}`.trim(),
@@ -57,14 +69,16 @@ function buildAdvisorFacts(estimateState) {
     totalRatePerM2: totalRate ? `${fmtRand(totalRate)} /m2` : 'not available',
     constructionCost: fmtRand(constructionCost),
     constructionRatePerM2: constructionRate ? `${fmtRand(constructionRate)} /m2` : 'not available',
+    baseRate: baseRate ? `${fmtRand(baseRate)} /m2` : 'not available',
     adjustedBaseRate: adjustedBaseRate ? `${fmtRand(adjustedBaseRate)} /m2` : 'not available',
+    specUpliftPerM2: specUpliftPerM2 ? `${fmtRand(specUpliftPerM2)} /m2` : 'not available',
+    ratePosition,
     dominantDrivers: drivers.map((d) => `${d.label}: ${fmtRand(d.value)}`).join('; '),
     allowances: [
       `contingency ${fmtPct(estimateState.contingencyPct)} (${fmtRand(estimateState.contingency)})`,
       `contractor profit ${fmtPct(estimateState.contractorProfitPct)} (${fmtRand(estimateState.contractorProfit)})`,
       `preliminaries ${fmtPct(estimateState.preliminariesPct)} (${fmtRand(estimateState.preliminaries)})`,
       `professional fees ${fmtPct(estimateState.professionalFeesPct)} (${fmtRand(estimateState.professionalFees)})`,
-      `VAT ${fmtPct(estimateState.vatPct)} (${fmtRand(estimateState.vat)})`,
     ].join('; '),
     specificationSignals: [
       `quality ${estimateState.qualityKey || 'not provided'} x${asNumber(estimateState.qualityMultiplier).toFixed(2)}`,
@@ -78,6 +92,9 @@ function buildAdvisorFacts(estimateState) {
     land: asNumber(estimateState.landCost) > 0
       ? `${estimateState.landType || 'Land'} on ${Math.round(asNumber(estimateState.landArea))} m2: ${fmtRand(estimateState.landCost)}`
       : 'no land cost included',
+    vat: asNumber(estimateState.vat) > 0
+      ? `${fmtPct(estimateState.vatPct)} (${fmtRand(estimateState.vat)})`
+      : 'not available',
   };
 }
 
@@ -150,6 +167,7 @@ export default async function handler(req, res) {
       'Every sentence must be grounded in the QS facts or estimate data above.',
       'Use the formatted rand values from QS FACTS wherever possible. Do not output decimals for rands.',
       'Name the dominant cost drivers by actual rand value and explain why they matter in this context.',
+      'VAT RULE: Never comment on VAT, never frame VAT as a cost driver, and never advise on VAT. VAT is statutory and present on all projects. Only mention VAT if the user explicitly asks about VAT.',
       'Contextualise the rate from the data AprIQ has supplied. If the estimate shows high quality, high complexity, difficult site access, renovation work, land cost, escalation, or thin allowances, say what that means. Do not cite or imply external pricing guides.',
       'Identify real risks: escalation exposure in rands where provided, whether contingency is adequate for this project type, specification decisions that carry cost risk, and budget pressure points.',
       'Suggest practical levers. State the single most impactful thing the user could change to reduce cost or manage risk, and describe the directional impact without recalculating a replacement estimate.',
@@ -189,7 +207,7 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: contents,
-          generationConfig: { maxOutputTokens: 2500, temperature: 0.35 },
+          generationConfig: { maxOutputTokens: 2500, temperature: 0.42 },
         }),
       }
     );
