@@ -234,6 +234,15 @@ export default function Calculator() {
   const [newClientNameCalc, setNewClientNameCalc] = useState('');
   const [savingNewProj, setSavingNewProj] = useState(false);
   const [showAdvisor, setShowAdvisor] = useState(false);
+  const [advisorMessages, setAdvisorMessages] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem('apriqAdvisorSession');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [includeAdvisorSummaryInPdf, setIncludeAdvisorSummaryInPdf] = useState(false);
 
   const tier     = profile?.tier || 'free';
   const trialEnd = profile?.trial_end_date ? new Date(profile.trial_end_date) : null;
@@ -440,11 +449,27 @@ export default function Calculator() {
   const pdfRef_display  = selectedProject?.reference_number || pdfRef;
   const pdfFilename     = `APRIQ-${pdfRef_display}-${_ds}-${_ts}.pdf`;
   const isRenovation   = inputs.projectTypeKey === 'Renovation';
+  const configuredProjectLocation = selectedProject?.address?.trim() || '';
+  const advisorSummary = [...advisorMessages].reverse().find(m => m.role === 'assistant')?.content || '';
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('apriqAdvisorSession', JSON.stringify(advisorMessages));
+    } catch {
+      // Session persistence is a convenience; the advisor still works without it.
+    }
+  }, [advisorMessages]);
 
   const estimateState = result
     ? {
         buildingType: inputs.use1Category,
         buildingSubtype: inputs.use1Subtype,
+        projectLocation: {
+          address: configuredProjectLocation,
+          source: configuredProjectLocation ? 'configured_project' : 'missing',
+          projectName: selectedProject?.project_name || '',
+          projectReference: selectedProject?.reference_number || '',
+        },
         floorArea: inputs.floorArea,
         isRenovation,
         renovationArea: inputs.renovationArea,
@@ -778,7 +803,16 @@ export default function Calculator() {
 
     {isPro && result ? (
       <>
-        <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'0.5rem' }} onClick={() => {
+        {advisorSummary && (
+          <label style={{ display:'flex', alignItems:'flex-start', gap:'8px', padding:'0.75rem 0.875rem', background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:'12px', marginBottom:'0.5rem', cursor:'pointer', fontFamily:'inherit' }}>
+            <input type="checkbox" checked={includeAdvisorSummaryInPdf} onChange={e=>setIncludeAdvisorSummaryInPdf(e.target.checked)} style={{ marginTop:'2px', cursor:'pointer' }} />
+            <span style={{ display:'flex', flexDirection:'column', gap:'3px' }}>
+              <span style={{ fontSize:'0.82rem', fontWeight:600, color:'#111111' }}>Include AprIQ advisor summary in PDF</span>
+              <span style={{ fontSize:'0.72rem', color:'#979899', lineHeight:1.45 }}>Uses the latest advisor reply from this session. Adjust the estimate and ask the advisor to revise it before exporting.</span>
+            </span>
+          </label>
+        )}
+        <PDFDownloadLink document={<EstimatePDF inputs={inputs} result={result} userDetails={userDetails} project={selectedProject} client={selectedClient} reference={pdfRef_display} numCats={numCats} isRenovation={isRenovation} advisorSummary={includeAdvisorSummaryInPdf ? advisorSummary : ''}/>} fileName={pdfFilename} style={{ display:'block', textDecoration:'none', marginBottom:'0.5rem' }} onClick={() => {
                   if (result) {
                     supabase.from('estimates').update({ pdf_generated: true }).eq('project_id', selectedProjectId || '').eq('user_id', user?.id || '').eq('is_latest', true).then(()=>{});
                     supabase.from('pdf_exports').insert({
@@ -1033,6 +1067,8 @@ export default function Calculator() {
       {showAdvisor && estimateState && (
         <AprIQAdvisor
           estimateState={estimateState}
+          messages={advisorMessages}
+          setMessages={setAdvisorMessages}
           onClose={() => setShowAdvisor(false)}
         />
       )}

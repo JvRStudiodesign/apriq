@@ -48,14 +48,22 @@ const LockIcon = () => (
   </svg>
 );
 
-export default function AprIQAdvisor({ estimateState, onClose }) {
+function extractManualLocation(messages) {
+  const locationMsg = [...messages].reverse().find(msg => msg.role === 'user' && msg.type === 'location');
+  return locationMsg?.content?.replace(/^Project location:\s*/i, '').trim() || '';
+}
+
+export default function AprIQAdvisor({ estimateState, messages, setMessages, onClose }) {
   const { user, profile } = useAuth();
-  const [stage, setStage] = useState('prompt');
-  const [messages, setMessages] = useState([]);
+  const [stage, setStage] = useState(() => messages.length > 0 ? 'chat' : 'prompt');
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [questionsUsed, setQuestionsUsed] = useState(profile?.ai_questions_used || 0);
   const bodyRef = useRef(null);
+  const configuredLocation = estimateState?.projectLocation?.address?.trim() || '';
+  const manualLocation = extractManualLocation(messages);
+  const activeLocation = configuredLocation || manualLocation;
+  const needsLocation = !activeLocation;
 
   const tier = profile?.tier;
   const trialEnd = profile?.trial_end_date ? new Date(profile.trial_end_date) : null;
@@ -70,12 +78,36 @@ export default function AprIQAdvisor({ estimateState, onClose }) {
   useEffect(() => { if (isLocked || isTrialAiExpired) setStage('locked'); }, [isLocked, isTrialAiExpired]);
   useEffect(() => { if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight; }, [messages, loading]);
 
+  const requestLocation = () => {
+    setStage('chat');
+    setMessages(prev => [
+      ...prev,
+      {
+        role: 'assistant',
+        content: 'Before I summarise or give cost feedback, what is the project location or address? Location affects South African construction costs, so I will not assume it from your profile or other projects.',
+      },
+    ]);
+  };
+
   const sendMessage = async (text) => {
     const userMsg = text || input.trim();
     if (!userMsg || loading || atLimit) return;
     setInput('');
     setStage('chat');
-    const newMessages = [...messages, { role: 'user', content: userMsg }];
+    const isLocationReply = needsLocation && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content?.includes('what is the project location');
+    const userMessage = isLocationReply
+      ? { role: 'user', content: `Project location: ${userMsg}`, type: 'location' }
+      : { role: 'user', content: userMsg };
+    const locationForRequest = configuredLocation || (isLocationReply ? userMsg : manualLocation);
+    const nextEstimateState = {
+      ...estimateState,
+      projectLocation: {
+        ...(estimateState?.projectLocation || {}),
+        address: locationForRequest || '',
+        source: configuredLocation ? 'configured_project' : locationForRequest ? 'manual_chat' : 'missing',
+      },
+    };
+    const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setLoading(true);
     try {
@@ -84,7 +116,7 @@ export default function AprIQAdvisor({ estimateState, onClose }) {
       const res = await fetch('/api/ai-advisor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ message: userMsg, estimateState, conversationHistory: messages, userId: user.id })
+        body: JSON.stringify({ message: userMsg, estimateState: nextEstimateState, conversationHistory: messages, userId: user.id })
       });
       const data = await res.json();
       if (res.status === 429) { setQuestionsUsed(DAILY_LIMIT); setMessages(prev => [...prev, { role: 'assistant', content: 'You have reached your 20 question limit for today. Your limit resets tomorrow.' }]); return; }
@@ -95,7 +127,10 @@ export default function AprIQAdvisor({ estimateState, onClose }) {
     finally { setLoading(false); }
   };
 
-  const handleSummary = () => sendMessage('Please give me a plain-language summary of my current estimate — what are the main cost drivers, how does this rate compare to typical projects of this type in South Africa, and are there any flags I should be aware of?');
+  const handleSummary = () => {
+    if (needsLocation) { requestLocation(); return; }
+    sendMessage('Please give me a plain-language summary of my current estimate — what are the main cost drivers, how does this rate compare to typical projects of this type in South Africa, and are there any flags I should be aware of?');
+  };
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
 
 if (stage === 'locked') return (
@@ -132,7 +167,11 @@ if (stage === 'locked') return (
         </div>
         <div style={{ ...s.body, justifyContent: 'center' }}>
           <div style={s.promptCard}>
-            <p style={s.promptLabel}>Would you like a summary of your current estimate before we start?</p>
+            <p style={s.promptLabel}>
+              {configuredLocation
+                ? `Using project location: ${configuredLocation}. Would you like a summary of your current estimate before we start?`
+                : 'Would you like a summary of your current estimate before we start? I will ask for the project location first because location affects cost.'}
+            </p>
           <div style={s.promptBtns}>
               <button style={s.promptBtn(true)} onClick={handleSummary}>Yes, summarise it</button>
               <button style={s.promptBtn(false)} onClick={() => setStage('chat')}>No, I have a question</button>
@@ -158,6 +197,9 @@ if (stage === 'locked') return (
           </div>
         </div>
         <div style={s.body} ref={bodyRef}>
+          {configuredLocation && (
+            <div style={s.warnStrip}>Using configured project location: <strong style={{ color: '#111111' }}>{configuredLocation}</strong></div>
+          )}
           {messages.map((msg, i) => (
             <div key={i} style={s.msgWrap(msg.role === 'user')}>
               <span style={s.msgLabel}>{msg.role === 'user' ? 'You' : 'AprIQ advisor'}</span>

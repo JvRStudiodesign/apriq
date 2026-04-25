@@ -37,6 +37,8 @@ const s = StyleSheet.create({
   grandTotal: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12, backgroundColor: '#111111', borderRadius: 5, marginBottom: 12 },
   grandLabel: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#F9FAFA' },
   grandVal: { fontSize: 14, fontFamily: 'Helvetica-Bold', color: '#F9FAFA' },
+  advisorBox: { padding: 10, backgroundColor: '#F9FAFA', borderWidth: 0.5, borderColor: '#FF8210', borderStyle: 'solid', borderRadius: 5 },
+  advisorText: { fontSize: 8.5, color: '#111111', lineHeight: 1.5 },
   paramGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   paramHalf: { width: '50%', paddingRight: 8 },
   disclaimer: { marginTop: 12, paddingTop: 10, borderTopWidth: 0.5, borderTopColor: '#E4E5E5', borderTopStyle: 'solid' },
@@ -46,7 +48,7 @@ const s = StyleSheet.create({
   footerText: { fontSize: 6.5, color: '#cccccc' },
 });
 
-export function EstimatePDF({ inputs, result, userDetails, project, client, reference, numCats, isRenovation }) {
+export function EstimatePDF({ inputs, result, userDetails, project, client, reference, numCats, isRenovation, advisorSummary }) {
   const today = new Date().toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' });
   const base = result?.weightedBaseRate || 0;
 
@@ -223,6 +225,15 @@ export function EstimatePDF({ inputs, result, userDetails, project, client, refe
           <Text style={s.grandLabel}>Total Project Cost</Text>
           <Text style={s.grandVal}>{fmt(result?.totalProjectCost)}</Text>
         </View>
+
+        {advisorSummary && (
+          <View style={s.section} wrap={false}>
+            <Text style={s.sectionTitle}>AprIQ Advisor Summary</Text>
+            <View style={s.advisorBox}>
+              <Text style={s.advisorText}>{advisorSummary}</Text>
+            </View>
+          </View>
+        )}
 
         {/* Escalation */}
         {inputs.includeEscalation && result?.escalationYears?.length > 0 && (

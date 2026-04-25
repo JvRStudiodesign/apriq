@@ -49,6 +49,9 @@ function buildAdvisorFacts(estimateState) {
 
   return {
     project: `${estimateState.projectTypeKey || 'Project'} ${estimateState.buildingType || ''} / ${estimateState.buildingSubtype || ''}`.trim(),
+    projectLocation: estimateState.projectLocation?.address
+      ? `${estimateState.projectLocation.address} (${estimateState.projectLocation.source || 'provided'})`
+      : 'missing - ask the user before giving a summary or location-sensitive cost feedback',
     floorArea: floorArea ? `${Math.round(floorArea)} m2` : 'not provided',
     totalCost: fmtRand(totalCost),
     totalRatePerM2: totalRate ? `${fmtRand(totalRate)} /m2` : 'not available',
@@ -141,6 +144,8 @@ export default async function handler(req, res) {
       '',
       'WHAT YOU MUST DO:',
       'Do not just read back numbers. Interpret them.',
+      'Location is cost-sensitive. If projectLocation is missing, your first response to any request for summary, feedback, or interpretation must be one concise question asking for the project location or address. Do not provide the summary until location is supplied. Never infer location from the user profile or from other projects.',
+      'If projectLocation is provided, explicitly use it as context for location-sensitive commentary. If the source is configured_project, treat it as the selected project address from the configurator. If the source is manual_chat, treat it as supplied by the user in this advisor session.',
       'Start with the strongest commercial insight, not with "This estimate indicates".',
       'Every sentence must be grounded in the QS facts or estimate data above.',
       'Use the formatted rand values from QS FACTS wherever possible. Do not output decimals for rands.',

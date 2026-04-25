@@ -1,5 +1,6 @@
 import { Link, useOutletContext } from 'react-router-dom';
 import { useFadeIn } from '../hooks/useFadeIn';
+import AprIQIntelligence from '../components/AprIQIntelligence';
 
 const WHY_PILLS = ['Faster Early Decisions','Structured Cost Guidance','Instant Cost Breakdown','Clearer Feasibility Planning'];
 const HOW_STEPS = ['Add Project\n& Client info','Add Project\nArea','Select All\nCost Factors','Generate/Export\nSummary'];
@@ -53,6 +54,7 @@ export default function LandingPage() {
         <h2 style={s.panelH2} className="fi">Core features</h2>
         <div style={s.pillRow} className="fi">{FEATURE_PILLS.map((p) => <span key={p} style={s.pill}>{p}</span>)}</div>
       </div></div></section>
+      <AprIQIntelligence />
     </div>
   );
 }
