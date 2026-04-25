@@ -1,4 +1,4 @@
-const CACHE_NAME = 'apriq-v1';
+const CACHE_NAME = 'apriq-v2';
 const SHELL = [
   '/',
   '/index.html',
@@ -39,9 +39,14 @@ self.addEventListener('fetch', e => {
   // For navigation (HTML pages), try network first, fall back to cached /index.html
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request).catch(() =>
-        caches.match('/index.html')
-      )
+      fetch(e.request)
+        .then(res => {
+          // Keep cached shell HTML fresh so deploys don't strand clients
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put('/index.html', copy)).catch(() => {});
+          return res;
+        })
+        .catch(() => caches.match('/index.html'))
     );
     return;
   }
