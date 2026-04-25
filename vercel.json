@@ -5,6 +5,34 @@
       "destination": "/api/$1"
     },
     {
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/sw.js",
+      "destination": "/sw.js"
+    },
+    {
+      "source": "/manifest.json",
+      "destination": "/manifest.json"
+    },
+    {
+      "source": "/favicon.svg",
+      "destination": "/favicon.svg"
+    },
+    {
+      "source": "/icon-192.png",
+      "destination": "/icon-192.png"
+    },
+    {
+      "source": "/icon-512.png",
+      "destination": "/icon-512.png"
+    },
+    {
+      "source": "/logo-transparent.png",
+      "destination": "/logo-transparent.png"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
