@@ -1226,14 +1226,14 @@ export default function Calculator() {
               <Slider label="Escalation rate" value={inputs.escalationRate} min={0} max={20} step={1} onChange={v => isPro && upd('escalationRate', v)} fmtFn={v => v + '% p.a.'} locked={!isPro} />
               <div style={{ opacity: isPro ? 1 : 0.5 }}>
                 <label style={lbl}>Estimated start date</label>
-                <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #E4E5E5', borderRadius: '12px', overflow: 'hidden', width: '100%', maxWidth: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #E4E5E5', borderRadius: '12px', overflow: 'hidden', width: '100%', maxWidth: '100%', background: '#F9FAFA' }}>
                   <input
                     ref={estimatedStartDateRef}
                     type="date"
                     value={inputs.estimatedStartDate || ''}
                     onChange={e => isPro && upd('estimatedStartDate', e.target.value || null)}
                     disabled={!isPro}
-                    style={{ flex: 1, minWidth: 0, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#111111', WebkitTextFillColor: '#111111', background: isPro ? '#F9FAFA' : '#F9FAFA', colorScheme: 'light' }}
+                    style={{ flex: 1, minWidth: 0, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#111111', WebkitTextFillColor: '#111111', background: '#F9FAFA', colorScheme: 'light', appearance: 'none', WebkitAppearance: 'none' }}
                   />
                   <button
                     type="button"
@@ -1245,7 +1245,7 @@ export default function Calculator() {
                       if (typeof el.showPicker === 'function') el.showPicker();
                       else el.focus();
                     }}
-                    style={{ padding: '0.6rem 0.875rem', background: 'transparent', border: 'none', cursor: isPro ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ padding: '0.6rem 0.875rem', background: '#F9FAFA', border: 'none', cursor: isPro ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', appearance: 'none', WebkitAppearance: 'none' }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF8210" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="4" width="18" height="18" rx="2"/>

@@ -118,10 +118,22 @@ input, select, textarea, input[type="date"], input[type="number"], input[type="t
 input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 0 !important;
   filter: none !important;
+  background: transparent !important;
 }
 
 /* Ensure iOS keeps date text visible */
 input[type="date"] {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+/* Force the editable date text to remain visible on iOS */
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
   color: #111111 !important;
   -webkit-text-fill-color: #111111 !important;
 }
