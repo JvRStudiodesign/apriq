@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 
 const DAILY_LIMIT = 20;
 const FONT = "'Roboto',system-ui,sans-serif";
+const UNLIMITED_AI_EMAIL = 'apriq@apriq.co.za';
 
 const s = {
   overlay: { position:'fixed', inset:0, background:'rgba(17,17,17,0.42)', backdropFilter:'blur(5px)', WebkitBackdropFilter:'blur(5px)', zIndex:500, display:'flex', alignItems:'center', justifyContent:'center', padding:24 },
@@ -56,10 +57,11 @@ function extractManualLocation(messages) {
 
 export default function AprIQAdvisor({ estimateState, messages, setMessages, onClose }) {
   const { user, profile } = useAuth();
+  const hasUnlimitedAi = (profile?.email || '').toLowerCase() === UNLIMITED_AI_EMAIL;
   const [stage, setStage] = useState(() => messages.length > 0 ? 'chat' : 'prompt');
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [questionsUsed, setQuestionsUsed] = useState(profile?.ai_questions_used || 0);
+  const [questionsUsed, setQuestionsUsed] = useState(hasUnlimitedAi ? 0 : (profile?.ai_questions_used || 0));
   const bodyRef = useRef(null);
   const configuredLocation = estimateState?.projectLocation?.address?.trim() || '';
   const manualLocation = extractManualLocation(messages);
@@ -78,7 +80,8 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
   const daysSinceTrial = trialStart ? Math.floor((Date.now() - trialStart) / 86400000) : 999;
   const isLocked = tier === 'free';
   const isTrialAiExpired = tier === 'trial' && daysSinceTrial >= 7;
-  const questionsRemaining = DAILY_LIMIT - questionsUsed;
+  const effectiveUsed = hasUnlimitedAi ? 0 : questionsUsed;
+  const questionsRemaining = DAILY_LIMIT - effectiveUsed;
   const atLimit = questionsRemaining <= 0;
   const nearLimit = questionsRemaining <= 4 && questionsRemaining > 0;
 
@@ -126,9 +129,13 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
         body: JSON.stringify({ message: userMsg, estimateState: nextEstimateState, conversationHistory: messages, userId: user.id })
       });
       const data = await res.json();
-      if (res.status === 429) { setQuestionsUsed(DAILY_LIMIT); setMessages(prev => [...prev, { role: 'assistant', content: 'You have reached your 20 question limit for today. Your limit resets tomorrow.' }]); return; }
+      if (res.status === 429) {
+        if (!hasUnlimitedAi) setQuestionsUsed(DAILY_LIMIT);
+        setMessages(prev => [...prev, { role: 'assistant', content: 'You have reached your 20 question limit for today. Your limit resets tomorrow.' }]);
+        return;
+      }
       if (!res.ok) { setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong. Please try again in a moment.' }]); return; }
-      setQuestionsUsed(data.questionsUsed);
+      setQuestionsUsed(hasUnlimitedAi ? 0 : data.questionsUsed);
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
     } catch { setMessages(prev => [...prev, { role: 'assistant', content: 'Unable to connect. Please check your connection and try again.' }]); }
     finally { setLoading(false); }

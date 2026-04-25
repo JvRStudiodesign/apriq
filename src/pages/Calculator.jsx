@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -247,7 +247,7 @@ export default function Calculator() {
   const { user, profile } = useAuth();
   const [inputs, setInputs]   = useState(DEFAULT);
   const [numCats, setNumCats] = useState(1);
-  const [result, setResult]   = useState(null);
+  const [manualResult, setManualResult] = useState(null);
   const [saving, setSaving]   = useState(false);
   const [saved, setSaved]         = useState(false);
   const [sharing, setSharing]       = useState(false);
@@ -282,7 +282,10 @@ export default function Calculator() {
   const isPro    = tier === 'pro' || trialOk;
   const daysLeft = trialEnd ? Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)) : 0;
 
-  useEffect(() => { if (isPro) setResult(calculate(inputs)); }, [inputs, isPro]);
+  // Defer heavy recalculation work so typing/sliders stay responsive.
+  const deferredInputs = useDeferredValue(inputs);
+  const proResult = useMemo(() => (isPro ? calculate(deferredInputs) : null), [isPro, deferredInputs]);
+  const result = isPro ? proResult : manualResult;
 
   useEffect(() => {
     if (!user?.id) return;
@@ -322,7 +325,7 @@ export default function Calculator() {
     const cat = CATEGORIES.find(c => c.key === catKey);
     setInputs(p => ({ ...p, [`use${n}Category`]: catKey, [`use${n}Subtype`]: cat?.subtypes[0]?.key || '' }));
   }
-  function resetAll() { setInputs(DEFAULT); setNumCats(1); setResult(null); setSaved(false); }
+  function resetAll() { setInputs(DEFAULT); setNumCats(1); setManualResult(null); setSaved(false); }
 
   function setAlloc1(pct) {
     const v = pct / 100;
@@ -398,7 +401,7 @@ export default function Calculator() {
     }
   }
 
-  function handleCalc() { setResult(calculate(inputs)); setSaved(false); }
+  function handleCalc() { setManualResult(calculate(inputs)); setSaved(false); }
 
   async function handleSave() {
     if (!result) return;
@@ -634,8 +637,11 @@ export default function Calculator() {
         { label: `Preliminaries (${Math.round(inputs.preliminariesPct * 100)}%)`, value: result.preliminaries },
         { label: `Professional fees (${Math.round(inputs.feesPct * 100)}%)`, value: result.professionalFees },
         { label: `VAT (${Math.round(inputs.vatPct * 100)}%)`, value: result.vatAmount },
-      ].map(r => (
-        <div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={rowVal}>{fmtZAR(r.value)}</span></div>
+      ].map((r, i, arr) => (
+        <div key={r.label} style={{ ...rowStyle, borderBottom: i === arr.length - 1 ? 'none' : rowStyle.borderBottom }}>
+          <span style={rowLbl}>{r.label}</span>
+          <span style={rowVal}>{fmtZAR(r.value)}</span>
+        </div>
       ))}
       <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid #E4E5E5', fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>
         <span>Total financial additions</span>
@@ -649,10 +655,13 @@ export default function Calculator() {
       {[
         { label: 'Land procurement', value: result.landProcurementCost || 0 },
         { label: `Land development allowance (${((result.landDevelopmentMultiplier || 0) * 100).toFixed(0)}%)`, value: result.landDevelopmentCost || 0 },
-      ].map(r => (
-        <div key={r.label} style={rowStyle}><span style={rowLbl}>{r.label}</span><span style={rowVal}>{fmtZAR(r.value)}</span></div>
+      ].map((r, i, arr) => (
+        <div key={r.label} style={{ ...rowStyle, borderBottom: i === arr.length - 1 ? 'none' : rowStyle.borderBottom }}>
+          <span style={rowLbl}>{r.label}</span>
+          <span style={rowVal}>{fmtZAR(r.value)}</span>
+        </div>
       ))}
-      <div style={rowStyle}>
+      <div style={{ ...rowStyle, borderBottom: 'none' }}>
         <span style={rowLbl}>Land type / slope {fmtX(result.earthworksMultiplier || 1)}</span>
         <span style={rowVal}>{''}</span>
       </div>
@@ -757,6 +766,24 @@ export default function Calculator() {
           ))}
         </>
       )}
+
+      {(() => {
+        const totalFinancialAdditions =
+          (result.contingencyAmount || 0) +
+          (result.contractorProfit || 0) +
+          (result.preliminaries || 0) +
+          (result.professionalFees || 0) +
+          (result.vatAmount || 0);
+        const area = inputs.floorArea || 0;
+        const weightedProjectRateExcludingLand =
+          area > 0 ? (((result.constructionCost || 0) + totalFinancialAdditions) / area) : 0;
+        return (
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid #f5f5f3' }}>
+            <span style={{ fontSize: '0.78rem', color: '#555' }}>Weighted project rate excluding land</span>
+            <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(weightedProjectRateExcludingLand)} /m²</span>
+          </div>
+        );
+      })()}
 
       {/* Multiplier uplifts — each shown as rand value added */}
       {(() => {

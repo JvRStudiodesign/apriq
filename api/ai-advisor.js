@@ -6,6 +6,7 @@ const supabase    = supabaseUrl && serviceKey ? createClient(supabaseUrl, servic
 
 const DAILY_LIMIT   = 20;
 const AI_TRIAL_DAYS = 7;
+const UNLIMITED_AI_EMAILS = new Set(['apriq@apriq.co.za']);
 
 function asNumber(value) {
   const n = Number(value);
@@ -113,6 +114,8 @@ export default async function handler(req, res) {
   if (!userRes.ok) return res.status(401).json({ error: 'Invalid session' });
   const sessionUser = await userRes.json();
   if (!sessionUser?.id) return res.status(401).json({ error: 'Invalid session' });
+  const sessionEmail = (sessionUser?.email || '').toLowerCase();
+  const hasUnlimitedAi = UNLIMITED_AI_EMAILS.has(sessionEmail);
 
   const { message, estimateState, conversationHistory, userId } = req.body || {};
   if (!message || !estimateState || !userId) return res.status(400).json({ error: 'Missing required fields' });
@@ -130,21 +133,23 @@ export default async function handler(req, res) {
     const today = new Date().toISOString().split('T')[0];
     const tier  = profile.tier;
 
-    if (tier === 'free') return res.status(403).json({ error: 'upgrade_required' });
+    if (!hasUnlimitedAi && tier === 'free') return res.status(403).json({ error: 'upgrade_required' });
 
-    if (tier === 'trial' && profile.trial_end_date) {
+    if (!hasUnlimitedAi && tier === 'trial' && profile.trial_end_date) {
       const trialEnd   = new Date(profile.trial_end_date);
       const trialStart = new Date(trialEnd.getTime() - 30 * 86400000);
       const daysSince  = Math.floor((Date.now() - trialStart.getTime()) / 86400000);
       if (daysSince >= AI_TRIAL_DAYS) return res.status(403).json({ error: 'trial_ai_expired' });
     }
 
-    let questionsUsed = profile.ai_questions_used || 0;
-    if (profile.ai_questions_reset_date !== today) {
+    let questionsUsed = hasUnlimitedAi ? 0 : (profile.ai_questions_used || 0);
+    if (!hasUnlimitedAi && profile.ai_questions_reset_date !== today) {
       questionsUsed = 0;
       await supabase.from('profiles').update({ ai_questions_used: 0, ai_questions_reset_date: today }).eq('id', userId);
     }
-    if (questionsUsed >= DAILY_LIMIT) return res.status(429).json({ error: 'daily_limit_reached', questionsUsed, limit: DAILY_LIMIT });
+    if (!hasUnlimitedAi && questionsUsed >= DAILY_LIMIT) {
+      return res.status(429).json({ error: 'daily_limit_reached', questionsUsed, limit: DAILY_LIMIT });
+    }
 
     const advisorFacts = buildAdvisorFacts(estimateState);
     const estimateJson = JSON.stringify(estimateState, null, 2);
@@ -229,10 +234,17 @@ export default async function handler(req, res) {
       .trim();
     if (!aiReply) return res.status(502).json({ error: 'Empty response from AI' });
 
-    const newCount = questionsUsed + 1;
-    await supabase.from('profiles').update({ ai_questions_used: newCount, ai_questions_reset_date: today }).eq('id', userId);
+    const newCount = hasUnlimitedAi ? 0 : (questionsUsed + 1);
+    if (!hasUnlimitedAi) {
+      await supabase.from('profiles').update({ ai_questions_used: newCount, ai_questions_reset_date: today }).eq('id', userId);
+    }
 
-    return res.status(200).json({ reply: aiReply, questionsUsed: newCount, questionsRemaining: DAILY_LIMIT - newCount, limit: DAILY_LIMIT });
+    return res.status(200).json({
+      reply: aiReply,
+      questionsUsed: newCount,
+      questionsRemaining: hasUnlimitedAi ? DAILY_LIMIT : (DAILY_LIMIT - newCount),
+      limit: DAILY_LIMIT,
+    });
 
   } catch (err) {
     console.error('AI advisor error:', err);
