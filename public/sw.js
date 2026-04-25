@@ -1,67 +1,36 @@
-const CACHE_NAME = 'apriq-v2';
-const SHELL = [
-  '/',
-  '/index.html',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/logo-transparent.png',
-];
+// Break-glass SW: stop caching app shell to prevent blank screens
+// from stale index.html referencing missing asset hashes.
+const CACHE_NAME = 'apriq-v3';
 
-// Install: cache the app shell
-self.addEventListener('install', e => {
+self.addEventListener('install', (e) => {
+  e.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())
+    caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-// Activate: remove old caches
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-// Fetch: network-first for API/auth, cache-first for static assets
-self.addEventListener('fetch', e => {
+self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // Always use network for Supabase, API calls, and non-GET requests
+  // Never intercept API/auth or non-GET requests
   if (
     e.request.method !== 'GET' ||
     url.hostname.includes('supabase') ||
     url.pathname.startsWith('/api/')
-  ) {
-    return; // let browser handle normally
-  }
+  ) return;
 
-  // For navigation (HTML pages), try network first, fall back to cached /index.html
+  // Network-only for navigations (SPA). If offline, let it fail normally.
   if (e.request.mode === 'navigate') {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          // Keep cached shell HTML fresh so deploys don't strand clients
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put('/index.html', copy)).catch(() => {});
-          return res;
-        })
-        .catch(() => caches.match('/index.html'))
-    );
+    e.respondWith(fetch(e.request));
     return;
   }
 
-  // For JS/CSS/fonts/images: cache-first, revalidate in background
+  // Network-first for assets; if offline, try cache (which we clear on activate).
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      const networkFetch = fetch(e.request).then(response => {
-        if (response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
-        }
-        return response;
-      });
-      return cached || networkFetch;
-    })
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
