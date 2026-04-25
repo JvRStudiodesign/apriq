@@ -964,9 +964,12 @@ export default function Calculator() {
           <div style={card}>
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '1.25rem' }}>Land</span>
             <label style={lbl}>Procurement type</label>
-            <select value={inputs.landProcurementType} onChange={e => upd('landProcurementType', e.target.value)} style={{ ...sel, marginBottom: '1.1rem' }}>
+            <select value={inputs.landProcurementType} onChange={e => upd('landProcurementType', e.target.value)} style={{ ...sel, marginBottom: '0.35rem' }}>
               {landOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
+            <p style={{ fontSize: '0.72rem', color: '#aaa', marginTop: '0.4rem', marginBottom: '1.1rem' }}>
+              {fmtZAR(LAND_PROCUREMENT[inputs.landProcurementType]?.ratePerM2 || 0)} /m² land rate
+            </p>
             {inputs.landProcurementType !== 'N/A' && (<>
               <NumBox label="Land area" value={inputs.landArea} onChange={v => upd('landArea', v)} suffix="m²" />
               <BtnGroup label="Land type / slope" value={inputs.landSlopeKey} onChange={v => upd('landSlopeKey', v)} options={slopeOpts} cols={2} getDesc={v => slopeOpts.find(o => o.value === v)?.desc} />
