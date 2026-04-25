@@ -260,13 +260,15 @@ export default function Calculator() {
   useEffect(() => { if (isPro) setResult(calculate(inputs)); }, [inputs, isPro]);
 
   useEffect(() => {
+    if (!user?.id) return;
     loadProjectsAndClients();
     const params = new URLSearchParams(window.location.search);
     const editId = params.get('edit');
     if (editId) loadEstimate(editId);
-  }, []);
+  }, [user?.id]);
 
   async function loadProjectsAndClients() {
+    if (!user?.id) return;
     const [{ data: p }, { data: c }] = await Promise.all([
       supabase.from('projects').select('*, clients(company_name,contact_name,email)').eq('user_id', user.id).order('project_name'),
       supabase.from('clients').select('*').eq('user_id', user.id).order('company_name'),
