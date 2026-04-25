@@ -228,12 +228,12 @@ export const COMPLEXITY = {
 };
 
 export const LAND_PROCUREMENT = {
-  'N/A':                               { label: 'N/A (No land cost)',             ratePerM2: 0    },
-  'Unserviced Land (Raw / Greenfield)':{ label: 'Unserviced Land (Raw / Greenfield)', ratePerM2: 250  },
-  'Partially Serviced Land':           { label: 'Partially Serviced Land',        ratePerM2: 550  },
-  'Fully Serviced Land':               { label: 'Fully Serviced Land',            ratePerM2: 950  },
-  'Brownfield Land':                   { label: 'Brownfield Land',                ratePerM2: 700  },
-  'Infill / Redevelopment Land':       { label: 'Infill / Redevelopment Land',    ratePerM2: 1100 },
+  'Prime Serviced Land':     { label: 'Prime Serviced Land',     ratePerM2: 1500, developmentMultiplier: 0.07, description: 'Very high land cost, fully serviced, ready to build' },
+  'Brownfield Land':         { label: 'Brownfield Land',         ratePerM2: 1300, developmentMultiplier: 0.20, description: 'Medium-high land cost, demolition and remediation risk' },
+  'Fully Serviced Land':     { label: 'Fully Serviced Land',     ratePerM2: 1100, developmentMultiplier: 0.00, description: 'High land cost, low services required, fast rollout' },
+  'Partially Serviced Land': { label: 'Partially Serviced Land', ratePerM2: 650,  developmentMultiplier: 0.15, description: 'Medium land cost, partial services, moderate development required' },
+  'Unserviced Land':         { label: 'Unserviced Land',         ratePerM2: 300,  developmentMultiplier: 0.30, description: 'Low land cost, high services required, slow rollout' },
+  'N/A':                     { label: 'N/A',                     ratePerM2: 0,    developmentMultiplier: 0.00, description: 'No land cost included' },
 };
 
 export const LAND_SLOPE = {

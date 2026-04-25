@@ -68,12 +68,14 @@ export function calculate(inputs) {
   }
 
   const landProcurementRatePerM2 = LAND_PROCUREMENT[landProcurementType]?.ratePerM2 ?? 0;
+  const landDevelopmentMultiplier = LAND_PROCUREMENT[landProcurementType]?.developmentMultiplier ?? 0;
   const landProcurementCost      = landProcurementRatePerM2 * landArea;
   const earthworksMultiplier     = LAND_SLOPE[landSlopeKey]?.multiplier ?? 1;
   const earthworksCost           = landProcurementCost * earthworksMultiplier;
 
   const constructionCost      = baseConstructionCostNew + baseConstructionCostRenovation;
   const totalConstructionCost = constructionCost + earthworksCost;
+  const landDevelopmentCost   = totalConstructionCost * landDevelopmentMultiplier;
 
   const contingencyAmount  = totalConstructionCost * contingencyPct;
   const contractorProfit   = (totalConstructionCost + contingencyAmount) * profitPct;
@@ -82,7 +84,7 @@ export function calculate(inputs) {
   const professionalFees   = subtotalBeforeFees * feesPct;
   const subtotalExVAT      = subtotalBeforeFees + professionalFees;
   const vatAmount          = subtotalExVAT * vatPct;
-  const totalProjectCost   = subtotalExVAT + vatAmount;
+  const totalProjectCost   = subtotalExVAT + vatAmount + landProcurementCost + landDevelopmentCost;
 
   // Hidden backend weights — influence Rand distribution only, never exposed in UI
   const ELEMENT_WEIGHTS = [0.55, 0.90, 1.25, 1.05, 1.30, 0.95, 1.45, 1.35, 0.70, 1.40, 0.80];
@@ -136,7 +138,7 @@ export function calculate(inputs) {
     newArea, renovArea,
     baseConstructionCostNew, baseConstructionCostRenovation,
     constructionCost, totalConstructionCost,
-    landProcurementRatePerM2, landProcurementCost, earthworksMultiplier, earthworksCost,
+    landProcurementRatePerM2, landProcurementCost, landDevelopmentMultiplier, landDevelopmentCost, earthworksMultiplier, earthworksCost,
     contingencyAmount, contractorProfit, preliminaries,
     subtotalBeforeFees, professionalFees, subtotalExVAT, vatAmount, totalProjectCost,
     escalatedTotal, escalationYears,

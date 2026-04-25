@@ -25,6 +25,11 @@ function fmtZAR(n) {
   if (!n || isNaN(n) || n === 0) return 'R 0';
   return 'R ' + Math.round(n).toLocaleString('en-ZA');
 }
+function fmtZARRate(n) {
+  const v = Number(n);
+  if (!v || isNaN(v) || v === 0) return 'R0.00';
+  return 'R' + v.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 function pctFmt(p) { return (p * 100).toFixed(1) + '%'; }
 
 function BtnGroup({ label, value, onChange, options, locked, cols, getDesc }) {
@@ -968,7 +973,22 @@ export default function Calculator() {
               {landOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             <p style={{ fontSize: '0.72rem', color: '#aaa', marginTop: '0.4rem', marginBottom: '1.1rem' }}>
-              {fmtZAR(LAND_PROCUREMENT[inputs.landProcurementType]?.ratePerM2 || 0)} /m² land rate
+              {(() => {
+                const landRate = LAND_PROCUREMENT[inputs.landProcurementType]?.ratePerM2 || 0;
+                const devMult = LAND_PROCUREMENT[inputs.landProcurementType]?.developmentMultiplier || 0;
+                const landArea = inputs.landArea || 0;
+                const totalConst = result?.totalConstructionCost || 0;
+                const approx = (inputs.landProcurementType === 'N/A' || !landArea)
+                  ? 0
+                  : landRate + ((totalConst * devMult) / landArea);
+                return (
+                  <>
+                    <span style={{ display: 'block' }}>Land cost: {fmtZARRate(landRate)}/m²</span>
+                    <span style={{ display: 'block' }}>Land development multiplier: {(devMult * 100).toFixed(0)}%</span>
+                    <span style={{ display: 'block' }}>Approximate land cost: {fmtZARRate(approx)}/m²</span>
+                  </>
+                );
+              })()}
             </p>
             {inputs.landProcurementType !== 'N/A' && (<>
               <NumBox label="Land area" value={inputs.landArea} onChange={v => upd('landArea', v)} suffix="m²" />
