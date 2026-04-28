@@ -25,6 +25,10 @@ export default function UserProfile() {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef();
 
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteErr, setDeleteErr] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
   // Load profile once — NOT in a dependency loop
   useEffect(() => {
     if (!profile) return;
@@ -88,6 +92,41 @@ export default function UserProfile() {
     }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  }
+
+  async function handleDeleteAccount() {
+    if (!user?.id || deleting) return;
+    setDeleting(true);
+    setDeleteErr('');
+    try {
+      // 1) Delete saved estimates (table may not exist in all deployments)
+      const delSaved = await supabase.from('saved_estimates').delete().eq('user_id', user.id);
+      if (delSaved?.error) {
+        const msg = String(delSaved.error?.message || '');
+        const isMissingTable = msg.toLowerCase().includes('saved_estimates') && msg.toLowerCase().includes('does not exist');
+        if (!isMissingTable) throw delSaved.error;
+      }
+
+      // 2) Delete user row
+      const delUser = await supabase.from('users').delete().eq('id', user.id);
+      if (delUser?.error) throw delUser.error;
+
+      // 3) Delete auth user (requires an existing RPC)
+      const rpc = await supabase.rpc('delete_user');
+      if (rpc?.error) throw rpc.error;
+
+      // 4) Sign out
+      await supabase.auth.signOut();
+
+      // 5) Redirect
+      navigate('/');
+    } catch (e) {
+      console.error('Delete account failed:', e);
+      setDeleteErr('Something went wrong. Please try again or contact hello@apriq.co.za');
+      setDeleting(false);
+      return;
+    }
+    setDeleting(false);
   }
 
   return (
@@ -187,7 +226,117 @@ export default function UserProfile() {
           <p style={{ fontSize:'0.78rem', color:'#979899', marginBottom:'0.75rem', lineHeight:'1.5' }}>Add AprIQ to your home screen for instant access and limited offline use.</p>
           <InstallPWA />
         </div>
+
+        {/* Danger zone */}
+        <div style={{ borderTop: '1px solid #E4E5E5', marginTop: 32, paddingTop: 32 }}>
+          <div style={{ fontFamily: "'Aptos', 'Segoe UI', system-ui, sans-serif", fontSize: '0.85rem', fontWeight: 600, color: '#979899', marginBottom: 16 }}>
+            Danger zone
+          </div>
+          <button
+            type="button"
+            onClick={() => { setDeleteErr(''); setDeleteOpen(true); }}
+            style={{
+              background: 'transparent',
+              color: '#CC3333',
+              border: '1.5px solid #CC3333',
+              borderRadius: 10,
+              padding: '0.75rem 1.5rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              transition: 'all 150ms ease',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#FFF0F0'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+          >
+            Delete my account
+          </button>
+        </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      {deleteOpen && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setDeleteOpen(false); }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.35)',
+            zIndex: 2000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24,
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            style={{
+              background: '#F9FAFA',
+              border: '1px solid #E4E5E5',
+              borderRadius: 16,
+              padding: 32,
+              width: '100%',
+              maxWidth: 420,
+            }}
+          >
+            <div style={{ fontFamily: "'Aptos', 'Segoe UI', system-ui, sans-serif", fontSize: '1.1rem', fontWeight: 600, color: '#111111', marginBottom: 10 }}>
+              Delete your account?
+            </div>
+            <div style={{ fontFamily: "'Roboto', 'Segoe UI', system-ui, sans-serif", fontSize: '0.9rem', color: '#979899', lineHeight: 1.6, marginBottom: 18 }}>
+              This will permanently delete your account and all saved estimates. This cannot be undone.
+            </div>
+
+            {deleteErr && (
+              <div style={{ fontFamily: "'Roboto', 'Segoe UI', system-ui, sans-serif", fontSize: '0.9rem', color: '#CC3333', marginBottom: 12 }}>
+                {deleteErr}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setDeleteOpen(false)}
+                disabled={deleting}
+                style={{
+                  background: 'transparent',
+                  color: '#111111',
+                  border: '1.5px solid #111111',
+                  borderRadius: 10,
+                  padding: '0.75rem 1.5rem',
+                  fontWeight: 600,
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'all 150ms ease',
+                  opacity: deleting ? 0.6 : 1,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                style={{
+                  background: 'transparent',
+                  color: '#CC3333',
+                  border: '1.5px solid #CC3333',
+                  borderRadius: 10,
+                  padding: '0.75rem 1.5rem',
+                  fontWeight: 600,
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'all 150ms ease',
+                  opacity: deleting ? 0.7 : 1,
+                }}
+              >
+                {deleting ? 'Deleting…' : 'Yes, delete my account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '', full_name: '', company: '', profession: '', referral_source: '' });
+  const [form, setForm] = useState({ email: '', password: '', full_name: '', company: '', profession: '', referral_source: '', marketing_consent: false });
   const [acceptedLegal, setAcceptedLegal] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,6 +38,7 @@ export default function Signup() {
         company: form.company,
         profession: form.profession,
         referral_source: form.referral_source || null,
+        marketing_consent: !!form.marketing_consent,
       });
     }
     // Send welcome email
@@ -63,11 +64,30 @@ export default function Signup() {
       setError('Please confirm you have read and agree to the Terms of Service and Privacy Policy.');
       return;
     }
-    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://www.apriq.co.za' } });
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://apriq.co.za' } });
   }
 
   const inputStyle = { width: '100%', padding: '0.625rem 0.75rem', border: '1.5px solid #E4E5E5', borderRadius: '12px', marginBottom: '1rem', fontSize: '0.9rem', boxSizing: 'border-box', background: '#F9FAFA', color: '#111111', colorScheme: 'light' };
   const labelStyle = { display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem', fontWeight: '600', color: '#979899', textTransform: 'uppercase', letterSpacing: '0.04em' };
+  const optRow = { display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none', marginBottom: '1.25rem' };
+  const cbBox = (checked) => ({
+    width: 18,
+    height: 18,
+    borderRadius: 5,
+    border: `1.5px solid ${checked ? '#0F4C5C' : '#E4E5E5'}`,
+    background: checked ? '#0F4C5C' : '#F9FAFA',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 150ms ease',
+    flexShrink: 0,
+  });
+  const cbLabel = { fontFamily: "'Roboto', 'Segoe UI', system-ui, sans-serif", fontSize: '0.875rem', color: '#979899', lineHeight: 1.5 };
+  const checkMark = (
+    <svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true" focusable="false">
+      <path d="M1 5.2L4.2 8.2L11 1.5" stroke="#F9FAFA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA' }}>
@@ -113,6 +133,26 @@ export default function Signup() {
             <option value="word_of_mouth">Word of mouth</option>
             <option value="other">Other</option>
           </select>
+
+          {/* Optional marketing consent (unchecked by default) */}
+          <div
+            role="checkbox"
+            aria-checked={!!form.marketing_consent}
+            tabIndex={0}
+            onClick={() => update('marketing_consent', !form.marketing_consent)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                update('marketing_consent', !form.marketing_consent);
+              }
+            }}
+            style={optRow}
+          >
+            <div style={cbBox(!!form.marketing_consent)}>
+              {form.marketing_consent ? checkMark : null}
+            </div>
+            <div style={cbLabel}>I'd like to receive product updates and tips from AprIQ (optional)</div>
+          </div>
 
           <div style={{ background: '#f9f9f7', borderRadius: '10px', padding: '0.75rem 0.875rem', marginBottom: '1.25rem', border: '1.5px solid #E4E5E5' }}>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', fontSize: '0.78rem', color: '#979899', lineHeight: 1.5 }}>
