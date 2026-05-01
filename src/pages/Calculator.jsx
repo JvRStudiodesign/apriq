@@ -1142,7 +1142,19 @@ export default function Calculator() {
                   {inputs.floorArea - inputs.renovationArea} m² new · {inputs.renovationArea} m² renovation
                 </p>
               )}
-              <BtnGroup label="Renovation complexity" value={inputs.renovationComplexityKey} onChange={v => upd('renovationComplexityKey', v)} options={renovOpts} getDesc={v => { const opt = renovOpts.find(o => o.value === v); const mult = RENOVATION_COMPLEXITY[v]?.multiplier; return opt ? `${opt.desc}  ·  ${mult}×` : null; }} />
+              <BtnGroup
+                label="Renovation complexity"
+                value={inputs.renovationComplexityKey}
+                onChange={v => upd('renovationComplexityKey', v)}
+                options={renovOpts}
+                getDesc={v => {
+                  const opt = renovOpts.find(o => o.value === v);
+                  const mult = RENOVATION_COMPLEXITY[v]?.multiplier;
+                  if (!opt) return null;
+                  if (typeof mult !== 'number') return opt.desc || null;
+                  return `${opt.desc} (x${mult.toFixed(2)})`;
+                }}
+              />
             </>) : (
               <NumBox label="Floor area" value={inputs.floorArea} onChange={v => upd('floorArea', v)} suffix="m²" />
             )}
