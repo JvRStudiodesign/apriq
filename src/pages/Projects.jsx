@@ -61,8 +61,8 @@ function ProjectForm({ initial, clients, onSave, onCancel, saving }) {
 function PDFBtn({ estimate, project, profile, userEmail }) {
   const inputs = estimate.inputs_json ? (typeof estimate.inputs_json === 'string' ? JSON.parse(estimate.inputs_json) : estimate.inputs_json) : {};
   const result = estimate.result_json ? (typeof estimate.result_json === 'string' ? JSON.parse(estimate.result_json) : estimate.result_json) : null;
-  if (!result) return null;
   const [downloading, setDownloading] = useState(false);
+  if (!result) return null;
   const now = new Date();
   const ref = project.reference_number || 'APRIQ';
   const filename = `APRIQ-${ref}-${now.toISOString().slice(0,10)}-${now.toTimeString().slice(0,5).replace(':','-')}.pdf`;

@@ -146,7 +146,7 @@ export default function UserProfile() {
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
                 {logoPreview
-                  ? <img src={logoPreview} alt="Logo" style={{ width: '160px', height: '28px', width: 'auto', objectFit: 'contain', borderRadius: '8px', border: '1px solid #eee', background: '#F9FAFA', padding: '8px' }} />
+                  ? <img src={logoPreview} alt="Logo" style={{ height: '28px', width: 'auto', objectFit: 'contain', borderRadius: '8px', border: '1px solid #eee', background: '#F9FAFA', padding: '8px' }} />
                   : <div style={{ width: '160px', height: '70px', borderRadius: '8px', border: '1.5px dashed #E4E5E5', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA', colorScheme: 'light' }}>
                       <span style={{ fontSize: '0.65rem', color: '#979899' }}>No logo</span>
                     </div>}

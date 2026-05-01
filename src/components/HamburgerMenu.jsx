@@ -8,7 +8,7 @@ export function HamburgerMenu() {
   const ref = useRef();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  useAuth();
 
   useEffect(() => {
     function handle(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
