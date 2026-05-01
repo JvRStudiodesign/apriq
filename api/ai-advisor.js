@@ -382,7 +382,7 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: contents,
-          generationConfig: { maxOutputTokens: 1100, temperature: 0.35 },
+          generationConfig: { maxOutputTokens: 1800, temperature: 0.35 },
         }),
       }
     );
