@@ -1,6 +1,7 @@
 import {
   getRate, QUALITY, SITE_ACCESS, PROJECT_TYPE,
-  RENOVATION_COMPLEXITY, COMPLEXITY, LAND_PROCUREMENT, LAND_SLOPE, BREAKDOWN_ELEMENTS,
+  RENOVATION_COMPLEXITY, COMPLEXITY, LAND_PROCUREMENT, LAND_SLOPE,
+  BREAKDOWN_ELEMENTS, MULTIPLIER_WEIGHTS,
 } from './rates.js';
 
 function asNumber(v) {
@@ -16,9 +17,9 @@ export function calculate(inputs) {
     floorArea = 0, complexityKey = 'Low Complexity', siteAccessKey = 'Urban Setting',
     projectTypeKey = 'New', renovationArea = 0, renovationComplexityKey = 'Low',
     qualityKey = 'Medium', contingencyPct = 0.10, profitPct = 0.10,
-    preliminariesPct = 0.05, feesPct = 0.12, vatPct = 0.15,
+    preliminariesPct = 0.12, feesPct = 0.12, vatPct = 0.15,
     landProcurementType = 'N/A', landArea = 0, landSlopeKey = 'Flat Land (0-5%)',
-    escalationRate = 7, estimatedStartDate = null, includeEscalation = false,
+    escalationRate = 6, estimatedStartDate = null, includeEscalation = false,
     useCustomSplit = false, customElementPcts = null,
     rate1Adjustment = 0, rate2Adjustment = 0, rate3Adjustment = 0,
   } = inputs;
@@ -47,9 +48,9 @@ export function calculate(inputs) {
   // Blended multiplier — weighted additive stack (replaces compounded multiplication)
   // Quality influence: 1.00 | Complexity influence: 0.75 | Site influence: 0.50
   const blendedMultiplier = 1
-    + (qualityMultiplier - 1) * 1.00
-    + (complexityMultiplier - 1) * 0.75
-    + (siteMultiplier - 1) * 0.50;
+    + (qualityMultiplier - 1) * MULTIPLIER_WEIGHTS.quality
+    + (complexityMultiplier - 1) * MULTIPLIER_WEIGHTS.complexity
+    + (siteMultiplier - 1) * MULTIPLIER_WEIGHTS.siteAccess;
   const totalAdjustedBaseRate = weightedBaseRate * blendedMultiplier;
 
   const effectivePcts = (useCustomSplit && customElementPcts) ? customElementPcts : BREAKDOWN_ELEMENTS.map(e => e.pct);
@@ -109,7 +110,7 @@ export function calculate(inputs) {
   const totalProjectCost = constructionCost + totalFinancialAdditions + totalLandCost;
 
   // Hidden backend weights — influence Rand distribution only, never exposed in UI
-  const ELEMENT_WEIGHTS = [0.55, 0.90, 1.25, 1.05, 1.30, 0.95, 1.45, 1.35, 0.70, 1.40, 0.80];
+  const ELEMENT_WEIGHTS = [0.55, 0.90, 1.25, 1.05, 1.30, 0.95, 1.45, 1.35, 0.70, 1.40];
 
   // Step 1: weighted_share_i = effectivePct_i x hidden_weight_i
   const weightedShares = BREAKDOWN_ELEMENTS.map((el, i) => {
