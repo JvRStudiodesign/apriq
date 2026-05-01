@@ -27,3 +27,8 @@ dist-ssr
 .env*.local
 public/*.mp4
 public/files.zip
+
+apriq-engine-constants.json
+scripts/_pydeps/
+*.xlsx
+*.xls
