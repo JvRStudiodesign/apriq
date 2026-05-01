@@ -17,18 +17,12 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const clean = (name) => name
-    .replace(/,?\s*South Africa$/i, '')
-    .replace(/,?\s*ZA$/i, '')
-    .replace(/,?\s*Gauteng$/i, ', Gauteng')
-    .trim();
-
   const search = (q) => {
     clearTimeout(debounceRef.current);
     if (!q || q.length < 2) { setSuggestions([]); setOpen(false); return; }
     debounceRef.current = setTimeout(async () => {
       try {
-        const url = 'https://nominatim.openstreetmap.org/search?' + new URLSearchParams({
+        const params = new URLSearchParams({
           q,
           countrycodes: 'za',
           format: 'json',
@@ -36,21 +30,34 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
           addressdetails: '1',
           'accept-language': 'en',
         });
-        const res = await fetch(url, { headers: { 'User-Agent': 'AprIQ/1.0 (apriq.co.za)' } });
+        const res = await fetch('https://nominatim.openstreetmap.org/search?' + params, {
+          headers: { 'User-Agent': 'AprIQ/1.0 (apriq.co.za)' }
+        });
         const data = await res.json();
         const seen = new Set();
         const results = data.map(d => {
           const a = d.address || {};
           const suburb = a.suburb || a.neighbourhood || a.quarter || a.village || '';
           const city = a.city || a.town || a.municipality || a.county || '';
-          const province = a.state || a.province || '';
+          const province = a.state || '';
           let label = '';
-          if (suburb && city) label = suburb + ', ' + city;
+          if (suburb && city && province) label = suburb + ', ' + city + ', ' + province;
+          else if (suburb && city) label = suburb + ', ' + city;
           else if (city && province) label = city + ', ' + province;
-          else label = clean(d.display_name).split(',').slice(0, 3).join(',').trim();
+          else {
+            // fallback: take first 3 parts of display_name, strip SA
+            label = d.display_name
+              .replace(/, South Africa$/i, '')
+              .replace(/, ZA$/i, '')
+              .split(',').slice(0, 3).join(',').trim();
+          }
           return label;
         }).filter(label => {
-          if (!label || seen.has(label)) return false;
+          if (!label || label.length < 3) return false;
+          // Filter out ward numbers and irrelevant administrative areas
+          if (/ward \d/i.test(label)) return false;
+          if (/^\d/.test(label)) return false;
+          if (seen.has(label)) return false;
           seen.add(label);
           return true;
         }).slice(0, 6);
@@ -88,7 +95,7 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
       />
       {open && suggestions.length > 0 && (
         <div style={{
-          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 9999,
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 99999,
           background: '#F9FAFA', border: '1px solid #E4E5E5', borderRadius: '12px',
           marginTop: '4px', overflow: 'hidden',
           boxShadow: '0 4px 16px rgba(17,17,17,0.08)',

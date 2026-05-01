@@ -9,7 +9,7 @@ const UNLIMITED_AI_EMAIL = 'apriq@apriq.co.za';
 
 const s = {
   overlay: { position:'fixed', inset:0, background:'rgba(17,17,17,0.42)', backdropFilter:'blur(5px)', WebkitBackdropFilter:'blur(5px)', zIndex:500, display:'flex', alignItems:'center', justifyContent:'center', padding:24 },
-  panel: { background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:20, width:'100%', maxWidth:460, position:'relative', display:'flex', flexDirection:'column', maxHeight:'85vh', overflow:'hidden' },
+  panel: { background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:20, width:'100%', maxWidth:460, position:'relative', display:'flex', flexDirection:'column', maxHeight:'92vh', overflow:'visible' },
   header: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'20px 24px 16px', borderBottom:'1px solid #E4E5E5', flexShrink:0 },
   titleWrap: { display:'flex', alignItems:'center', gap:8 },
   dot: (active) => ({ width:8, height:8, borderRadius:'50%', background: active ? '#FF8210' : '#BFD1D6', flexShrink:0 }),
