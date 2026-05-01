@@ -1,3 +1,5 @@
+export const config = { runtime: 'nodejs' };
+
 import { rateLimit, getClientIP } from './_rate-limit.js';
 
 const PLACES_ENDPOINT = 'https://places.googleapis.com/v1/places:autocomplete';
@@ -12,7 +14,7 @@ export default async function handler(req, res) {
   const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
   if (!q || q.length < 2) return res.status(400).json({ error: 'Query too short' });
 
-  const key = process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_PLACES_API_KEY;
+  const key = process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_PLACES_KEY;
   if (!key) return res.status(503).json({ error: 'Places not configured' });
 
   try {
