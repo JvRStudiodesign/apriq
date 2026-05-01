@@ -22,49 +22,13 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
     if (!q || q.length < 2) { setSuggestions([]); setOpen(false); return; }
     debounceRef.current = setTimeout(async () => {
       try {
-        const params = new URLSearchParams({
-          q,
-          countrycodes: 'za',
-          format: 'json',
-          limit: '8',
-          addressdetails: '1',
-          'accept-language': 'en',
-        });
-        const res = await fetch('https://nominatim.openstreetmap.org/search?' + params, {
-          headers: { 'User-Agent': 'AprIQ/1.0 (apriq.co.za)' }
-        });
+        const res = await fetch('/api/places?q=' + encodeURIComponent(q));
         const data = await res.json();
-        const seen = new Set();
-        const results = data.map(d => {
-          const a = d.address || {};
-          const suburb = a.suburb || a.neighbourhood || a.quarter || a.village || '';
-          const city = a.city || a.town || a.municipality || a.county || '';
-          const province = a.state || '';
-          let label = '';
-          if (suburb && city && province) label = suburb + ', ' + city + ', ' + province;
-          else if (suburb && city) label = suburb + ', ' + city;
-          else if (city && province) label = city + ', ' + province;
-          else {
-            // fallback: take first 3 parts of display_name, strip SA
-            label = d.display_name
-              .replace(/, South Africa$/i, '')
-              .replace(/, ZA$/i, '')
-              .split(',').slice(0, 3).join(',').trim();
-          }
-          return label;
-        }).filter(label => {
-          if (!label || label.length < 3) return false;
-          // Filter out ward numbers and irrelevant administrative areas
-          if (/ward \d/i.test(label)) return false;
-          if (/^\d/.test(label)) return false;
-          if (seen.has(label)) return false;
-          seen.add(label);
-          return true;
-        }).slice(0, 6);
+        const results = data.predictions || [];
         setSuggestions(results);
         setOpen(results.length > 0);
       } catch { setSuggestions([]); setOpen(false); }
-    }, 300);
+    }, 250);
   };
 
   const handleChange = (val) => {
@@ -72,8 +36,8 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
     search(val);
   };
 
-  const handleSelect = (label) => {
-    const val = label.includes('South Africa') ? label : label + ', South Africa';
+  const handleSelect = (item) => {
+    const val = item.full || (item.label + ', South Africa');
     if (onChange) onChange(val);
     if (onSelect) onSelect(val);
     setSuggestions([]);
@@ -100,10 +64,10 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
           marginTop: '4px', overflow: 'hidden',
           boxShadow: '0 4px 16px rgba(17,17,17,0.08)',
         }}>
-          {suggestions.map((label, i) => (
+          {suggestions.map((item, i) => (
             <div
               key={i}
-              onMouseDown={() => handleSelect(label)}
+              onMouseDown={() => handleSelect(item)}
               style={{
                 padding: '10px 14px', fontSize: '13px', color: '#111111',
                 fontFamily: "'Roboto',system-ui,sans-serif", cursor: 'pointer',
@@ -113,7 +77,7 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
               onMouseEnter={e => e.currentTarget.style.background = '#E4E5E5'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              {label}
+              {item.label}
             </div>
           ))}
         </div>
