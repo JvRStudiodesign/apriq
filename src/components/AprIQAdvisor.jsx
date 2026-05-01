@@ -84,7 +84,7 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
   const manualLocation = extractManualLocation(messages);
   const activeLocation = configuredLocation || manualLocation;
   const needsLocation = !activeLocation;
-  const isLocationReplyMode = needsLocation && messages.length > 0 && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content?.includes('what is the project location');
+  const isLocationReplyMode = needsLocation && stage === 'chat';
   const resetChat = () => {
     setMessages([]);
     setInput('');
