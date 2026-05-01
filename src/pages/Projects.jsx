@@ -1,3 +1,4 @@
+import PlacesAutocomplete from '../components/PlacesAutocomplete';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -33,7 +34,17 @@ function ProjectForm({ initial, clients, onSave, onCancel, saving }) {
       ].map(f => (
         <div key={f.field} style={{ marginBottom:'0.875rem' }}>
           <label style={lbl}>{f.label}</label>
-          <input value={form[f.field]} onChange={e => upd(f.field, e.target.value)} placeholder={f.placeholder} style={inp} />
+          {f.field === 'address' ? (
+            <PlacesAutocomplete
+              value={form[f.field]}
+              onChange={val => upd(f.field, val)}
+              onSelect={val => upd(f.field, val)}
+              placeholder={f.placeholder}
+              style={inp}
+            />
+          ) : (
+            <input value={form[f.field]} onChange={e => upd(f.field, e.target.value)} placeholder={f.placeholder} style={inp} />
+          )}
         </div>
       ))}
       <div style={{ marginBottom:'0.875rem' }}>
