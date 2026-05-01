@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import PlacesAutocomplete from './PlacesAutocomplete';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 
@@ -83,6 +84,7 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
   const manualLocation = extractManualLocation(messages);
   const activeLocation = configuredLocation || manualLocation;
   const needsLocation = !activeLocation;
+  const isLocationReplyMode = needsLocation && messages.length > 0 && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content?.includes('what is the project location');
   const resetChat = () => {
     setMessages([]);
     setInput('');
@@ -294,7 +296,19 @@ if (stage === 'locked') return (
           )}
         </div>
         <div style={s.footer}>
-          <input style={s.input} placeholder={atLimit ? 'Daily limit reached — resets tomorrow' : 'Ask anything about your estimate...'} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown} disabled={loading || atLimit}/>
+          {isLocationReplyMode ? (
+            <PlacesAutocomplete
+              value={input}
+              onChange={setInput}
+              onSelect={val => { setInput(val); }}
+              placeholder="Start typing your project address..."
+              style={{ ...s.input }}
+              autoFocus={true}
+              disabled={loading || atLimit}
+            />
+          ) : (
+            <input style={s.input} placeholder={atLimit ? 'Daily limit reached — resets tomorrow' : 'Ask anything about your estimate...'} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown} disabled={loading || atLimit}/>
+          )}
           <button style={s.sendBtn(loading || atLimit || !input.trim())} onClick={() => sendMessage()} disabled={loading || atLimit || !input.trim()}>
             <SendIcon disabled={loading || atLimit || !input.trim()}/>
           </button>
