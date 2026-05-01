@@ -17,24 +17,43 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  const clean = (name) => name
+    .replace(/,?\s*South Africa$/i, '')
+    .replace(/,?\s*ZA$/i, '')
+    .trim();
+
   const search = (q) => {
     clearTimeout(debounceRef.current);
-    if (!q || q.length < 3) { setSuggestions([]); setOpen(false); return; }
+    if (!q || q.length < 2) { setSuggestions([]); setOpen(false); return; }
     debounceRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=za&format=json&limit=6&addressdetails=1`,
-          { headers: { 'Accept-Language': 'en', 'User-Agent': 'AprIQ/1.0 (apriq.co.za)' } }
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q + ' south africa')}&countrycodes=za&format=json&limit=7&addressdetails=1&featuretype=settlement`,
+          { headers: { 'Accept-Language': 'en' } }
         );
         const data = await res.json();
-        const results = data.map(d => ({
-          label: d.display_name.replace(/, South Africa$/, '').replace(/, ZA$/, ''),
-          full: d.display_name,
-        }));
+        const seen = new Set();
+        const results = data
+          .map(d => {
+            const a = d.address || {};
+            const parts = [
+              a.suburb || a.neighbourhood || a.quarter || a.village || a.town || a.city_district,
+              a.city || a.town || a.municipality || a.county,
+              a.state || a.province,
+            ].filter(Boolean);
+            const label = parts.length >= 2 ? parts.join(', ') : clean(d.display_name);
+            return label;
+          })
+          .filter(label => {
+            if (seen.has(label)) return false;
+            seen.add(label);
+            return true;
+          })
+          .slice(0, 6);
         setSuggestions(results);
         setOpen(results.length > 0);
       } catch { setSuggestions([]); setOpen(false); }
-    }, 300);
+    }, 350);
   };
 
   const handleChange = (val) => {
@@ -42,8 +61,8 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
     search(val);
   };
 
-  const handleSelect = (item) => {
-    const val = item.label + ', South Africa';
+  const handleSelect = (label) => {
+    const val = label + ', South Africa';
     if (onChange) onChange(val);
     if (onSelect) onSelect(val);
     setSuggestions([]);
@@ -70,20 +89,20 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
           marginTop: '4px', overflow: 'hidden',
           boxShadow: '0 4px 16px rgba(17,17,17,0.08)',
         }}>
-          {suggestions.map((item, i) => (
+          {suggestions.map((label, i) => (
             <div
               key={i}
-              onMouseDown={() => handleSelect(item)}
+              onMouseDown={() => handleSelect(label)}
               style={{
                 padding: '10px 14px', fontSize: '13px', color: '#111111',
                 fontFamily: "'Roboto',system-ui,sans-serif", cursor: 'pointer',
                 borderBottom: i < suggestions.length - 1 ? '1px solid #E4E5E5' : 'none',
-                lineHeight: 1.4,
+                lineHeight: 1.4, background: 'transparent',
               }}
               onMouseEnter={e => e.currentTarget.style.background = '#E4E5E5'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              {item.label}
+              {label}
             </div>
           ))}
         </div>
