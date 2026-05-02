@@ -26,7 +26,7 @@ const s = {
   msgWrap: (isUser) => ({ display:'flex', flexDirection:'column', gap:4, maxWidth:'88%', alignSelf: isUser ? 'flex-end' : 'flex-start', alignItems: isUser ? 'flex-end' : 'flex-start' }),
   msgLabel: { fontSize:11, color:'#979899', fontFamily:FONT },
   bubble: (isUser) => ({ padding:'10px 14px', borderRadius:16, borderBottomRightRadius: isUser ? 4 : 16, borderBottomLeftRadius: isUser ? 16 : 4, fontSize:13, lineHeight:1.55, color:'#111111', fontFamily:FONT, background: isUser ? '#E4E5E5' : '#F9FAFA', border: isUser ? 'none' : '1px solid #E4E5E5' }),
-  footer: { padding:'12px 24px 20px', borderTop:'1px solid #E4E5E5', display:'flex', gap:8, alignItems:'center', background:'#F9FAFA', flexShrink:0 },
+  footer: { padding:'12px 24px 20px', borderTop:'1px solid #E4E5E5', display:'flex', gap:8, alignItems:'center', background:'#F9FAFA', flexShrink:0, borderBottomLeftRadius:20, borderBottomRightRadius:20 },
   input: { flex:1, padding:'10px 14px', fontSize:13, borderRadius:12, border:'1px solid #E4E5E5', background:'#F9FAFA', color:'#111111', fontFamily:FONT, outline:'none', height:40 },
   sendBtn: (disabled) => ({ width:40, height:40, minWidth:40, borderRadius:12, background: disabled ? '#E4E5E5' : '#FF8210', border:'none', cursor: disabled ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }),
   warnStrip: { background:'#F9FAFA', border:'1px solid #FF8210', borderRadius:12, padding:'10px 14px', fontSize:12, color:'#979899', fontFamily:FONT },
