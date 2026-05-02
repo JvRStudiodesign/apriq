@@ -9,6 +9,19 @@ const DAILY_LIMIT   = 20;
 const AI_TRIAL_DAYS = 7;
 const UNLIMITED_AI_EMAILS = new Set(['apriq@apriq.co.za']);
 
+/** Keep long sessions from ballooning the prompt (stateless API; history is re-sent each request). */
+const MAX_HISTORY_MESSAGES = 40;
+
+/** Default raised from 1800: Gemini 2.5 Flash can use part of the budget for "thinking" unless disabled. */
+const DEFAULT_MAX_OUTPUT_TOKENS = 8192;
+
+function envInt(name, fallback) {
+  const raw = process.env[name];
+  if (raw == null || raw === '') return fallback;
+  const n = Number.parseInt(String(raw), 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
 function asNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
@@ -348,9 +361,10 @@ export default async function handler(req, res) {
       return res.status(429).json({ error: 'daily_limit_reached', questionsUsed, limit: DAILY_LIMIT });
     }
 
-    const estimateJson = JSON.stringify(estimateState, null, 2);
+    // Compact JSON reduces token usage vs pretty-printed JSON — important as chat history grows.
+    const estimateJson = JSON.stringify(estimateState);
     const advisorSignals = buildAdvisorSignals(estimateState);
-    const signalsJson = JSON.stringify(advisorSignals, null, 2);
+    const signalsJson = JSON.stringify(advisorSignals);
     const locationProfileHint = buildLocationProfileHint(estimateState, advisorSignals);
 
     const prompt = [
@@ -366,42 +380,94 @@ export default async function handler(req, res) {
       locationProfileHint || 'none',
     ].join('\n');
 
-    const history = (conversationHistory || []).map(function(msg) {
+    const historyRaw = Array.isArray(conversationHistory) ? conversationHistory : [];
+    const historyTrimmed = historyRaw.length > MAX_HISTORY_MESSAGES
+      ? historyRaw.slice(historyRaw.length - MAX_HISTORY_MESSAGES)
+      : historyRaw;
+
+    const history = historyTrimmed.map(function(msg) {
       return { role: msg.role === 'user' ? 'user' : 'model', parts: [{ text: msg.content }] };
     });
 
-    const contents = [
+    const prefixContents = [
       { role: 'user',  parts: [{ text: prompt }] },
       { role: 'model', parts: [{ text: 'Understood. I will interpret the supplied estimate using the advisor signals and produce feasibility-grade, location-contextual feedback without generating new numbers.' }] },
-    ].concat(history).concat([{ role: 'user', parts: [{ text: message }] }]);
+    ].concat(history);
 
-    const geminiRes = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + process.env.GEMINI_API_KEY,
-      {
+    const userTurn = { role: 'user', parts: [{ text: message }] };
+    const contents = prefixContents.concat([userTurn]);
+
+    const maxOutputTokens = envInt('GEMINI_MAX_OUTPUT_TOKENS', DEFAULT_MAX_OUTPUT_TOKENS);
+
+    const generationConfig = {
+      temperature: 0.35,
+      maxOutputTokens,
+      // Gemini 2.5: internal "thinking" can consume output budget unless disabled.
+      thinkingConfig: { thinkingBudget: 0 },
+    };
+
+    const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + process.env.GEMINI_API_KEY;
+
+    async function callGemini(contentsPayload) {
+      const geminiRes = await fetch(geminiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: contents,
-          generationConfig: { maxOutputTokens: 1800, temperature: 0.35 },
-        }),
-      }
-    );
+        body: JSON.stringify({ contents: contentsPayload, generationConfig }),
+      });
+      const geminiData = await geminiRes.json().catch(() => ({}));
+      return { ok: geminiRes.ok, status: geminiRes.status, data: geminiData };
+    }
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      console.error('Gemini error:', errText);
+    let { ok, status, data: geminiData } = await callGemini(contents);
+    if (!ok) {
+      console.error('Gemini HTTP error:', status, geminiData);
       return res.status(502).json({ error: 'AI service unavailable' });
     }
 
-    const geminiData = await geminiRes.json();
-    const candidate = geminiData?.candidates?.[0];
-    if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
-      console.warn('Gemini finish reason:', candidate.finishReason);
+    let candidate = geminiData?.candidates?.[0];
+    let finishReason = candidate?.finishReason;
+    const usage = geminiData?.usageMetadata;
+    if (usage) console.info('Gemini usage:', usage);
+    if (finishReason && finishReason !== 'STOP') console.warn('Gemini finish reason:', finishReason);
+    if (!candidate && geminiData?.promptFeedback) {
+      console.warn('Gemini promptFeedback:', geminiData.promptFeedback);
     }
-    const aiReply = candidate?.content?.parts
+
+    let aiReply = candidate?.content?.parts
       ?.map((part) => part.text || '')
       .join('')
       .trim();
+
+    // If the model hits MAX_TOKENS, do one continuation pass (still counts as a single user question).
+    if (finishReason === 'MAX_TOKENS' && aiReply) {
+      const continueContents = prefixContents.concat([
+        userTurn,
+        { role: 'model', parts: [{ text: aiReply }] },
+        { role: 'user', parts: [{ text: 'Your previous answer was cut off due to length limits. Continue from the next sentence. Do not repeat what you already wrote. Keep the same tone and constraints.' }] },
+      ]);
+
+      const second = await callGemini(continueContents);
+      if (second.ok) {
+        const c2 = second.data?.candidates?.[0];
+        const fr2 = c2?.finishReason;
+        const u2 = second.data?.usageMetadata;
+        if (u2) console.info('Gemini usage (continuation):', u2);
+        if (fr2 && fr2 !== 'STOP') console.warn('Gemini finish reason (continuation):', fr2);
+
+        const extra = c2?.content?.parts
+          ?.map((part) => part.text || '')
+          .join('')
+          .trim();
+
+        if (extra) {
+          aiReply = `${aiReply}\n\n${extra}`;
+          finishReason = fr2 || finishReason;
+        }
+      } else {
+        console.error('Gemini continuation HTTP error:', second.status, second.data);
+      }
+    }
+
     if (!aiReply) return res.status(502).json({ error: 'Empty response from AI' });
     const cleanedReply = stripAiFormatting(aiReply);
     if (!cleanedReply) return res.status(502).json({ error: 'Empty response from AI' });
