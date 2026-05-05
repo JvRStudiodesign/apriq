@@ -15,6 +15,8 @@ import Upgrade from './pages/Upgrade';
 import Billing from './pages/Billing';
 import Admin from './pages/Admin';
 import Layout from './components/Layout';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCancel from './pages/PaymentCancel';
 import LandingPage from './pages/LandingPage';
 import AboutPage from './pages/AboutPage';
 import HowItWorksPage from './pages/HowItWorksPage';
@@ -55,6 +57,8 @@ export default function App() {
             <Route path="/legal" element={<LegalPage />} />
             <Route path="/plans" element={<BillingPage />} />
             <Route path="/estimate/:token" element={<SharedEstimate />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-cancel"  element={<PaymentCancel />} />
             <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
             <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />

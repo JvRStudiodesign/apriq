@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import UpgradeModal from './UpgradeModal';
 
 const T = {
   petrol:'#0F4C5C', ink:'#111111', paper:'#F9FAFA', mist:'#E4E5E5',
@@ -344,9 +345,11 @@ const m = {
 export default function Layout() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('waitlist');
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const { user } = useAuth();
   const isLoggedIn = !!user;
   function openModal(mode = 'waitlist') { setModalMode(mode); setModalOpen(true); }
+  function openUpgrade() { setShowUpgrade(true); }
   useEffect(() => {
     const handler = () => openModal('contact');
     window.addEventListener('open-contact-modal', handler);
@@ -356,9 +359,10 @@ export default function Layout() {
   return (
     <>
       <Header onOpenModal={openModal} isLoggedIn={isLoggedIn}/>
-      <main><Outlet context={{ openModal, isLoggedIn }}/></main>
+      <main><Outlet context={{ openModal, openUpgrade, isLoggedIn }}/></main>
       <Footer/>
       <WaitlistModal open={modalOpen} onClose={() => setModalOpen(false)} mode={modalMode}/>
+      <UpgradeModal isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} user={user} />
     </>
   );
 }

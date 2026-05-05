@@ -1,128 +1,165 @@
-import { rateLimit, getClientIP } from './_rate-limit.js';
-// api/payfast-itn.js — PayFast ITN with signature verification
-import crypto from 'crypto';
+// api/payfast-itn.js
+// PayFast Instant Transaction Notification (ITN) handler.
+// Verifies signature, validates with PayFast server, updates Supabase.
 
-function verifyPayFastSignature(body, passphrase) {
-  // Build the signature string from all fields except 'signature'
-  const fields = Object.keys(body)
-    .filter(k => k !== 'signature' && body[k] !== '')
-    .sort()
-    .map(k => `${k}=${encodeURIComponent(body[k]).replace(/%20/g, '+')}`)
-    .join('&');
-  const strToHash = passphrase
-    ? `${fields}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`
-    : fields;
-  return crypto.createHash('md5').update(strToHash).digest('hex');
-}
+import crypto from 'crypto';
+import https  from 'https';
+import { createClient } from '@supabase/supabase-js';
+
+// Service role client — bypasses RLS for tier updates
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end('Method not allowed');
-  // Rate limit: max 20 ITN calls per minute per IP
-  const ip = getClientIP(req);
-  const rl = rateLimit(`itn:${ip}`, 20, 60000);
-  if (!rl.allowed) return res.status(429).end('Too many requests');
-
-  const serviceKey   = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const passphrase   = process.env.PAYFAST_PASSPHRASE || '';
-  const supabaseUrl  = 'https://cocugdgelatgjzgkyhpz.supabase.co';
-
-  if (!serviceKey) {
-    console.error('SUPABASE_SERVICE_ROLE_KEY not set');
-    return res.status(500).end('Server configuration error');
+  if (req.method !== 'POST') {
+    return res.status(405).end();
   }
 
   try {
-    const body = req.body || {};
+    const params = req.body; // Vercel parses x-www-form-urlencoded automatically
 
-    // 1. Verify PayFast signature
-    const receivedSig  = body.signature;
-    const expectedSig  = verifyPayFastSignature(body, passphrase);
-    if (!receivedSig || receivedSig !== expectedSig) {
-      console.error('PayFast ITN signature mismatch', { received: receivedSig, expected: expectedSig });
-      return res.status(400).end('Invalid signature');
+    // ── Step 1: Verify signature ─────────────────────────────────────────────
+    const { signature, ...rest } = params;
+    const passphrase = process.env.PAYFAST_PASSPHRASE;
+
+    const paramString = Object.keys(rest)
+      .sort()
+      .filter(k => rest[k] !== '')
+      .map(k => `${k}=${encodeURIComponent(rest[k]).replace(/%20/g, '+')}`)
+      .join('&');
+
+    const stringToHash = passphrase
+      ? `${paramString}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`
+      : paramString;
+
+    const expectedSig = crypto.createHash('md5').update(stringToHash).digest('hex');
+
+    if (expectedSig !== signature) {
+      console.error('PayFast ITN: Signature mismatch — possible tampering');
+      return res.status(400).end();
     }
 
-    // 2. Validate required fields
-    const paymentStatus = body.payment_status;
-    const userId        = body.custom_str1;
-    const plan          = body.custom_str2;
-    const amountGross   = parseFloat(body.amount_gross || 0);
+    // ── Step 2: Validate with PayFast server ─────────────────────────────────
+    const isSandbox = process.env.PAYFAST_SANDBOX === 'true';
+    const validateHost = isSandbox
+      ? 'sandbox.payfast.co.za'
+      : 'www.payfast.co.za';
 
-    if (!userId || typeof userId !== 'string' || userId.length < 10) {
-      console.error('ITN: invalid userId', userId);
-      return res.status(400).end('Invalid user ID');
-    }
-    if (!['COMPLETE', 'CANCELLED', 'FAILED'].includes(paymentStatus)) {
-      console.error('ITN: unexpected payment_status', paymentStatus);
-      return res.status(400).end('Unexpected status');
+    const isValid = await validateWithPayFast(validateHost, paramString);
+    if (!isValid) {
+      console.error('PayFast ITN: Server validation failed');
+      return res.status(400).end();
     }
 
-    // 3. Validate amount matches expected plan price (prevent amount manipulation)
-    if (paymentStatus === 'COMPLETE') {
-      const expectedAmount = plan === 'annual' ? 1490.00 : 149.00;
-      if (Math.abs(amountGross - expectedAmount) > 1) {
-        console.error('ITN: amount mismatch', { received: amountGross, expected: expectedAmount, plan });
-        return res.status(400).end('Amount mismatch');
+    // ── Step 3: Update Supabase ───────────────────────────────────────────────
+    const {
+      payment_status,
+      m_payment_id,
+      custom_str1: userId,
+    } = params;
+
+    if (!userId) {
+      console.error('PayFast ITN: No userId in custom_str1');
+      return res.status(400).end();
+    }
+
+    if (payment_status === 'COMPLETE') {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          user_tier:               'pro',
+          subscription_id:         m_payment_id,
+          subscription_status:     'active',
+          subscription_updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Supabase update error (COMPLETE):', error);
+      } else {
+        console.log(`PayFast ITN: Upgraded user ${userId} to Pro`);
+      }
+
+    } else if (payment_status === 'CANCELLED') {
+      // Start 3-day grace period — do not immediately lock out
+      const graceExpiry = new Date();
+      graceExpiry.setDate(graceExpiry.getDate() + 3);
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          subscription_status:     'cancelled',
+          grace_period_expires_at: graceExpiry.toISOString(),
+          subscription_updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Supabase update error (CANCELLED):', error);
+      } else {
+        console.log(`PayFast ITN: Cancelled user ${userId}, grace until ${graceExpiry.toISOString()}`);
+      }
+
+    } else if (payment_status === 'FAILED') {
+      // Same grace logic as cancellation
+      const graceExpiry = new Date();
+      graceExpiry.setDate(graceExpiry.getDate() + 3);
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          subscription_status:     'failed',
+          grace_period_expires_at: graceExpiry.toISOString(),
+          subscription_updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Supabase update error (FAILED):', error);
+      } else {
+        console.log(`PayFast ITN: Failed payment for user ${userId}, grace until ${graceExpiry.toISOString()}`);
       }
     }
 
-    // 4. Verify user actually exists in DB before updating
-    const checkRes = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=id`, {
-      headers: { 'apikey': serviceKey, 'Authorization': `Bearer ${serviceKey}` },
-    });
-    const checkUsers = await checkRes.json();
-    if (!Array.isArray(checkUsers) || checkUsers.length === 0) {
-      console.error('ITN: user not found', userId);
-      return res.status(400).end('User not found');
-    }
+    // PayFast requires a 200 response to acknowledge receipt
+    return res.status(200).end();
 
-    // 5. Update tier
-    let tier = 'free';
-    if (paymentStatus === 'COMPLETE') tier = 'pro';
-
-    const updateRes = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': serviceKey,
-        'Authorization': `Bearer ${serviceKey}`,
-        'Prefer': 'return=minimal',
-      },
-      body: JSON.stringify({ tier, updated_at: new Date().toISOString() }),
-    });
-
-    if (!updateRes.ok) {
-      console.error('Supabase update failed:', await updateRes.text());
-      return res.status(500).end('DB update failed');
-    }
-
-    console.log(`ITN: user ${userId} → ${tier} (${paymentStatus}, plan: ${plan}, amount: ${amountGross})`);
-
-    // 6. Send email — fire-and-forget, errors are non-fatal
-    const userRes = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=full_name,email`, {
-      headers: { 'apikey': serviceKey, 'Authorization': `Bearer ${serviceKey}` },
-    });
-    const users = await userRes.json();
-    const u = users?.[0];
-    if (u?.email && process.env.INTERNAL_API_SECRET) {
-      const emailEndpoint = paymentStatus === 'COMPLETE' ? '/api/send-email'
-                          : paymentStatus === 'CANCELLED' ? '/api/send-email'
-                          : '/api/send-email';
-      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://apriq.vercel.app';
-      fetch(`${baseUrl}${emailEndpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-internal-secret': process.env.INTERNAL_API_SECRET || 'missing-secret',
-        },
-        body: JSON.stringify({ type: paymentStatus === 'COMPLETE' ? 'payment_confirmed' : paymentStatus === 'CANCELLED' ? 'cancelled' : 'payment_failed', to: u.email, name: u.full_name, amount: body.amount_gross }),
-      }).catch(e => console.error('Email send failed:', e));
-    }
-
-    return res.status(200).end('OK');
   } catch (err) {
-    console.error('ITN error:', err.message);
-    console.error('Internal error in ' + process.env.VERCEL_URL + ':', err?.message);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('PayFast ITN unexpected error:', err);
+    return res.status(500).end();
   }
+}
+
+// Validates the ITN data against PayFast's own server
+function validateWithPayFast(host, paramString) {
+  return new Promise((resolve) => {
+    const options = {
+      host,
+      port: 443,
+      path: '/eng/query/validate',
+      method: 'POST',
+      headers: {
+        'Content-Type':   'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(paramString),
+      },
+    };
+
+    const request = https.request(options, (response) => {
+      let data = '';
+      response.on('data', chunk => { data += chunk; });
+      response.on('end', () => {
+        resolve(data === 'VALID');
+      });
+    });
+
+    request.on('error', (err) => {
+      console.error('PayFast validate request error:', err);
+      resolve(false);
+    });
+
+    request.write(paramString);
+    request.end();
+  });
 }
