@@ -2,17 +2,17 @@
 //
 // Accepts a normal HTML form POST from UpgradeModal (userId, email,
 // firstName, lastName), builds the PayFast Custom-Integration params +
-// signature, and responds with a self-submitting HTML page that POSTs to
-// PayFast.
+// signature, then responds with a 303 See Other redirect to the PayFast
+// /eng/process URL with the signed params on the query string.
 //
-// Includes:
-//   - explicit permissive CSP for this response so vercel.json's stricter
-//     global CSP cannot block the redirect (we override it here on purpose).
-//   - <button type="submit"> placed *inside* the form (most browser-
-//     compatible — avoids the `form="id"` attribute fallback path).
-//   - <a href> GET fallback that also works on /eng/process — useful if
-//     anything still blocks form post.
-//   - documented Custom-Integration field order — NOT alphabetical.
+// PayFast /eng/process accepts both POST and GET; the MD5 signature is
+// computed identically. Earlier iterations used a self-submitting POST
+// form, but POST navigations to PayFast were being blocked client-side
+// (stale service worker / browser extension / CSP). 303 → GET sidesteps
+// every one of those by simply navigating the browser via Location.
+//
+// Field order: PayFast Custom-Integration documented order (NOT
+// alphabetical). Alphabetical (ksort) is for their API integration only.
 import crypto from 'crypto';
 
 export const config = { runtime: 'nodejs' };
@@ -90,88 +90,18 @@ export default function handler(req, res) {
 
     const finalParams = { ...cleaned, signature };
 
-    const fields = Object.entries(finalParams)
-      .map(([k, v]) => `<input type="hidden" name="${escapeAttr(k)}" value="${escapeAttr(v)}">`)
-      .join('\n      ');
-
-    // GET fallback URL (PayFast /eng/process accepts both POST and GET).
+    // PayFast /eng/process accepts both POST and GET; the signature is
+    // computed identically. Earlier we used a self-submitting POST form,
+    // but POST navigations were being blocked client-side (stale SW /
+    // extension / CSP — multiple suspects). GET via redirect is rock-solid.
     const queryString = Object.entries(finalParams)
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
       .join('&');
     const getUrl = `${payfastUrl}?${queryString}`;
 
-    // Override the global vercel.json CSP for this single response so it
-    // cannot block form-action / inline script.
-    const csp = [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
-      "form-action 'self' https://sandbox.payfast.co.za https://www.payfast.co.za",
-      "base-uri 'self'",
-    ].join('; ');
-
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
-    res.setHeader('Content-Security-Policy', csp);
-    res.setHeader('X-Frame-Options', 'DENY');
-
-    const html = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Redirecting to PayFast…</title>
-<meta http-equiv="cache-control" content="no-store">
-<style>
-  body { font-family: Roboto, system-ui, sans-serif; background: #F9FAFA; color: #0F4C5C;
-         display: flex; align-items: center; justify-content: center; height: 100vh;
-         margin: 0; padding: 1rem; }
-  .box { text-align: center; max-width: 440px; }
-  .spinner { width: 36px; height: 36px; border: 3px solid #BFD1D6; border-top-color: #0F4C5C;
-             border-radius: 50%; margin: 0 auto 16px; animation: spin 0.9s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .continue { display: inline-block; margin-top: 1.25rem; padding: 0.75rem 1.5rem;
-              background: #0F4C5C; color: #F9FAFA; border: none; border-radius: 10px;
-              font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit;
-              text-decoration: none; }
-  .continue:hover { background: #0a3a47; }
-  .alt { display: block; margin-top: 0.75rem; font-size: 0.85rem; color: #0F4C5C; text-decoration: underline; }
-  .hint { font-size: 0.8rem; color: #979899; margin-top: 1rem; }
-  form { margin: 0; }
-</style>
-</head>
-<body>
-  <div class="box">
-    <div class="spinner"></div>
-    <div>Redirecting to PayFast…</div>
-
-    <form id="pf" method="POST" action="${escapeAttr(payfastUrl)}" target="_top">
-      ${fields}
-      <button type="submit" class="continue">Continue to PayFast</button>
-    </form>
-
-    <a class="alt" href="${escapeAttr(getUrl)}">Or click here if the button does not work</a>
-    <p class="hint">If this page does not redirect automatically, click the button above.</p>
-  </div>
-
-  <script>
-    (function(){
-      try {
-        var f = document.getElementById('pf');
-        if (!f) { console.error('payfast-redirect: form not found'); return; }
-        f.submit();
-      } catch (e) { console.error('payfast-redirect submit (parse):', e); }
-    })();
-    document.addEventListener('DOMContentLoaded', function(){
-      try {
-        var f = document.getElementById('pf');
-        if (f && !f._submitted) { f._submitted = true; f.submit(); }
-      } catch (e) { console.error('payfast-redirect submit (DOMContentLoaded):', e); }
-    });
-  </script>
-</body>
-</html>`;
-
-    return res.status(200).send(html);
+    res.setHeader('Location', getUrl);
+    return res.status(303).end();
 
   } catch (err) {
     console.error('payfast-redirect error:', err);
