@@ -4,7 +4,9 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { effectiveTier } from '../utils/tier';
 
-const DAILY_LIMIT = 20;
+const PRO_DAILY_LIMIT   = 20;
+const TRIAL_DAILY_LIMIT = 5;
+const AI_TRIAL_DAYS     = 7;
 const FONT = "'Roboto',system-ui,sans-serif";
 const UNLIMITED_AI_EMAIL = 'apriq@apriq.co.za';
 
@@ -94,16 +96,28 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
   };
 
   const eff = effectiveTier(profile);
-  // AI advisor is unlocked for the full 30-day trial and for active Pro.
-  // effectiveTier returns 'free' the moment trial_end_date passes, so that's
-  // the only gate we need here.
-  const isLocked = eff === 'free';
+  // 30-day trial gives all Pro features. The AI advisor specifically is
+  // capped at 7 days inside the trial, with 5 questions/day. After day 7
+  // the advisor locks; the other Pro features remain unlocked until day 30.
+  const trialStart = profile?.trial_started_at
+    ? new Date(profile.trial_started_at)
+    : (profile?.trial_end_date
+        ? new Date(new Date(profile.trial_end_date).getTime() - 30 * 86400000)
+        : null);
+  const daysSinceTrial = trialStart ? Math.floor((Date.now() - trialStart.getTime()) / 86400000) : 999;
+  const isLocked         = eff === 'free';
+  const isTrialAiExpired = eff === 'trial' && daysSinceTrial >= AI_TRIAL_DAYS;
+  const dailyLimit       = hasUnlimitedAi ? PRO_DAILY_LIMIT
+                         : eff === 'trial' ? TRIAL_DAILY_LIMIT
+                         : PRO_DAILY_LIMIT;
   const effectiveUsed = hasUnlimitedAi ? 0 : questionsUsed;
-  const questionsRemaining = DAILY_LIMIT - effectiveUsed;
-  const atLimit = questionsRemaining <= 0;
-  const nearLimit = questionsRemaining <= 4 && questionsRemaining > 0;
+  const questionsRemaining = Math.max(0, dailyLimit - effectiveUsed);
+  const atLimit   = questionsRemaining <= 0;
+  const nearLimit = questionsRemaining <= Math.max(1, Math.floor(dailyLimit * 0.25)) && questionsRemaining > 0;
 
-  useEffect(() => { if (isLocked) setStage('locked'); }, [isLocked]);
+  useEffect(() => {
+    if (isLocked || isTrialAiExpired) setStage('locked');
+  }, [isLocked, isTrialAiExpired]);
   useEffect(() => {
     if (!bodyRef.current) return;
     // If we just appended an assistant reply after a user action, keep the scroll
@@ -162,8 +176,9 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
       });
       const data = await res.json();
       if (res.status === 429) {
-        if (!hasUnlimitedAi) setQuestionsUsed(DAILY_LIMIT);
-        setMessages(prev => [...prev, { role: 'assistant', content: 'You have reached your 20 question limit for today. Your limit resets tomorrow.' }]);
+        const lim = data?.limit || dailyLimit;
+        if (!hasUnlimitedAi) setQuestionsUsed(lim);
+        setMessages(prev => [...prev, { role: 'assistant', content: `You have reached your ${lim} question limit for today. Your limit resets tomorrow.` }]);
         return;
       }
       if (!res.ok) { setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong. Please try again in a moment.' }]); return; }
@@ -198,13 +213,23 @@ if (stage === 'locked') return (
           <a href="/plans" style={s.upgradeCard}>
             <LockIcon/>
             <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <p style={{ fontSize: 15, fontWeight: 500, color: '#111111', fontFamily: FONT }}>AprIQ advisor is a Pro feature</p>
-              <p style={{ fontSize: 13, color: '#979899', lineHeight: 1.55, fontFamily: FONT }}>Get instant feedback on your estimates, ask questions about your costs, and understand what is driving the numbers.</p>
+              <p style={{ fontSize: 15, fontWeight: 500, color: '#111111', fontFamily: FONT }}>
+                {isTrialAiExpired ? 'Your AprIQ advisor trial has ended' : 'AprIQ advisor is a Pro feature'}
+              </p>
+              <p style={{ fontSize: 13, color: '#979899', lineHeight: 1.55, fontFamily: FONT }}>
+                {isTrialAiExpired
+                  ? 'Your other Pro features remain active for the rest of your 30-day trial. Upgrade to Pro for unlimited advisor access (20 questions/day).'
+                  : 'Get instant feedback on your estimates, ask questions about your costs, and understand what is driving the numbers.'}
+              </p>
             </div>
             <div style={s.upgradeBtn}>Upgrade to Pro — R79/month</div>
           </a>
         </div>
-        <div style={s.trialBar}>Your 30-day trial includes 7 days of AprIQ advisor access.</div>
+        <div style={s.trialBar}>
+          {isTrialAiExpired
+            ? 'Trial includes 7 days of advisor access (5 questions/day). Upgrade for unlimited access.'
+            : 'Your 30-day trial includes 7 days of AprIQ advisor access (5 questions/day).'}
+        </div>
       </div>
     </div>
   );
@@ -223,7 +248,7 @@ if (stage === 'locked') return (
         <div style={s.header}>
           <div style={s.titleWrap}><div style={s.dot(true)}/><span style={s.title}>AprIQ advisor</span></div>
           <div style={s.metaWrap}>
-            <span style={s.counter(false)}>{questionsRemaining} of {DAILY_LIMIT} remaining today</span>
+            <span style={s.counter(false)}>{questionsRemaining} of {dailyLimit} remaining today</span>
             <button style={s.resetBtn} onClick={resetChat} disabled={messages.length === 0 || loading} aria-disabled={messages.length === 0 || loading} title="Clear and restart this chat">
               Reset
             </button>
@@ -265,7 +290,7 @@ if (stage === 'locked') return (
         <div style={s.header}>
           <div style={s.titleWrap}><div style={s.dot(true)}/><span style={s.title}>AprIQ advisor</span></div>
           <div style={s.metaWrap}>
-            <span style={s.counter(nearLimit || atLimit)}>{questionsRemaining} of {DAILY_LIMIT} remaining today</span>
+            <span style={s.counter(nearLimit || atLimit)}>{questionsRemaining} of {dailyLimit} remaining today</span>
             <button style={s.resetBtn} onClick={resetChat} disabled={messages.length === 0 || loading} aria-disabled={messages.length === 0 || loading} title="Clear and restart this chat">
               Reset
             </button>
@@ -292,7 +317,7 @@ if (stage === 'locked') return (
             <div style={s.warnStrip}>You have <strong style={{ color: '#FF8210' }}>{questionsRemaining} questions left today</strong>. Your limit resets tomorrow.</div>
           )}
           {atLimit && (
-            <div style={{ ...s.warnStrip, borderColor: '#E4E5E5' }}>You have reached your daily limit of {DAILY_LIMIT} questions. Your limit resets tomorrow.</div>
+            <div style={{ ...s.warnStrip, borderColor: '#E4E5E5' }}>You have reached your daily limit of {dailyLimit} questions. Your limit resets tomorrow.</div>
           )}
         </div>
         <div style={s.footer}>

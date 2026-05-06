@@ -5,7 +5,13 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase    = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
 
-const DAILY_LIMIT = 20;
+// Pro & override emails get 20 questions/day for the entire 30-day trial /
+// active subscription. Trial users get 5 questions/day for the FIRST 7 days
+// only — after that the advisor locks (other Pro features remain available
+// for the rest of the 30-day trial).
+const DAILY_LIMIT       = 20;
+const TRIAL_DAILY_LIMIT = 5;
+const AI_TRIAL_DAYS     = 7;
 const UNLIMITED_AI_EMAILS = new Set(['apriq@apriq.co.za']);
 
 /** Keep long sessions from ballooning the prompt (stateless API; history is re-sent each request). */
@@ -346,17 +352,30 @@ export default async function handler(req, res) {
     const trialActive = profile.tier === 'trial' && profile.trial_end_date && new Date(profile.trial_end_date).getTime() > now;
     const effective   = proActive ? 'pro' : trialActive ? 'trial' : 'free';
 
-    // AI advisor is included for the full 30-day trial. effectiveTier returns
-    // 'free' the moment trial_end_date passes, which is the only gate we need.
     if (!hasUnlimitedAi && effective === 'free') return res.status(403).json({ error: 'upgrade_required' });
+
+    // Trial users get 7 days of advisor access (other Pro features remain for
+    // the full 30 days, gated by effectiveTier).
+    if (!hasUnlimitedAi && effective === 'trial') {
+      const trialStart = profile.trial_started_at
+        ? new Date(profile.trial_started_at)
+        : new Date(new Date(profile.trial_end_date).getTime() - 30 * 86400000);
+      const daysSince = Math.floor((now - trialStart.getTime()) / 86400000);
+      if (daysSince >= AI_TRIAL_DAYS) return res.status(403).json({ error: 'trial_ai_expired' });
+    }
+
+    // Per-day question cap differs by tier.
+    const dailyLimit = hasUnlimitedAi ? DAILY_LIMIT
+                     : effective === 'trial' ? TRIAL_DAILY_LIMIT
+                     : DAILY_LIMIT;
 
     let questionsUsed = hasUnlimitedAi ? 0 : (profile.ai_questions_used || 0);
     if (!hasUnlimitedAi && profile.ai_questions_reset_date !== today) {
       questionsUsed = 0;
       await supabase.from('profiles').update({ ai_questions_used: 0, ai_questions_reset_date: today }).eq('id', userId);
     }
-    if (!hasUnlimitedAi && questionsUsed >= DAILY_LIMIT) {
-      return res.status(429).json({ error: 'daily_limit_reached', questionsUsed, limit: DAILY_LIMIT });
+    if (!hasUnlimitedAi && questionsUsed >= dailyLimit) {
+      return res.status(429).json({ error: 'daily_limit_reached', questionsUsed, limit: dailyLimit });
     }
 
     // Compact JSON reduces token usage vs pretty-printed JSON — important as chat history grows.
@@ -478,8 +497,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       reply: cleanedReply,
       questionsUsed: newCount,
-      questionsRemaining: hasUnlimitedAi ? DAILY_LIMIT : (DAILY_LIMIT - newCount),
-      limit: DAILY_LIMIT,
+      questionsRemaining: hasUnlimitedAi ? dailyLimit : (dailyLimit - newCount),
+      limit: dailyLimit,
     });
 
   } catch (err) {
