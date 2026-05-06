@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 const BRAND = {
   teal:   '#0F4C5C',
   black:  '#111111',
@@ -11,68 +9,15 @@ const BRAND = {
 };
 
 export default function UpgradeModal({ isOpen, onClose, user, profile }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState(null);
-
   if (!isOpen) return null;
 
-  async function handleUpgrade() {
-    const userId   = user?.id;
-    const email    = user?.email || profile?.email;
-    const fullName = profile?.full_name || user?.user_metadata?.full_name || '';
+  const userId   = user?.id || '';
+  const email    = user?.email || profile?.email || '';
+  const fullName = profile?.full_name || user?.user_metadata?.full_name || '';
+  const firstName = fullName.split(' ')[0] || '';
+  const lastName  = fullName.split(' ').slice(1).join(' ') || '';
 
-    if (!userId || !email) {
-      setError('You must be logged in to upgrade.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch('/api/payfast-sign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          email,
-          firstName: fullName.split(' ')[0] || '',
-          lastName:  fullName.split(' ').slice(1).join(' ') || '',
-        }),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Server error ${res.status}`);
-      }
-
-      const { payfastUrl, params } = await res.json();
-
-      // DEBUG — remove after confirming PayFast works
-      console.log('=== PAYFAST URL ===', payfastUrl);
-      console.log('=== PAYFAST PARAMS ===', JSON.stringify(params, null, 2));
-
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = payfastUrl;
-
-      Object.entries(params).forEach(([key, value]) => {
-        const input = document.createElement('input');
-        input.type  = 'hidden';
-        input.name  = key;
-        input.value = value;
-        form.appendChild(input);
-      });
-
-      document.body.appendChild(form);
-      form.submit();
-
-    } catch (err) {
-      console.error('UpgradeModal error:', err);
-      setError(err.message || 'Something went wrong. Please try again.');
-      setLoading(false);
-    }
-  }
+  const canSubmit = !!userId && !!email;
 
   return (
     <div
@@ -130,19 +75,38 @@ export default function UpgradeModal({ isOpen, onClose, user, profile }) {
           </ul>
         </div>
 
-        {error && (
+        {!canSubmit && (
           <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#B91C1C' }}>
-            {error}
+            You must be logged in to upgrade.
           </div>
         )}
 
-        <button
-          onClick={handleUpgrade}
-          disabled={loading}
-          style={{ width: '100%', background: loading ? BRAND.light : BRAND.teal, color: BRAND.bg, border: 'none', borderRadius: 10, padding: '0.875rem', fontSize: '1rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Roboto, sans-serif' }}
-        >
-          {loading ? 'Redirecting to PayFast…' : 'Subscribe — R79/month'}
-        </button>
+        {/*
+          Real HTML form post → /api/payfast-redirect → server-rendered
+          self-submitting page → PayFast.  Avoids Chromium "user activation
+          consumed" issue that silently blocks form.submit() after `await`.
+        */}
+        <form action="/api/payfast-redirect" method="POST" style={{ margin: 0 }}>
+          <input type="hidden" name="userId"    value={userId} />
+          <input type="hidden" name="email"     value={email} />
+          <input type="hidden" name="firstName" value={firstName} />
+          <input type="hidden" name="lastName"  value={lastName} />
+
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            style={{
+              width: '100%',
+              background: canSubmit ? BRAND.teal : BRAND.light,
+              color: BRAND.bg, border: 'none', borderRadius: 10,
+              padding: '0.875rem', fontSize: '1rem', fontWeight: 700,
+              cursor: canSubmit ? 'pointer' : 'not-allowed',
+              fontFamily: 'Roboto, sans-serif',
+            }}
+          >
+            Subscribe — R79/month
+          </button>
+        </form>
 
         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: BRAND.grey, marginTop: '0.75rem', marginBottom: 0 }}>
           Secured by PayFast · Cancel anytime from your billing page
