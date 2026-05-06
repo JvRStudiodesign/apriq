@@ -5,8 +5,7 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase    = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
 
-const DAILY_LIMIT   = 20;
-const AI_TRIAL_DAYS = 7;
+const DAILY_LIMIT = 20;
 const UNLIMITED_AI_EMAILS = new Set(['apriq@apriq.co.za']);
 
 /** Keep long sessions from ballooning the prompt (stateless API; history is re-sent each request). */
@@ -347,15 +346,9 @@ export default async function handler(req, res) {
     const trialActive = profile.tier === 'trial' && profile.trial_end_date && new Date(profile.trial_end_date).getTime() > now;
     const effective   = proActive ? 'pro' : trialActive ? 'trial' : 'free';
 
+    // AI advisor is included for the full 30-day trial. effectiveTier returns
+    // 'free' the moment trial_end_date passes, which is the only gate we need.
     if (!hasUnlimitedAi && effective === 'free') return res.status(403).json({ error: 'upgrade_required' });
-
-    if (!hasUnlimitedAi && effective === 'trial') {
-      const trialStart = profile.trial_started_at
-        ? new Date(profile.trial_started_at)
-        : new Date(new Date(profile.trial_end_date).getTime() - 30 * 86400000);
-      const daysSince = Math.floor((now - trialStart.getTime()) / 86400000);
-      if (daysSince >= AI_TRIAL_DAYS) return res.status(403).json({ error: 'trial_ai_expired' });
-    }
 
     let questionsUsed = hasUnlimitedAi ? 0 : (profile.ai_questions_used || 0);
     if (!hasUnlimitedAi && profile.ai_questions_reset_date !== today) {
