@@ -98,26 +98,45 @@ export default function handler(req, res) {
 <meta http-equiv="cache-control" content="no-store">
 <style>
   body { font-family: Roboto, system-ui, sans-serif; background: #F9FAFA; color: #0F4C5C;
-         display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-  .box { text-align: center; }
+         display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; padding: 1rem; }
+  .box { text-align: center; max-width: 420px; }
   .spinner { width: 36px; height: 36px; border: 3px solid #BFD1D6; border-top-color: #0F4C5C;
              border-radius: 50%; margin: 0 auto 16px; animation: spin 0.9s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  noscript { display: block; margin-top: 12px; font-size: 0.9rem; }
+  .continue {
+    display: inline-block; margin-top: 1.25rem; padding: 0.75rem 1.5rem;
+    background: #0F4C5C; color: #F9FAFA; border: none; border-radius: 10px;
+    font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .hint { font-size: 0.8rem; color: #979899; margin-top: 1rem; }
 </style>
 </head>
 <body>
   <div class="box">
     <div class="spinner"></div>
     <div>Redirecting to PayFast…</div>
-    <noscript>
-      JavaScript is disabled. <button form="pf" type="submit">Continue to PayFast</button>
-    </noscript>
+    <button class="continue" form="pf" type="submit">Continue to PayFast</button>
+    <p class="hint">If this page does not redirect automatically, click the button above.</p>
   </div>
-  <form id="pf" method="POST" action="${escapeAttr(payfastUrl)}" style="display:none">
+  <form id="pf" method="POST" action="${escapeAttr(payfastUrl)}" target="_top">
       ${fields}
   </form>
-  <script>document.getElementById('pf').submit();</script>
+  <script>
+    (function(){
+      try {
+        var f = document.getElementById('pf');
+        if (!f) { console.error('payfast-redirect: form not found'); return; }
+        // Strategy 1: submit immediately on parse.
+        f.submit();
+      } catch (e) { console.error('payfast-redirect submit (parse):', e); }
+    })();
+    document.addEventListener('DOMContentLoaded', function(){
+      try {
+        var f = document.getElementById('pf');
+        if (f && !f._submitted) { f._submitted = true; f.submit(); }
+      } catch (e) { console.error('payfast-redirect submit (DOMContentLoaded):', e); }
+    });
+  </script>
 </body>
 </html>`;
 
