@@ -18,8 +18,14 @@ export function HamburgerMenu() {
 
   async function handleLogout() {
     setOpen(false);
-    await supabase.auth.signOut();
-    navigate('/login');
+    try { await supabase.auth.signOut({ scope: 'local' }); }
+    catch (e) { console.warn('signOut error (continuing):', e); }
+    try {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('sb-') || k.startsWith('supabase'))
+        .forEach(k => localStorage.removeItem(k));
+    } catch { /* ignore */ }
+    navigate('/home', { replace: true });
   }
 
   const item = (label, path) => (

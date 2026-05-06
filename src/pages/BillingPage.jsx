@@ -98,15 +98,21 @@ export default function BillingPage() {
   }
 
   async function handleReplaceCard() {
-    // PayFast doesn't expose a "swap card" flow.  We cancel the current
-    // subscription, then immediately open the upgrade modal so the user
-    // re-subscribes with a new card.
-    if (!window.confirm('Replacing your card cancels the current subscription and starts a new one with the new card. Continue?')) return;
+    // PayFast doesn't expose a "swap card" flow. We cancel the current
+    // subscription, then open the upgrade modal in 'replace_card' mode so
+    // the user re-subscribes with a new card. Pro access is retained
+    // through pro_until.
+    if (!window.confirm(
+      'Replace card?\n\n' +
+      'PayFast doesn\'t support changing the card on an existing subscription, ' +
+      'so we\'ll cancel your current one and start a new subscription on the next page. ' +
+      'You\'ll keep Pro access until the end of your current billing period.'
+    )) return;
     setError(null); setInfo(null); setBusy('replace');
     try {
       if (subActive) await authedFetch('/api/payfast-cancel');
       if (profile?.id) await fetchProfile?.(profile.id);
-      openUpgrade?.();
+      openUpgrade?.('replace_card');
     } catch (e) {
       setError(e.message || 'Could not replace card.');
     } finally {
@@ -117,10 +123,10 @@ export default function BillingPage() {
   // Primary CTA shown next to "Current plan"
   const primaryCta = (() => {
     if (subActive)        return null; // Pro active, manage below instead
-    if (cancelledButActive) return { label: 'Resubscribe to Pro', onClick: () => openUpgrade?.() };
-    if (trialActive)      return { label: 'Upgrade to Pro', onClick: () => openUpgrade?.() };
+    if (cancelledButActive) return { label: 'Resubscribe to Pro', onClick: () => openUpgrade?.('resubscribe') };
+    if (trialActive)      return { label: 'Upgrade to Pro', onClick: () => openUpgrade?.('upgrade') };
     if (eligibleForTrial) return { label: 'Start 30-day free trial', onClick: handleStartTrial };
-    return                       { label: 'Upgrade to Pro', onClick: () => openUpgrade?.() };
+    return                       { label: 'Upgrade to Pro', onClick: () => openUpgrade?.('upgrade') };
   })();
 
   const planLabel = (() => {
@@ -179,10 +185,10 @@ export default function BillingPage() {
               disabled = true;
             } else {
               if (subActive && !cancelledButActive)  { cta = 'Your current plan'; disabled = true; }
-              else if (cancelledButActive)           { cta = 'Resubscribe to Pro'; onClickCard = () => openUpgrade?.(); }
-              else if (trialActive)                  { cta = 'Upgrade to Pro';     onClickCard = () => openUpgrade?.(); }
+              else if (cancelledButActive)           { cta = 'Resubscribe to Pro';  onClickCard = () => openUpgrade?.('resubscribe'); }
+              else if (trialActive)                  { cta = 'Upgrade to Pro';      onClickCard = () => openUpgrade?.('upgrade'); }
               else if (eligibleForTrial)             { cta = 'Start 30-day free trial'; onClickCard = handleStartTrial; }
-              else                                   { cta = 'Upgrade to Pro';     onClickCard = () => openUpgrade?.(); }
+              else                                   { cta = 'Upgrade to Pro';      onClickCard = () => openUpgrade?.('upgrade'); }
             }
 
             return (

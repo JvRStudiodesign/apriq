@@ -46,10 +46,14 @@ export default async function handler(req, res) {
     if (!profile.payfast_token)      return res.status(409).json({ error: 'No active PayFast subscription found.' });
 
     // ── Step 3: Call PayFast Subscription Management API ─────────────────────
+    // PayFast's API host is api.payfast.co.za for BOTH live and sandbox.
+    // For sandbox transactions, append `?testing=true` to the path. The
+    // earlier sandbox.payfast.co.za is the *payment* site (Laravel app with
+    // CSRF middleware) — hitting it returns 419 CSRF mismatch errors.
     const merchantId  = (process.env.PAYFAST_MERCHANT_ID  || '').trim();
     const passphrase  = (process.env.PAYFAST_PASSPHRASE   || '').trim();
     const isSandbox   = process.env.PAYFAST_SANDBOX === 'true';
-    const apiHost     = isSandbox ? 'sandbox.payfast.co.za' : 'api.payfast.co.za';
+    const apiHost     = 'api.payfast.co.za';
     const testingFlag = isSandbox ? '?testing=true' : '';
     const path        = `/subscriptions/${encodeURIComponent(profile.payfast_token)}/cancel${testingFlag}`;
 
@@ -61,8 +65,9 @@ export default async function handler(req, res) {
     const timestamp = new Date().toISOString();
     const version   = 'v1';
 
-    // PayFast API signing: alphabetical order of header fields (merchant-id,
-    // passphrase, timestamp, version), MD5'd just like the form-post sig.
+    // PayFast API signing: ksort over the headers (merchant-id, timestamp,
+    // version) plus the optional passphrase, php-urlencode each value, join
+    // with '&', then MD5. Identical algorithm to the form-post signature.
     const headerParams = { 'merchant-id': merchantId, version, timestamp };
     if (passphrase) headerParams.passphrase = passphrase;
 
@@ -71,13 +76,16 @@ export default async function handler(req, res) {
       .join('&');
     const apiSignature = crypto.createHash('md5').update(sigSrc).digest('hex');
 
+    console.log(`[cancel] PUT https://${apiHost}${path} sig=${apiSignature.substring(0,12)}…`);
+
     const pfResponse = await pfRequest({
       host: apiHost, path, method: 'PUT',
       headers: {
         'merchant-id': merchantId,
         version, timestamp,
         signature: apiSignature,
-        accept:    'application/json',
+        accept:           'application/json',
+        'x-requested-with': 'XMLHttpRequest', // belt-and-braces against any CSRF middleware
       },
     });
 
@@ -85,7 +93,9 @@ export default async function handler(req, res) {
     // still proceed to mark as cancelled in our DB to avoid leaving the user
     // stranded — log so we can reconcile manually.
     if (pfResponse.statusCode < 200 || pfResponse.statusCode >= 300) {
-      console.error('payfast-cancel: PayFast API non-2xx', pfResponse.statusCode, pfResponse.body);
+      console.error(`[cancel] PayFast API ${pfResponse.statusCode}: ${pfResponse.body.substring(0, 400)}`);
+    } else {
+      console.log(`[cancel] PayFast API ${pfResponse.statusCode}: ${pfResponse.body.substring(0, 200)}`);
     }
 
     // ── Step 4: Mark the profile as cancelled ────────────────────────────────

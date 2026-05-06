@@ -10,11 +10,17 @@ const BRAND = {
   light:  '#BFD1D6',
 };
 
-export default function UpgradeModal({ isOpen, onClose, user, profile }) {
+export default function UpgradeModal({ isOpen, onClose, user, profile, mode = 'upgrade' }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   if (!isOpen) return null;
+
+  const copy = {
+    upgrade:      { title: 'Upgrade to Pro',         subtitle: 'Unlock all AprIQ features',                                       cta: 'Subscribe — R79/month' },
+    replace_card: { title: 'Replace your card',      subtitle: 'Your old card will stop being charged. Enter your new card on the next page.', cta: 'Continue to PayFast — R79/month' },
+    resubscribe:  { title: 'Resubscribe to Pro',     subtitle: 'Re-activate your AprIQ Pro plan.',                                cta: 'Resubscribe — R79/month' },
+  }[mode] || { title: 'Upgrade to Pro', subtitle: 'Unlock all AprIQ features', cta: 'Subscribe — R79/month' };
 
   const userId   = user?.id || '';
   const email    = user?.email || profile?.email || '';
@@ -75,14 +81,20 @@ export default function UpgradeModal({ isOpen, onClose, user, profile }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
           <div>
             <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: BRAND.teal, fontFamily: 'Aptos, sans-serif' }}>
-              Upgrade to Pro
+              {copy.title}
             </h2>
             <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: BRAND.grey }}>
-              Unlock all AprIQ features
+              {copy.subtitle}
             </p>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: BRAND.grey, fontSize: '1.25rem', lineHeight: 1, padding: '0.25rem' }}>×</button>
         </div>
+
+        {mode === 'replace_card' && (
+          <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#9A3412', lineHeight: 1.5 }}>
+            <strong>Note:</strong> PayFast doesn't support changing the card on an existing subscription. Your previous subscription has been cancelled — you'll keep Pro access until the end of your current billing period. Continuing here will start a fresh subscription on your new card.
+          </div>
+        )}
 
         <div style={{ border: `2px solid ${BRAND.teal}`, borderRadius: 12, padding: '1.25rem', marginBottom: '1.25rem', background: '#fff', position: 'relative' }}>
           <span style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: BRAND.orange, color: '#fff', fontSize: '0.7rem', fontWeight: 700, padding: '3px 12px', borderRadius: 20, letterSpacing: '0.04em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
@@ -126,7 +138,7 @@ export default function UpgradeModal({ isOpen, onClose, user, profile }) {
             fontFamily: 'Roboto, sans-serif',
           }}
         >
-          {loading ? 'Redirecting to PayFast…' : 'Subscribe — R79/month'}
+          {loading ? 'Redirecting to PayFast…' : copy.cta}
         </button>
 
         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: BRAND.grey, marginTop: '0.75rem', marginBottom: 0 }}>

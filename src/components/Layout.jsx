@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import UpgradeModal from './UpgradeModal';
 
 const T = {
@@ -20,12 +20,39 @@ const NAV = [
 
 function Header({ onOpenModal, isLoggedIn }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [menuOpen,    setMenuOpen]    = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [signingOut,  setSigningOut]  = useState(false);
 
   useEffect(() => { setMenuOpen(false); setProfileOpen(false); }, [location.pathname]);
 
   const active = (to) => location.pathname === to;
+
+  async function handleSignOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    setProfileOpen(false);
+    setMenuOpen(false);
+    try {
+      // 'local' scope is faster than the default 'global' (which round-trips
+      // to Supabase auth server) and matches what users expect when the auth
+      // server is slow / unreachable.
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch (e) {
+      // Even if signOut fails, force-clear local storage and continue —
+      // the user clicked sign-out and we should never leave them stranded.
+      console.warn('signOut error (continuing anyway):', e);
+    } finally {
+      try {
+        Object.keys(localStorage)
+          .filter(k => k.startsWith('sb-') || k.startsWith('supabase'))
+          .forEach(k => localStorage.removeItem(k));
+      } catch { /* ignore */ }
+      setSigningOut(false);
+      navigate('/home', { replace: true });
+    }
+  }
 
   return (
     <header style={h.root}>
@@ -58,7 +85,7 @@ function Header({ onOpenModal, isLoggedIn }) {
                     <Link to="/profile" style={h.dropItem} onClick={() => setProfileOpen(false)}>Profile</Link>
                     <Link to="/plans" style={h.dropItem} onClick={() => setProfileOpen(false)}>My Plan</Link>
                     <hr style={h.dropDivider}/>
-                    <button style={{ ...h.dropItem, ...h.dropBtn }} onClick={async () => { setProfileOpen(false); await supabase.auth.signOut(); }}>Sign out</button>
+                    <button style={{ ...h.dropItem, ...h.dropBtn }} onClick={handleSignOut} disabled={signingOut}>{signingOut ? 'Signing out…' : 'Sign out'}</button>
                   </>
                 ) : (
                   <>
@@ -92,7 +119,7 @@ function Header({ onOpenModal, isLoggedIn }) {
             <Link to="/profile" style={h.mobileLink} onClick={()=>setMenuOpen(false)}>Profile</Link>
             <Link to="/plans" style={h.mobileLink} onClick={()=>setMenuOpen(false)}>My Plan</Link>
             <div style={h.mobileDivider}/>
-            <button style={{...h.mobileLink,...h.mobileLinkBtn,color:'#cc3300'}} onClick={async()=>{setMenuOpen(false);await supabase.auth.signOut();}}>Sign out</button>
+            <button style={{...h.mobileLink,...h.mobileLinkBtn,color:'#cc3300'}} onClick={handleSignOut} disabled={signingOut}>{signingOut ? 'Signing out…' : 'Sign out'}</button>
           </>)}
           {!isLoggedIn && (<>
             <div style={h.mobileDivider}/>
@@ -346,10 +373,14 @@ export default function Layout() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('waitlist');
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [upgradeMode, setUpgradeMode] = useState('upgrade'); // 'upgrade' | 'replace_card' | 'resubscribe'
   const { user, profile } = useAuth();
   const isLoggedIn = !!user;
   function openModal(mode = 'waitlist') { setModalMode(mode); setModalOpen(true); }
-  function openUpgrade() { setShowUpgrade(true); }
+  function openUpgrade(mode = 'upgrade') {
+    setUpgradeMode(typeof mode === 'string' ? mode : 'upgrade');
+    setShowUpgrade(true);
+  }
   useEffect(() => {
     const handler = () => openModal('contact');
     window.addEventListener('open-contact-modal', handler);
@@ -362,7 +393,7 @@ export default function Layout() {
       <main><Outlet context={{ openModal, openUpgrade, isLoggedIn }}/></main>
       <Footer/>
       <WaitlistModal open={modalOpen} onClose={() => setModalOpen(false)} mode={modalMode}/>
-      <UpgradeModal isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} user={user} profile={profile} />
+      <UpgradeModal isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} user={user} profile={profile} mode={upgradeMode} />
     </>
   );
 }
