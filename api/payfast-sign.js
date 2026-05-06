@@ -1,4 +1,9 @@
 // api/payfast-sign.js
+// Builds PayFast payment params + MD5 signature server-side.
+// IMPORTANT: PayFast verifies the signature on the data in the order it
+// receives the POST fields. We therefore (a) sort the cleaned params
+// alphabetically, (b) sign that sorted object, and (c) return that same
+// sorted object so the form is POSTed in the same order.
 import crypto from 'crypto';
 
 export default function handler(req, res) {
@@ -7,36 +12,38 @@ export default function handler(req, res) {
   }
 
   try {
-    const merchantId  = process.env.PAYFAST_MERCHANT_ID;
-    const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
-    const passphrase  = (process.env.PAYFAST_PASSPHRASE || '').trim();
-    const appUrl      = (process.env.APP_URL || 'https://www.apriq.co.za').trim();
+    const merchantId  = (process.env.PAYFAST_MERCHANT_ID  || '').trim();
+    const merchantKey = (process.env.PAYFAST_MERCHANT_KEY || '').trim();
+    const passphrase  = (process.env.PAYFAST_PASSPHRASE   || '').trim();
+    const appUrl      = (process.env.APP_URL || 'https://www.apriq.co.za')
+                          .trim()
+                          .replace(/\/+$/, '');
     const isSandbox   = process.env.PAYFAST_SANDBOX !== 'false';
 
     if (!merchantId || !merchantKey) {
-      console.error('payfast-sign: merchant credentials not set');
+      console.error('payfast-sign: PAYFAST_MERCHANT_ID / PAYFAST_MERCHANT_KEY env vars missing');
       return res.status(500).json({ error: 'Payment configuration error.' });
     }
 
     const { userId, email, firstName = '', lastName = '' } = req.body || {};
 
     if (!userId || !email) {
-      console.error('payfast-sign: missing userId or email');
+      console.error('payfast-sign: missing userId or email in body');
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
     const mPaymentId = `${userId}-${Date.now()}`;
 
-    // Build params object — merchant_key included (required for signature)
+    // ── Build raw params object ──────────────────────────────────────────────
     const params = {
-      merchant_id:       merchantId.trim(),
-      merchant_key:      merchantKey.trim(),
+      merchant_id:       merchantId,
+      merchant_key:      merchantKey,
       return_url:        `${appUrl}/payment-success`,
       cancel_url:        `${appUrl}/payment-cancel`,
       notify_url:        `${appUrl}/api/payfast-itn`,
-      name_first:        firstName.trim(),
-      name_last:         lastName.trim(),
-      email_address:     email.trim(),
+      name_first:        String(firstName).trim(),
+      name_last:         String(lastName).trim(),
+      email_address:     String(email).trim(),
       m_payment_id:      mPaymentId,
       amount:            '79.00',
       item_name:         'AprIQ Pro Monthly',
@@ -49,24 +56,34 @@ export default function handler(req, res) {
       cycles:            '0',
     };
 
-    // Remove empty string / null / undefined values
+    // Drop empty / null / undefined values (PayFast rejects them anyway).
     const cleaned = Object.fromEntries(
       Object.entries(params).filter(([, v]) => v !== '' && v !== null && v !== undefined)
     );
 
-    // Generate signature — matches PayFast PHP SDK exactly:
-    // ksort → urlencode(trim(val)) → join with & → append passphrase → md5
-    const signature = generateSignature(cleaned, passphrase || null);
+    // ── Sort alphabetically — same order will be signed AND POSTed ─────────
+    const sorted = Object.keys(cleaned).sort().reduce((acc, key) => {
+      acc[key] = cleaned[key];
+      return acc;
+    }, {});
+
+    // ── Build the exact string PayFast will MD5 on its end ────────────────
+    const { signature, getString } = generateSignature(sorted, passphrase || null);
 
     const payfastUrl = isSandbox
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
 
-    console.log(`payfast-sign OK — user=${userId} sandbox=${isSandbox} sig=${signature.substring(0,8)}...`);
+    // Visible in Vercel function logs — paste back here if signatures still mismatch.
+    console.log(
+      `payfast-sign OK — user=${userId} sandbox=${isSandbox} ` +
+      `passphrase=${passphrase ? 'yes' : 'no'} sig=${signature.substring(0, 12)}...`
+    );
+    console.log(`payfast-sign string-to-hash: ${getString}`);
 
     return res.status(200).json({
       payfastUrl,
-      params: { ...cleaned, signature },
+      params: { ...sorted, signature },
     });
 
   } catch (err) {
@@ -76,38 +93,33 @@ export default function handler(req, res) {
 }
 
 /**
- * Replicates PayFast PHP SDK generateSignature() exactly.
- * Ref: pfpayments/payfast-php-sdk — PFPayment.php
+ * Replicates PayFast PHP SDK PFPayment::generateSignature() exactly.
+ * Caller passes data in the order it will be POSTed; we do NOT re-sort here.
  */
 function generateSignature(data, passPhrase = null) {
-  // ksort equivalent — alphabetical key sort
-  const sorted = Object.keys(data).sort().reduce((acc, key) => {
-    acc[key] = data[key];
-    return acc;
-  }, {});
-
   let pfOutput = '';
-  for (const [key, val] of Object.entries(sorted)) {
+  for (const [key, val] of Object.entries(data)) {
     const trimmed = String(val).trim();
     if (trimmed !== '') {
       pfOutput += `${key}=${phpUrlencode(trimmed)}&`;
     }
   }
 
-  // Remove trailing &
-  let getString = pfOutput.slice(0, -1);
+  let getString = pfOutput.slice(0, -1); // drop trailing &
 
   if (passPhrase !== null && passPhrase !== '') {
-    getString += `&passphrase=${phpUrlencode(passPhrase.trim())}`;
+    getString += `&passphrase=${phpUrlencode(String(passPhrase).trim())}`;
   }
 
-  return crypto.createHash('md5').update(getString).digest('hex');
+  const signature = crypto.createHash('md5').update(getString).digest('hex');
+  return { signature, getString };
 }
 
 /**
- * PHP urlencode equivalent.
- * PHP encodes space as + and uses %XX for everything else.
- * encodeURIComponent leaves ! ' ( ) * unencoded — PHP encodes them.
+ * Matches PHP's urlencode():
+ *  - space → +
+ *  - !  \'  (  )  *  → %21 %27 %28 %29 %2A
+ *  - everything else uses encodeURIComponent (which already matches RFC 3986).
  */
 function phpUrlencode(str) {
   return encodeURIComponent(str)
