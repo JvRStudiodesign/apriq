@@ -1,6 +1,4 @@
 // api/payfast-sign.js
-// Builds PayFast payment params + MD5 signature server-side.
-// Passphrase never leaves the server.
 import crypto from 'crypto';
 
 export default function handler(req, res) {
@@ -9,27 +7,24 @@ export default function handler(req, res) {
   }
 
   try {
-    // ── Validate env vars first ───────────────────────────────────────────────
     const merchantId  = process.env.PAYFAST_MERCHANT_ID;
     const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
-    const passphrase  = process.env.PAYFAST_PASSPHRASE  || '';
-    const appUrl      = process.env.APP_URL              || 'https://www.apriq.co.za';
-    const isSandbox   = process.env.PAYFAST_SANDBOX      !== 'false';
+    const passphrase  = process.env.PAYFAST_PASSPHRASE || '';
+    const appUrl      = process.env.APP_URL || 'https://www.apriq.co.za';
+    const isSandbox   = process.env.PAYFAST_SANDBOX !== 'false';
 
     if (!merchantId || !merchantKey) {
-      console.error('payfast-sign: PAYFAST_MERCHANT_ID or PAYFAST_MERCHANT_KEY env var not set');
-      return res.status(500).json({ error: 'Payment configuration error — contact support.' });
+      console.error('payfast-sign: merchant credentials not set');
+      return res.status(500).json({ error: 'Payment configuration error.' });
     }
 
-    // ── Validate request body ────────────────────────────────────────────────
     const { userId, email, firstName = '', lastName = '' } = req.body || {};
 
     if (!userId || !email) {
-      console.error('payfast-sign: missing userId or email in body', { userId: !!userId, email: !!email });
-      return res.status(400).json({ error: 'Missing required fields: userId and email required.' });
+      console.error('payfast-sign: missing userId or email');
+      return res.status(400).json({ error: 'Missing required fields.' });
     }
 
-    // ── Build params ─────────────────────────────────────────────────────────
     const mPaymentId = `${userId}-${Date.now()}`;
 
     const params = {
@@ -53,19 +48,24 @@ export default function handler(req, res) {
       cycles:            '0',
     };
 
-    // Remove empty/null values
+    // Remove empty/null/undefined values
     const cleaned = Object.fromEntries(
       Object.entries(params).filter(([, v]) => v !== '' && v !== null && v !== undefined)
     );
 
-    // ── Build signature ───────────────────────────────────────────────────────
-    const paramString = Object.keys(cleaned)
+    // Signature string excludes merchant_key — PayFast verifies without it
+    const sigParams = Object.fromEntries(
+      Object.entries(cleaned).filter(([k]) => k !== 'merchant_key')
+    );
+
+    // PHP urlencode compatible — sort alphabetically
+    const paramString = Object.keys(sigParams)
       .sort()
-      .map(k => `${k}=${encodeURIComponent(String(cleaned[k])).replace(/%20/g, '+')}`)
+      .map(k => `${k}=${phpUrlencode(String(sigParams[k]))}`)
       .join('&');
 
     const stringToHash = passphrase
-      ? `${paramString}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`
+      ? `${paramString}&passphrase=${phpUrlencode(passphrase)}`
       : paramString;
 
     const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
@@ -74,7 +74,7 @@ export default function handler(req, res) {
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
 
-    console.log(`payfast-sign: OK — user=${userId} sandbox=${isSandbox} url=${payfastUrl}`);
+    console.log(`payfast-sign OK — user=${userId} sandbox=${isSandbox}`);
 
     return res.status(200).json({
       payfastUrl,
@@ -82,7 +82,14 @@ export default function handler(req, res) {
     });
 
   } catch (err) {
-    console.error('payfast-sign: unexpected error', err);
+    console.error('payfast-sign error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
+}
+
+// Matches PHP urlencode: spaces as +, RFC 3986 encoding for others
+function phpUrlencode(str) {
+  return encodeURIComponent(str)
+    .replace(/%20/g, '+')
+    .replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
 }
