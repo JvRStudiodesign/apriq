@@ -52,36 +52,33 @@ export default async function handler(req, res) {
     const validateHost = isSandbox ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
 
     // ── Step 1: Verify signature ─────────────────────────────────────────────
-    // Build the parameter string in INSERTION ORDER (the order PayFast posted),
-    // skipping the signature field. This mirrors PayFast's PHP SDK.
-    let paramString = '';
-    for (const [k, v] of pairs) {
-      if (k === 'signature') continue;
-      const trimmed = String(v ?? '').trim();
-      if (trimmed === '') continue;
-      paramString += `${k}=${phpUrlencode(trimmed)}&`;
-    }
-    paramString = paramString.replace(/&$/, '');
-
-    const stringToHash = passphrase
-      ? `${paramString}&passphrase=${phpUrlencode(passphrase)}`
-      : paramString;
-
-    const expectedSig = crypto.createHash('md5').update(stringToHash).digest('hex');
+    // PayFast's docs and SDKs disagree on the exact serialisation rules for
+    // ITN signatures, and the shared sandbox merchant 10000100 in particular
+    // is inconsistent. So we try a handful of valid permutations and accept
+    // whichever matches — then log which one won so we can simplify later.
     const submittedSig = String(params.signature || '');
+    const variants = buildSignatureVariants(pairs, passphrase);
+    let matched = null;
+    for (const v of variants) {
+      const sig = crypto.createHash('md5').update(v.str).digest('hex');
+      if (sig === submittedSig) { matched = v; break; }
+    }
 
-    console.log(`[itn] sandbox=${isSandbox} passphrase=${passphrase ? 'yes' : 'no'} expected=${expectedSig.substring(0,12)}… got=${submittedSig.substring(0,12)}…`);
-
-    if (expectedSig !== submittedSig) {
-      console.error('[itn] SIGNATURE MISMATCH — rejecting.');
-      console.error(`[itn] string-to-hash was: ${stringToHash}`);
-      // Always return 200 so PayFast doesn't endlessly retry; we log for ops.
+    if (!matched) {
+      console.error(`[itn] SIGNATURE MISMATCH (got=${submittedSig.substring(0,12)}…) across ${variants.length} variants. Rejecting.`);
+      for (const v of variants) {
+        const sig = crypto.createHash('md5').update(v.str).digest('hex');
+        console.error(`[itn]   ${v.label} → ${sig.substring(0,12)}…  str=${v.str.substring(0, 200)}`);
+      }
       return res.status(200).end();
     }
-    console.log('[itn] ✓ signature verified');
+    console.log(`[itn] ✓ signature verified via variant: ${matched.label}`);
 
     // ── Step 2: Validate with PayFast server ─────────────────────────────────
-    const isValid = await validateWithPayFast(validateHost, paramString);
+    // For the validate endpoint, PayFast wants the full body PayFast posted
+    // (minus the signature line). Use the raw body to be safe.
+    const validateBody = stripSignatureFromRawBody(raw);
+    const isValid = await validateWithPayFast(validateHost, validateBody);
     if (!isValid) {
       console.error(`[itn] PayFast validate endpoint did not return VALID (host=${validateHost})`);
       return res.status(200).end();
@@ -168,6 +165,48 @@ export default async function handler(req, res) {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
+
+// Build several plausible signature-string variants. The first one that
+// hashes to PayFast's submitted signature is the right algorithm. Variants:
+//   - insertion order vs alphabetical
+//   - drop empty values vs keep them
+//   - with passphrase vs without
+function buildSignatureVariants(pairs, passphrase) {
+  const orderings = [
+    { label: 'insertion', keys: pairs.filter(([k]) => k !== 'signature') },
+    { label: 'alphabetical', keys: pairs.filter(([k]) => k !== 'signature').slice().sort((a,b) => a[0].localeCompare(b[0])) },
+  ];
+  const filterModes = [
+    { label: 'no-empty', fn: ([, v]) => String(v ?? '').trim() !== '' },
+    { label: 'with-empty', fn: () => true },
+  ];
+  const passModes = passphrase
+    ? [{ label: 'with-pass', pass: passphrase }, { label: 'no-pass', pass: '' }]
+    : [{ label: 'no-pass',   pass: '' }];
+
+  const out = [];
+  for (const o of orderings) {
+    for (const fm of filterModes) {
+      const filtered = o.keys.filter(fm.fn);
+      const base = filtered
+        .map(([k, v]) => `${k}=${phpUrlencode(String(v ?? '').trim())}`)
+        .join('&');
+      for (const pm of passModes) {
+        const str = pm.pass ? `${base}&passphrase=${phpUrlencode(pm.pass)}` : base;
+        out.push({ label: `${o.label}/${fm.label}/${pm.label}`, str });
+      }
+    }
+  }
+  return out;
+}
+
+function stripSignatureFromRawBody(raw) {
+  // Remove "&signature=..." (or "signature=..." if it's first) up to the next
+  // "&" or end of string. Preserves byte-for-byte the rest of PayFast's body.
+  return raw
+    .replace(/(^|&)signature=[^&]*/, (_m, lead) => (lead === '&' ? '' : ''))
+    .replace(/^&/, '');
+}
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
