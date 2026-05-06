@@ -346,7 +346,7 @@ export default function Layout() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('waitlist');
   const [showUpgrade, setShowUpgrade] = useState(false);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const isLoggedIn = !!user;
   function openModal(mode = 'waitlist') { setModalMode(mode); setModalOpen(true); }
   function openUpgrade() { setShowUpgrade(true); }
@@ -362,7 +362,7 @@ export default function Layout() {
       <main><Outlet context={{ openModal, openUpgrade, isLoggedIn }}/></main>
       <Footer/>
       <WaitlistModal open={modalOpen} onClose={() => setModalOpen(false)} mode={modalMode}/>
-      <UpgradeModal isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} user={user} />
+      <UpgradeModal isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} user={user} profile={profile} />
     </>
   );
 }

@@ -24,14 +24,19 @@ const BRAND = {
   light:  '#BFD1D6',
 };
 
-export default function UpgradeModal({ isOpen, onClose, user }) {
+export default function UpgradeModal({ isOpen, onClose, user, profile }) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
 
   if (!isOpen) return null;
 
   async function handleUpgrade() {
-    if (!user?.id || !user?.email) {
+    // Resolve email and name — profile is more reliable than auth user object
+    const userId    = user?.id;
+    const email     = user?.email || profile?.email;
+    const fullName  = profile?.full_name || user?.user_metadata?.full_name || '';
+
+    if (!userId || !email) {
       setError('You must be logged in to upgrade.');
       return;
     }
@@ -45,10 +50,10 @@ export default function UpgradeModal({ isOpen, onClose, user }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId:    user.id,
-          email:     user.email,
-          firstName: user.user_metadata?.full_name?.split(' ')[0] || '',
-          lastName:  user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+          userId,
+          email,
+          firstName: fullName.split(' ')[0] || '',
+          lastName:  fullName.split(' ').slice(1).join(' ') || '',
         }),
       });
 
