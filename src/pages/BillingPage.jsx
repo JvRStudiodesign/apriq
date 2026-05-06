@@ -1,3 +1,4 @@
+import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useFadeIn } from '../hooks/useFadeIn';
 
@@ -8,6 +9,7 @@ const TIERS = [
 
 export default function BillingPage() {
   const r1=useFadeIn(), r2=useFadeIn(), r3=useFadeIn();
+  const { openUpgrade } = useOutletContext() || {};
   const { profile } = useAuth();
   const tier = profile?.tier || 'free';
   const trialEnd = profile?.trial_end ? new Date(profile.trial_end) : null;
@@ -25,7 +27,7 @@ export default function BillingPage() {
             <p style={s.label}>Current plan</p>
             <p style={{...s.currentPlan, color: isPro || isTrial ? '#FF8210' : s.currentPlan.color}}>{isPro ? 'Pro' : isTrial ? 'Pro Trial' : 'Free'}</p>
           </div>
-          {currentTier === 'free' && <button style={s.upgradeCta}>Start 30-day free trial</button>}
+          {currentTier === 'free' && <button style={s.upgradeCta} onClick={() => openUpgrade?.()}>Start 30-day free trial</button>}
         </div>
       </div></div></section>
 
@@ -58,7 +60,7 @@ export default function BillingPage() {
                   </li>
                 ))}
               </ul>
-              <button style={{...s.tierCta, background:tier.highlight?'#111111':'transparent', color:tier.highlight?'#F9FAFA':'#979899', border:tier.highlight?'none':'1px solid #E4E5E5', cursor:isActive?'default':'pointer'}} disabled={isActive}>{cta}</button>
+              <button style={{...s.tierCta, background:tier.highlight?'#111111':'transparent', color:tier.highlight?'#F9FAFA':'#979899', border:tier.highlight?'none':'1px solid #E4E5E5', cursor:isActive?'default':'pointer'}} disabled={isActive} onClick={() => { if (!isActive && tier.id === 'pro') openUpgrade?.(); }}>{cta}</button>
             </div>
           );})}
         </div>
@@ -68,7 +70,7 @@ export default function BillingPage() {
         <h2 style={s.h2} className="fi">Manage subscription</h2>
         <div style={s.manageGrid} className="fi">
           {[
-            { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F4C5C" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>, label:'Payment method', sub:'Update your card or billing details.', action:<button style={s.manageBtn}>Update</button> },
+            { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F4C5C" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>, label:'Payment method', sub:'Update your card or billing details.', action:<button style={s.manageBtn} onClick={() => openUpgrade?.()}>Update</button> },
             { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F4C5C" strokeWidth="1.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, label:'Next billing date', sub:currentTier==='pro'?'15 May 2026':'—', action:null },
             { icon:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F4C5C" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, label:'Need help?', sub:'Contact us about your plan or billing.', action:<button style={s.manageBtn} onClick={() => { if(window.__openContactModal) window.__openContactModal(); else { const e = new CustomEvent('open-contact-modal'); window.dispatchEvent(e); } }}>Contact support</button> },
           ].map(({ icon, label, sub, action }, i) => (
