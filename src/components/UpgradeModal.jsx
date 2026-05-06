@@ -91,7 +91,7 @@ export default function UpgradeModal({ isOpen, onClose, user, profile, mode = 'u
         </div>
 
         {mode === 'replace_card' && (
-          <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#9A3412', lineHeight: 1.5 }}>
+          <div style={{ background: 'rgba(255, 130, 16, 0.30)', border: '1px solid rgba(255, 130, 16, 0.55)', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#111111', lineHeight: 1.5 }}>
             <strong>Note:</strong> PayFast doesn't support changing the card on an existing subscription. Your previous subscription has been cancelled — you'll keep Pro access until the end of your current billing period. Continuing here will start a fresh subscription on your new card.
           </div>
         )}
@@ -120,7 +120,7 @@ export default function UpgradeModal({ isOpen, onClose, user, profile, mode = 'u
         </div>
 
         {(error || (!userId || !email)) && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#B91C1C' }}>
+          <div style={{ background: 'rgba(255, 130, 16, 0.30)', border: '1px solid rgba(255, 130, 16, 0.55)', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#111111' }}>
             {error || 'You must be logged in to upgrade.'}
           </div>
         )}

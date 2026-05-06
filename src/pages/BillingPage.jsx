@@ -235,13 +235,21 @@ export default function BillingPage() {
       <section style={{ ...s.section, paddingBottom: 80 }}><div className="wrap" ref={r3}><div style={s.panel} className="fi-group">
         <h2 style={s.h2} className="fi">Manage subscription</h2>
 
-        {/* Status banner — always visible so user can see the actual state */}
+        {/* Status banner — always visible so user can see the actual state.
+            Colours from the approved AprIQ palette at 30% opacity. */}
         {(subActive || cancelledButActive || trialActive) && (
           <div style={{
             ...s.statusBanner,
-            background: subActive && !cancelledButActive ? '#ECFDF5' : cancelledButActive ? '#FEF3C7' : '#EFF6FF',
-            borderColor:  subActive && !cancelledButActive ? '#A7F3D0' : cancelledButActive ? '#FDE68A' : '#BFDBFE',
-            color:        subActive && !cancelledButActive ? '#065F46' : cancelledButActive ? '#92400E' : '#1E40AF',
+            // Active: paleBlue (calm/positive)
+            // Cancelled: orange (warm warning)
+            // Trial: petrol (depth/premium)
+            background:  subActive && !cancelledButActive ? 'rgba(191, 209, 214, 0.30)'
+                       : cancelledButActive               ? 'rgba(255, 130, 16, 0.30)'
+                       :                                    'rgba(15, 76, 92, 0.30)',
+            borderColor: subActive && !cancelledButActive ? 'rgba(191, 209, 214, 0.55)'
+                       : cancelledButActive               ? 'rgba(255, 130, 16, 0.55)'
+                       :                                    'rgba(15, 76, 92, 0.55)',
+            color: '#111111',
           }} className="fi">
             <strong>Status:</strong>{' '}
             {subActive && !cancelledButActive && `Active — renews ${formatDate(profile?.pro_until)}`}
@@ -296,15 +304,15 @@ export default function BillingPage() {
           {/* Cancel — placed prominently *inside* the manage grid for active subs */}
           {subActive && !cancelledButActive && (
             <div style={s.manageCard}>
-              <div style={{ ...s.manageIcon, borderColor: '#FCA5A5', background: '#FEF2F2' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <div style={{ ...s.manageIcon, borderColor: 'rgba(255, 130, 16, 0.55)', background: 'rgba(255, 130, 16, 0.30)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8210" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
               </div>
               <div style={{ flex: 1 }}>
                 <p style={s.manageLabel}>Cancel subscription</p>
                 <p style={s.manageSub}>Stops future billing. You keep Pro access until {formatDate(profile?.pro_until)}.</p>
               </div>
               <button
-                style={{ ...s.manageBtn, color: '#DC2626', borderColor: '#FCA5A5' }}
+                style={{ ...s.manageBtn, color: '#111111', borderColor: 'rgba(255, 130, 16, 0.55)', background: 'rgba(255, 130, 16, 0.30)' }}
                 onClick={handleCancel}
                 disabled={busy === 'cancel'}
               >
@@ -343,8 +351,8 @@ const s = {
   currentPlan: { fontFamily: "'Aptos','Segoe UI',system-ui,sans-serif", fontSize: 18, fontWeight: 600, color: '#111111' },
   currentRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 },
   upgradeCta: { padding: '10px 22px', background: '#111111', color: '#F9FAFA', border: 'none', borderRadius: 12, fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer' },
-  errorBox: { marginTop: 16, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, padding: '0.75rem 1rem', fontSize: 13, color: '#B91C1C' },
-  infoBox:  { marginTop: 16, background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 8, padding: '0.75rem 1rem', fontSize: 13, color: '#065F46' },
+  errorBox: { marginTop: 16, background: 'rgba(255, 130, 16, 0.30)', border: '1px solid rgba(255, 130, 16, 0.55)', borderRadius: 8, padding: '0.75rem 1rem', fontSize: 13, color: '#111111' },
+  infoBox:  { marginTop: 16, background: 'rgba(191, 209, 214, 0.30)', border: '1px solid rgba(191, 209, 214, 0.55)', borderRadius: 8, padding: '0.75rem 1rem', fontSize: 13, color: '#111111' },
   tierGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 16 },
   tierCard: { border: '1px solid', borderRadius: 16, padding: 28, display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', background: '#F9FAFA' },
   tierBadge: { position: 'absolute', top: -1, right: 20, background: '#0F4C5C', color: '#F9FAFA', fontSize: 11, fontWeight: 500, fontFamily: "'Roboto',system-ui,sans-serif", padding: '4px 12px', borderRadius: '0 0 10px 10px' },
