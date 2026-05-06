@@ -1,7 +1,6 @@
 // api/payfast-sign.js
 // Builds PayFast payment params + MD5 signature server-side.
 // Passphrase never leaves the server.
-
 import crypto from 'crypto';
 
 export default function handler(req, res) {
@@ -10,64 +9,61 @@ export default function handler(req, res) {
   }
 
   try {
-    const {
-      userId,
-      email,
-      firstName,
-      lastName,
-    } = req.body;
-
-    if (!userId || !email) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
+    // ── Validate env vars first ───────────────────────────────────────────────
     const merchantId  = process.env.PAYFAST_MERCHANT_ID;
     const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
-    const passphrase  = process.env.PAYFAST_PASSPHRASE;
-    const appUrl      = process.env.APP_URL || 'https://apriq.vercel.app';
-    const isSandbox   = process.env.PAYFAST_SANDBOX === 'true';
+    const passphrase  = process.env.PAYFAST_PASSPHRASE  || '';
+    const appUrl      = process.env.APP_URL              || 'https://www.apriq.co.za';
+    const isSandbox   = process.env.PAYFAST_SANDBOX      !== 'false';
 
-    const notifyUrl = `${appUrl}/api/payfast-itn`;
-    const returnUrl = `${appUrl}/payment-success`;
-    const cancelUrl = `${appUrl}/payment-cancel`;
+    if (!merchantId || !merchantKey) {
+      console.error('payfast-sign: PAYFAST_MERCHANT_ID or PAYFAST_MERCHANT_KEY env var not set');
+      return res.status(500).json({ error: 'Payment configuration error — contact support.' });
+    }
 
-    // Unique payment reference — userId + timestamp
+    // ── Validate request body ────────────────────────────────────────────────
+    const { userId, email, firstName = '', lastName = '' } = req.body || {};
+
+    if (!userId || !email) {
+      console.error('payfast-sign: missing userId or email in body', { userId: !!userId, email: !!email });
+      return res.status(400).json({ error: 'Missing required fields: userId and email required.' });
+    }
+
+    // ── Build params ─────────────────────────────────────────────────────────
     const mPaymentId = `${userId}-${Date.now()}`;
 
     const params = {
       merchant_id:       merchantId,
       merchant_key:      merchantKey,
-      return_url:        returnUrl,
-      cancel_url:        cancelUrl,
-      notify_url:        notifyUrl,
-      name_first:        firstName || '',
-      name_last:         lastName  || '',
+      return_url:        `${appUrl}/payment-success`,
+      cancel_url:        `${appUrl}/payment-cancel`,
+      notify_url:        `${appUrl}/api/payfast-itn`,
+      name_first:        firstName,
+      name_last:         lastName,
       email_address:     email,
       m_payment_id:      mPaymentId,
       amount:            '79.00',
-      item_name:         'AprIQ Pro — Monthly',
+      item_name:         'AprIQ Pro Monthly',
       item_description:  'Full access to all AprIQ Pro features',
-      custom_str1:       userId,          // passed back in ITN for Supabase lookup
-      // Subscription fields
+      custom_str1:       userId,
       subscription_type: '1',
-      billing_date:      getTodayISO(),
+      billing_date:      new Date().toISOString().split('T')[0],
       recurring_amount:  '79.00',
-      frequency:         '3',            // 3 = monthly
-      cycles:            '0',            // 0 = indefinite
+      frequency:         '3',
+      cycles:            '0',
     };
 
-    // Remove empty values
+    // Remove empty/null values
     const cleaned = Object.fromEntries(
-      Object.entries(params).filter(([, v]) => v !== '' && v != null)
+      Object.entries(params).filter(([, v]) => v !== '' && v !== null && v !== undefined)
     );
 
-    // Build param string — alphabetical order, URL-encoded
+    // ── Build signature ───────────────────────────────────────────────────────
     const paramString = Object.keys(cleaned)
       .sort()
-      .map(k => `${k}=${encodeURIComponent(cleaned[k]).replace(/%20/g, '+')}`)
+      .map(k => `${k}=${encodeURIComponent(String(cleaned[k])).replace(/%20/g, '+')}`)
       .join('&');
 
-    // Append passphrase if set
     const stringToHash = passphrase
       ? `${paramString}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`
       : paramString;
@@ -78,17 +74,15 @@ export default function handler(req, res) {
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
 
+    console.log(`payfast-sign: OK — user=${userId} sandbox=${isSandbox} url=${payfastUrl}`);
+
     return res.status(200).json({
       payfastUrl,
       params: { ...cleaned, signature },
     });
 
   } catch (err) {
-    console.error('payfast-sign error:', err);
+    console.error('payfast-sign: unexpected error', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
-}
-
-function getTodayISO() {
-  return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 }
