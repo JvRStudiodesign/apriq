@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import PlacesAutocomplete from './PlacesAutocomplete';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { effectiveTier } from '../utils/tier';
 
 const DAILY_LIMIT = 20;
 const FONT = "'Roboto',system-ui,sans-serif";
@@ -92,12 +93,16 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
     setStage('prompt');
   };
 
-  const tier = profile?.tier;
+  const eff = effectiveTier(profile);
+  // AI advisor is unlocked for active Pro and trial users; the trial-day-7
+  // gate stays in place so trial users get a 7-day window of advisor access.
   const trialEnd = profile?.trial_end_date ? new Date(profile.trial_end_date) : null;
-  const trialStart = trialEnd ? new Date(trialEnd.getTime() - 30 * 86400000) : null;
-  const daysSinceTrial = trialStart ? Math.floor((Date.now() - trialStart) / 86400000) : 999;
-  const isLocked = tier === 'free';
-  const isTrialAiExpired = tier === 'trial' && daysSinceTrial >= 7;
+  const trialStart = profile?.trial_started_at
+    ? new Date(profile.trial_started_at)
+    : (trialEnd ? new Date(trialEnd.getTime() - 30 * 86400000) : null);
+  const daysSinceTrial = trialStart ? Math.floor((Date.now() - trialStart.getTime()) / 86400000) : 999;
+  const isLocked = eff === 'free';
+  const isTrialAiExpired = eff === 'trial' && daysSinceTrial >= 7;
   const effectiveUsed = hasUnlimitedAi ? 0 : questionsUsed;
   const questionsRemaining = DAILY_LIMIT - effectiveUsed;
   const atLimit = questionsRemaining <= 0;
@@ -195,7 +200,7 @@ if (stage === 'locked') return (
           <button style={s.closeBtn} onClick={onClose}><XIcon/></button>
         </div>
         <div style={{ ...s.body, justifyContent: 'center', alignItems: 'center' }}>
-          <a href="/billing" style={s.upgradeCard}>
+          <a href="/plans" style={s.upgradeCard}>
             <LockIcon/>
             <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8 }}>
               <p style={{ fontSize: 15, fontWeight: 500, color: '#111111', fontFamily: FONT }}>{isTrialAiExpired ? 'Your AprIQ advisor trial has ended' : 'AprIQ advisor is a Pro feature'}</p>

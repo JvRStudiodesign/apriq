@@ -19,7 +19,7 @@ export default function Upgrade() {
       <h1 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.5rem', color: '#111111' }}>Upgrade</h1>
       {isPro ? (
         <div style={{ background: '#BFD1D6', border: '1px solid #0F4C5C', borderRadius: 16, padding: '1.25rem 1.5rem', color: '#0F4C5C', fontSize: '0.9rem' }}>
-          You are already on Pro. <span onClick={() => navigate('/billing')} style={{ fontWeight: 600, cursor: 'pointer', color: '#0F4C5C', textDecoration: 'underline' }}>Manage your plan →</span>
+          You are already on Pro. <span onClick={() => navigate('/plans')} style={{ fontWeight: 600, cursor: 'pointer', color: '#0F4C5C', textDecoration: 'underline' }}>Manage your plan →</span>
         </div>
       ) : (
         <p style={{ color: '#979899', fontSize: '0.9rem' }}>

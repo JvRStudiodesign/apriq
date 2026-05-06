@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { InstallPWA } from '../components/InstallPWA';
+import { isPro as isProUser } from '../utils/tier';
 
 const card = { background: '#F9FAFA', borderRadius: '16px', padding: '1.5rem', border: '1px solid #E4E5E5', marginBottom: '1rem' };
 const lbl = { display: 'block', fontSize: '0.7rem', fontWeight: '600', color: '#979899', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' };
@@ -13,9 +14,7 @@ const PRO_BADGE = <span style={{ marginLeft: '6px', fontSize: '0.6rem', backgrou
 export default function UserProfile() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const tier = profile?.tier || 'free';
-  const trialEnd = profile?.trial_end_date ? new Date(profile.trial_end_date) : null;
-  const isPro = tier === 'pro' || (tier === 'trial' && trialEnd && trialEnd > new Date());
+  const isPro = isProUser(profile);
 
   const [form, setForm] = useState({ full_name: '', company_name: '', phone: '', profession: '', address: '', newPassword: '', confirmPassword: '' });
   const [logoPreview, setLogoPreview] = useState(null);

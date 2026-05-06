@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { isPro as isProUser } from '../utils/tier';
 
 const FREE_LIMIT = 3;
 const PRO_LIMIT = 15;
@@ -48,7 +49,7 @@ function ClientForm({ initial, onSave, onCancel, saving }) {
 export default function Clients() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const isPro = profile?.tier === 'pro' || (profile?.tier === 'trial' && profile?.trial_end_date && new Date(profile.trial_end_date) > new Date());
+  const isPro = isProUser(profile);
   const limit = isPro ? PRO_LIMIT : FREE_LIMIT;
 
   const [clients, setClients] = useState([]);

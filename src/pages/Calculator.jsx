@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { isPro as isProUser, trialDaysLeft } from '../utils/tier';
 import { calculate } from '../engine/calculator';
 import {
   CATEGORIES, QUALITY, SITE_ACCESS, PROJECT_TYPE,
@@ -339,11 +340,8 @@ export default function Calculator() {
   });
   const [includeAdvisorSummaryInPdf, setIncludeAdvisorSummaryInPdf] = useState(false);
 
-  const tier     = profile?.tier || 'free';
-  const trialEnd = profile?.trial_end_date ? new Date(profile.trial_end_date) : null;
-  const trialOk  = tier === 'trial' && trialEnd && trialEnd > new Date();
-  const isPro    = tier === 'pro' || trialOk;
-  const daysLeft = trialEnd ? Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+  const isPro    = isProUser(profile);
+  const daysLeft = trialDaysLeft(profile);
 
   // Debounce heavy recalculation work so typing/sliders stay responsive.
   // UI inputs update immediately; only the calculated output is slightly delayed.

@@ -12,7 +12,6 @@ import Clients from './pages/Clients';
 import Projects from './pages/Projects';
 import SharedEstimate from './pages/SharedEstimate';
 import Upgrade from './pages/Upgrade';
-import Billing from './pages/Billing';
 import Admin from './pages/Admin';
 import Layout from './components/Layout';
 import PaymentSuccess from './pages/PaymentSuccess';
@@ -63,7 +62,7 @@ export default function App() {
             <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
             <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
-            <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+            <Route path="/billing" element={<Navigate to="/plans" replace />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

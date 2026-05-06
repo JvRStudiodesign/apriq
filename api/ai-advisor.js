@@ -334,21 +334,26 @@ export default async function handler(req, res) {
   try {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('tier, trial_end_date, ai_questions_used, ai_questions_reset_date')
+      .select('tier, trial_end_date, trial_started_at, pro_until, cancelled_at, ai_questions_used, ai_questions_reset_date')
       .eq('id', userId)
       .single();
 
     if (profileError || !profile) return res.status(401).json({ error: 'User not found' });
 
     const today = new Date().toISOString().split('T')[0];
-    const tier  = profile.tier;
+    const now   = Date.now();
+    // Compute effective tier server-side (mirrors src/utils/tier.js).
+    const proActive   = profile.tier === 'pro' && (!profile.pro_until || new Date(profile.pro_until).getTime() > now);
+    const trialActive = profile.tier === 'trial' && profile.trial_end_date && new Date(profile.trial_end_date).getTime() > now;
+    const effective   = proActive ? 'pro' : trialActive ? 'trial' : 'free';
 
-    if (!hasUnlimitedAi && tier === 'free') return res.status(403).json({ error: 'upgrade_required' });
+    if (!hasUnlimitedAi && effective === 'free') return res.status(403).json({ error: 'upgrade_required' });
 
-    if (!hasUnlimitedAi && tier === 'trial' && profile.trial_end_date) {
-      const trialEnd   = new Date(profile.trial_end_date);
-      const trialStart = new Date(trialEnd.getTime() - 30 * 86400000);
-      const daysSince  = Math.floor((Date.now() - trialStart.getTime()) / 86400000);
+    if (!hasUnlimitedAi && effective === 'trial') {
+      const trialStart = profile.trial_started_at
+        ? new Date(profile.trial_started_at)
+        : new Date(new Date(profile.trial_end_date).getTime() - 30 * 86400000);
+      const daysSince = Math.floor((now - trialStart.getTime()) / 86400000);
       if (daysSince >= AI_TRIAL_DAYS) return res.status(403).json({ error: 'trial_ai_expired' });
     }
 
