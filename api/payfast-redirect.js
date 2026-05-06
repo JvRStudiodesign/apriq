@@ -153,6 +153,6 @@ function errorPage(res, code, msg) {
 <body style="font-family:system-ui;padding:2rem;color:#B91C1C">
   <h1>Couldn't start payment</h1>
   <p>${escapeAttr(msg)}</p>
-  <p><a href="/billing">Back to billing</a></p>
+  <p><a href="/plans">Back to plan</a></p>
 </body></html>`);
 }

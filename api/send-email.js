@@ -19,7 +19,7 @@ const TEMPLATES = {
   }),
   payment_failed: (d) => ({
     subject: `Payment failed — AprIQ`,
-    html: `<body style="font-family:-apple-system,sans-serif;background:#f5f5f3;margin:0;padding:2rem 1rem"><div style="max-width:520px;margin:0 auto;background:#fff;border-radius:14px;padding:2rem;border:1px solid #eee"><strong>AprIQ</strong><h2 style="margin:1rem 0">Payment failed.</h2><p style="color:#555;line-height:1.6">Hi ${d.name||''}, your payment could not be processed. Please update your payment details.</p><a href="https://www.apriq.co.za/billing" style="display:inline-block;padding:0.75rem 1.5rem;background:#111;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.875rem;margin-top:1rem">Update billing</a><div style="margin-top:2rem;padding-top:1rem;border-top:1px solid #eee;font-size:0.75rem;color:#aaa">AprIQ &mdash; apriq.co.za</div></div></body>`
+    html: `<body style="font-family:-apple-system,sans-serif;background:#f5f5f3;margin:0;padding:2rem 1rem"><div style="max-width:520px;margin:0 auto;background:#fff;border-radius:14px;padding:2rem;border:1px solid #eee"><strong>AprIQ</strong><h2 style="margin:1rem 0">Payment failed.</h2><p style="color:#555;line-height:1.6">Hi ${d.name||''}, your payment could not be processed. Please update your payment details.</p><a href="https://www.apriq.co.za/plans" style="display:inline-block;padding:0.75rem 1.5rem;background:#111;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.875rem;margin-top:1rem">Update billing</a><div style="margin-top:2rem;padding-top:1rem;border-top:1px solid #eee;font-size:0.75rem;color:#aaa">AprIQ &mdash; apriq.co.za</div></div></body>`
   }),
   cancelled: (d) => ({
     subject: `Subscription cancelled — AprIQ`,

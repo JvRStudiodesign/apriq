@@ -16,9 +16,10 @@ export default function PaymentSuccess() {
   const navigate = useNavigate();
   const { user, profile, fetchProfile } = useAuth();
   const [status, setStatus] = useState('processing'); // 'processing' | 'success' | 'timeout'
-  const startRef = useRef(Date.now());
+  const startRef = useRef(0);
 
   useEffect(() => {
+    if (startRef.current === 0) startRef.current = Date.now();
     if (!user?.id) return;
     if (profile?.tier === 'pro') {
       setStatus('success');
