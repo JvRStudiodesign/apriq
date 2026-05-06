@@ -1,9 +1,17 @@
 // api/payfast-sign.js
-// Builds PayFast payment params + MD5 signature server-side.
-// IMPORTANT: PayFast verifies the signature on the data in the order it
-// receives the POST fields. We therefore (a) sort the cleaned params
-// alphabetically, (b) sign that sorted object, and (c) return that same
-// sorted object so the form is POSTed in the same order.
+// Builds PayFast Custom-Integration payment params + MD5 signature.
+//
+// IMPORTANT (per PayFast staff, github.com/Payfast/payfast-php-sdk/issues/1):
+//   - For the Custom/Onsite form-post integration (what we use), fields must
+//     be signed and POSTed in the documented Custom-Integration order, NOT
+//     alphabetically. Alphabetical (ksort) is only for the API integration.
+//   - The `params` declaration below is already in the correct order:
+//     merchant_id, merchant_key, return_url, cancel_url, notify_url,
+//     name_first, name_last, email_address, m_payment_id, amount,
+//     item_name, item_description, custom_str1, subscription_type,
+//     billing_date, recurring_amount, frequency, cycles.
+//   - Signature is md5( key=urlencode(trim(val)) joined by & + &passphrase=… )
+//   - Empty/blank values are omitted from both the form post and the signature.
 import crypto from 'crypto';
 
 export default function handler(req, res) {
@@ -34,7 +42,7 @@ export default function handler(req, res) {
 
     const mPaymentId = `${userId}-${Date.now()}`;
 
-    // ── Build raw params object ──────────────────────────────────────────────
+    // PayFast Custom-Integration documented field order (DO NOT REORDER).
     const params = {
       merchant_id:       merchantId,
       merchant_key:      merchantKey,
@@ -56,25 +64,19 @@ export default function handler(req, res) {
       cycles:            '0',
     };
 
-    // Drop empty / null / undefined values (PayFast rejects them anyway).
+    // Drop empty / null / undefined values — preserves insertion order.
     const cleaned = Object.fromEntries(
       Object.entries(params).filter(([, v]) => v !== '' && v !== null && v !== undefined)
     );
 
-    // ── Sort alphabetically — same order will be signed AND POSTed ─────────
-    const sorted = Object.keys(cleaned).sort().reduce((acc, key) => {
-      acc[key] = cleaned[key];
-      return acc;
-    }, {});
-
-    // ── Build the exact string PayFast will MD5 on its end ────────────────
-    const { signature, getString } = generateSignature(sorted, passphrase || null);
+    // Sign in insertion order. NO ksort — that's for the API integration only.
+    const { signature, getString } = generateSignature(cleaned, passphrase || null);
 
     const payfastUrl = isSandbox
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
 
-    // Visible in Vercel function logs — paste back here if signatures still mismatch.
+    // Visible in Vercel function logs — paste back if signatures still mismatch.
     console.log(
       `payfast-sign OK — user=${userId} sandbox=${isSandbox} ` +
       `passphrase=${passphrase ? 'yes' : 'no'} sig=${signature.substring(0, 12)}...`
@@ -83,7 +85,7 @@ export default function handler(req, res) {
 
     return res.status(200).json({
       payfastUrl,
-      params: { ...sorted, signature },
+      params: { ...cleaned, signature },
     });
 
   } catch (err) {
@@ -93,8 +95,8 @@ export default function handler(req, res) {
 }
 
 /**
- * Replicates PayFast PHP SDK PFPayment::generateSignature() exactly.
- * Caller passes data in the order it will be POSTed; we do NOT re-sort here.
+ * Replicates PayFast PHP SDK's pfGenerateSignature() — caller is responsible
+ * for passing data in the order it will be POSTed (we do NOT re-sort here).
  */
 function generateSignature(data, passPhrase = null) {
   let pfOutput = '';
@@ -116,10 +118,10 @@ function generateSignature(data, passPhrase = null) {
 }
 
 /**
- * Matches PHP's urlencode():
+ * PHP urlencode():
  *  - space → +
- *  - !  \'  (  )  *  → %21 %27 %28 %29 %2A
- *  - everything else uses encodeURIComponent (which already matches RFC 3986).
+ *  - !  '  (  )  *  → %21 %27 %28 %29 %2A
+ *  - everything else uses encodeURIComponent (matches RFC 3986).
  */
 function phpUrlencode(str) {
   return encodeURIComponent(str)
