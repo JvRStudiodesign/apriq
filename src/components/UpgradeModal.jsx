@@ -74,6 +74,18 @@ export default function UpgradeModal({ isOpen, onClose, user, profile }) {
         form.appendChild(input);
       });
 
+      // DEBUG — log all params before submit (remove after fix)
+      const debugParams = {};
+      form.querySelectorAll('input').forEach(i => { debugParams[i.name] = i.value; });
+      console.log('=== PAYFAST PARAMS ===', JSON.stringify(debugParams, null, 2));
+      console.log('=== PAYFAST URL ===', payfastUrl);
+      alert('DEBUG: Check browser console (F12) for PayFast params before submitting. Click OK to proceed to PayFast.');
+      // DEBUG — log all params before submit (remove after fix)
+      const debugParams = {};
+      form.querySelectorAll('input').forEach(i => { debugParams[i.name] = i.value; });
+      console.log('=== PAYFAST PARAMS ===', JSON.stringify(debugParams, null, 2));
+      console.log('=== PAYFAST URL ===', payfastUrl);
+      alert('DEBUG: Check browser console (F12) for PayFast params before submitting. Click OK to proceed to PayFast.');
       document.body.appendChild(form);
       form.submit();
 
