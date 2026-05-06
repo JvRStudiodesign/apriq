@@ -233,14 +233,19 @@ function parseFormBody(str) {
   return out;
 }
 
+// Pro is valid for ~1 month after each successful charge. PayFast posts
+// `billing_date` as the day this transaction was billed (i.e. today for
+// the first charge, today again for each renewal) — NOT the next charge
+// date. So we always anchor on the latest of (billing_date, now) and add
+// 1 month, giving the user at least 30 days of Pro from this ITN.
 function computeProUntil(billing_date) {
+  let base = new Date();
   if (billing_date && /^\d{4}-\d{2}-\d{2}$/.test(billing_date)) {
-    const d = new Date(`${billing_date}T00:00:00Z`);
-    if (!Number.isNaN(d.getTime())) return d.toISOString();
+    const d = new Date(`${billing_date}T12:00:00Z`); // midday UTC to avoid TZ edges
+    if (!Number.isNaN(d.getTime()) && d.getTime() > base.getTime()) base = d;
   }
-  const d = new Date();
-  d.setMonth(d.getMonth() + 1);
-  return d.toISOString();
+  base.setMonth(base.getMonth() + 1);
+  return base.toISOString();
 }
 
 function phpUrlencode(str) {
