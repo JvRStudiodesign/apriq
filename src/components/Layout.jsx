@@ -34,24 +34,32 @@ function Header({ onOpenModal, isLoggedIn }) {
     setSigningOut(true);
     setProfileOpen(false);
     setMenuOpen(false);
+
+    // Race signOut against a 1.5s timeout — if the auth server is slow we
+    // don't want the user stranded on a half-signed-out page.
+    const localSignOut = supabase.auth.signOut({ scope: 'local' }).catch((e) => {
+      console.warn('signOut error (continuing):', e);
+    });
+    await Promise.race([
+      localSignOut,
+      new Promise((r) => setTimeout(r, 1500)),
+    ]);
+
+    // Force-clear any cached supabase tokens so even if signOut silently
+    // failed, the next page load is unauthenticated.
     try {
-      // 'local' scope is faster than the default 'global' (which round-trips
-      // to Supabase auth server) and matches what users expect when the auth
-      // server is slow / unreachable.
-      await supabase.auth.signOut({ scope: 'local' });
-    } catch (e) {
-      // Even if signOut fails, force-clear local storage and continue —
-      // the user clicked sign-out and we should never leave them stranded.
-      console.warn('signOut error (continuing anyway):', e);
-    } finally {
-      try {
-        Object.keys(localStorage)
-          .filter(k => k.startsWith('sb-') || k.startsWith('supabase'))
-          .forEach(k => localStorage.removeItem(k));
-      } catch { /* ignore */ }
-      setSigningOut(false);
-      navigate('/home', { replace: true });
-    }
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('sb-') || k.startsWith('supabase'))
+        .forEach(k => localStorage.removeItem(k));
+      Object.keys(sessionStorage)
+        .filter(k => k.startsWith('sb-') || k.startsWith('supabase'))
+        .forEach(k => sessionStorage.removeItem(k));
+    } catch { /* ignore */ }
+
+    // Hard navigate — this guarantees React state, AuthContext, and any
+    // cached page state are fully reset. (React-router navigate sometimes
+    // gets superseded by parallel state updates and the user 'stays put'.)
+    window.location.replace('/home');
   }
 
   return (

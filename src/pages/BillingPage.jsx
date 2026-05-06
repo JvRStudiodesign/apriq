@@ -235,6 +235,21 @@ export default function BillingPage() {
       <section style={{ ...s.section, paddingBottom: 80 }}><div className="wrap" ref={r3}><div style={s.panel} className="fi-group">
         <h2 style={s.h2} className="fi">Manage subscription</h2>
 
+        {/* Status banner — always visible so user can see the actual state */}
+        {(subActive || cancelledButActive || trialActive) && (
+          <div style={{
+            ...s.statusBanner,
+            background: subActive && !cancelledButActive ? '#ECFDF5' : cancelledButActive ? '#FEF3C7' : '#EFF6FF',
+            borderColor:  subActive && !cancelledButActive ? '#A7F3D0' : cancelledButActive ? '#FDE68A' : '#BFDBFE',
+            color:        subActive && !cancelledButActive ? '#065F46' : cancelledButActive ? '#92400E' : '#1E40AF',
+          }} className="fi">
+            <strong>Status:</strong>{' '}
+            {subActive && !cancelledButActive && `Active — renews ${formatDate(profile?.pro_until)}`}
+            {cancelledButActive && `Cancelled — Pro access until ${formatDate(profile?.pro_until)}`}
+            {trialActive && `Free trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} remaining`}
+          </div>
+        )}
+
         <div style={s.manageGrid} className="fi">
           {/* Replace card — only when there's an active sub */}
           {subActive && !cancelledButActive && (
@@ -278,6 +293,26 @@ export default function BillingPage() {
             </div>
           )}
 
+          {/* Cancel — placed prominently *inside* the manage grid for active subs */}
+          {subActive && !cancelledButActive && (
+            <div style={s.manageCard}>
+              <div style={{ ...s.manageIcon, borderColor: '#FCA5A5', background: '#FEF2F2' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={s.manageLabel}>Cancel subscription</p>
+                <p style={s.manageSub}>Stops future billing. You keep Pro access until {formatDate(profile?.pro_until)}.</p>
+              </div>
+              <button
+                style={{ ...s.manageBtn, color: '#DC2626', borderColor: '#FCA5A5' }}
+                onClick={handleCancel}
+                disabled={busy === 'cancel'}
+              >
+                {busy === 'cancel' ? 'Cancelling…' : 'Cancel'}
+              </button>
+            </div>
+          )}
+
           {/* Help */}
           <div style={s.manageCard}>
             <div style={s.manageIcon}>
@@ -293,20 +328,6 @@ export default function BillingPage() {
             }}>Contact support</button>
           </div>
         </div>
-
-        {/* Cancel — only for an active (uncancelled) Pro subscription */}
-        {subActive && !cancelledButActive && (
-          <div style={s.cancelRow} className="fi">
-            <hr style={s.divider} />
-            <p style={s.cancelNote}>
-              Cancelling your subscription will take effect at the end of your current billing period.
-              You will retain Pro access until then.
-            </p>
-            <button style={s.cancelBtn} onClick={handleCancel} disabled={busy === 'cancel'}>
-              {busy === 'cancel' ? 'Cancelling…' : 'Cancel subscription'}
-            </button>
-          </div>
-        )}
       </div></div></section>
     </div>
   );
@@ -344,8 +365,9 @@ const s = {
   manageLabel: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 13, fontWeight: 500, color: '#111111', marginBottom: 2 },
   manageSub: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 12, color: '#979899' },
   manageBtn: { marginLeft: 'auto', padding: '8px 18px', border: '1px solid #E4E5E5', borderRadius: 10, background: '#F9FAFA', fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 12, color: '#111111', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' },
-  cancelRow: { marginTop: 4 },
-  divider: { border: 'none', borderTop: '1px solid #E4E5E5', margin: '24px 0 20px' },
-  cancelNote: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 12, color: '#979899', lineHeight: 1.6, marginBottom: 16, maxWidth: 480 },
-  cancelBtn: { padding: '9px 20px', border: '1px solid #E4E5E5', borderRadius: 10, background: 'transparent', fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 12, color: '#979899', cursor: 'pointer' },
+  statusBanner: {
+    border: '1px solid', borderRadius: 10, padding: '0.75rem 1rem',
+    fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 13, lineHeight: 1.5,
+    marginBottom: 16,
+  },
 };
