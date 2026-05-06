@@ -48,7 +48,9 @@ export default async function handler(req, res) {
 
   try {
     const passphrase = (process.env.PAYFAST_PASSPHRASE || '').trim();
-    const isSandbox  = process.env.PAYFAST_SANDBOX === 'true';
+    // Default to sandbox unless explicitly set to 'false' — safer default in
+    // case the env var is missing or misconfigured in a new deployment.
+    const isSandbox  = process.env.PAYFAST_SANDBOX !== 'false';
     const validateHost = isSandbox ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
 
     // ── Step 1: Verify signature ─────────────────────────────────────────────

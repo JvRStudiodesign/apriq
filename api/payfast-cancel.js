@@ -52,7 +52,9 @@ export default async function handler(req, res) {
     // CSRF middleware) — hitting it returns 419 CSRF mismatch errors.
     const merchantId  = (process.env.PAYFAST_MERCHANT_ID  || '').trim();
     const passphrase  = (process.env.PAYFAST_PASSPHRASE   || '').trim();
-    const isSandbox   = process.env.PAYFAST_SANDBOX === 'true';
+    // Default to sandbox unless explicitly set to 'false' — must match
+    // payfast-itn.js / payfast-redirect.js so all three agree on env state.
+    const isSandbox   = process.env.PAYFAST_SANDBOX !== 'false';
     const apiHost     = 'api.payfast.co.za';
     const testingFlag = isSandbox ? '?testing=true' : '';
     const path        = `/subscriptions/${encodeURIComponent(profile.payfast_token)}/cancel${testingFlag}`;
