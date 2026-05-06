@@ -9,8 +9,8 @@ export default function handler(req, res) {
   try {
     const merchantId  = process.env.PAYFAST_MERCHANT_ID;
     const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
-    const passphrase  = process.env.PAYFAST_PASSPHRASE || '';
-    const appUrl      = process.env.APP_URL || 'https://www.apriq.co.za';
+    const passphrase  = (process.env.PAYFAST_PASSPHRASE || '').trim();
+    const appUrl      = (process.env.APP_URL || 'https://www.apriq.co.za').trim();
     const isSandbox   = process.env.PAYFAST_SANDBOX !== 'false';
 
     if (!merchantId || !merchantKey) {
@@ -27,15 +27,16 @@ export default function handler(req, res) {
 
     const mPaymentId = `${userId}-${Date.now()}`;
 
+    // Build params object — merchant_key included (required for signature)
     const params = {
-      merchant_id:       merchantId,
-      merchant_key:      merchantKey,
+      merchant_id:       merchantId.trim(),
+      merchant_key:      merchantKey.trim(),
       return_url:        `${appUrl}/payment-success`,
       cancel_url:        `${appUrl}/payment-cancel`,
       notify_url:        `${appUrl}/api/payfast-itn`,
-      name_first:        firstName,
-      name_last:         lastName,
-      email_address:     email,
+      name_first:        firstName.trim(),
+      name_last:         lastName.trim(),
+      email_address:     email.trim(),
       m_payment_id:      mPaymentId,
       amount:            '79.00',
       item_name:         'AprIQ Pro Monthly',
@@ -48,33 +49,20 @@ export default function handler(req, res) {
       cycles:            '0',
     };
 
-    // Remove empty/null/undefined values
+    // Remove empty string / null / undefined values
     const cleaned = Object.fromEntries(
       Object.entries(params).filter(([, v]) => v !== '' && v !== null && v !== undefined)
     );
 
-    // Signature string excludes merchant_key — PayFast verifies without it
-    const sigParams = Object.fromEntries(
-      Object.entries(cleaned).filter(([k]) => k !== 'merchant_key')
-    );
-
-    // PHP urlencode compatible — sort alphabetically
-    const paramString = Object.keys(sigParams)
-      .sort()
-      .map(k => `${k}=${phpUrlencode(String(sigParams[k]))}`)
-      .join('&');
-
-    const stringToHash = passphrase
-      ? `${paramString}&passphrase=${phpUrlencode(passphrase)}`
-      : paramString;
-
-    const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
+    // Generate signature — matches PayFast PHP SDK exactly:
+    // ksort → urlencode(trim(val)) → join with & → append passphrase → md5
+    const signature = generateSignature(cleaned, passphrase || null);
 
     const payfastUrl = isSandbox
       ? 'https://sandbox.payfast.co.za/eng/process'
       : 'https://www.payfast.co.za/eng/process';
 
-    console.log(`payfast-sign OK — user=${userId} sandbox=${isSandbox}`);
+    console.log(`payfast-sign OK — user=${userId} sandbox=${isSandbox} sig=${signature.substring(0,8)}...`);
 
     return res.status(200).json({
       payfastUrl,
@@ -87,9 +75,46 @@ export default function handler(req, res) {
   }
 }
 
-// Matches PHP urlencode: spaces as +, RFC 3986 encoding for others
+/**
+ * Replicates PayFast PHP SDK generateSignature() exactly.
+ * Ref: pfpayments/payfast-php-sdk — PFPayment.php
+ */
+function generateSignature(data, passPhrase = null) {
+  // ksort equivalent — alphabetical key sort
+  const sorted = Object.keys(data).sort().reduce((acc, key) => {
+    acc[key] = data[key];
+    return acc;
+  }, {});
+
+  let pfOutput = '';
+  for (const [key, val] of Object.entries(sorted)) {
+    const trimmed = String(val).trim();
+    if (trimmed !== '') {
+      pfOutput += `${key}=${phpUrlencode(trimmed)}&`;
+    }
+  }
+
+  // Remove trailing &
+  let getString = pfOutput.slice(0, -1);
+
+  if (passPhrase !== null && passPhrase !== '') {
+    getString += `&passphrase=${phpUrlencode(passPhrase.trim())}`;
+  }
+
+  return crypto.createHash('md5').update(getString).digest('hex');
+}
+
+/**
+ * PHP urlencode equivalent.
+ * PHP encodes space as + and uses %XX for everything else.
+ * encodeURIComponent leaves ! ' ( ) * unencoded — PHP encodes them.
+ */
 function phpUrlencode(str) {
   return encodeURIComponent(str)
     .replace(/%20/g, '+')
-    .replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+    .replace(/!/g,  '%21')
+    .replace(/'/g,  '%27')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29')
+    .replace(/\*/g, '%2A');
 }
