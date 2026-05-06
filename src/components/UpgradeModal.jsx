@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 const BRAND = {
   teal:   '#0F4C5C',
   black:  '#111111',
@@ -9,6 +11,9 @@ const BRAND = {
 };
 
 export default function UpgradeModal({ isOpen, onClose, user, profile }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   if (!isOpen) return null;
 
   const userId   = user?.id || '';
@@ -17,7 +22,34 @@ export default function UpgradeModal({ isOpen, onClose, user, profile }) {
   const firstName = fullName.split(' ')[0] || '';
   const lastName  = fullName.split(' ').slice(1).join(' ') || '';
 
-  const canSubmit = !!userId && !!email;
+  const canSubmit = !!userId && !!email && !loading;
+
+  async function handleSubscribe() {
+    setError(null);
+    if (!userId || !email) {
+      setError('You must be logged in to upgrade.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/payfast-redirect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, email, firstName, lastName }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Server error ${res.status}`);
+      }
+      const { url } = await res.json();
+      if (!url) throw new Error('Server returned no PayFast URL.');
+      window.location.assign(url);
+    } catch (err) {
+      console.error('Subscribe failed:', err);
+      setError(err.message || 'Could not start payment. Please try again.');
+      setLoading(false);
+    }
+  }
 
   return (
     <div
@@ -75,38 +107,27 @@ export default function UpgradeModal({ isOpen, onClose, user, profile }) {
           </ul>
         </div>
 
-        {!canSubmit && (
+        {(error || (!userId || !email)) && (
           <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#B91C1C' }}>
-            You must be logged in to upgrade.
+            {error || 'You must be logged in to upgrade.'}
           </div>
         )}
 
-        {/*
-          Real HTML form post → /api/payfast-redirect → server-rendered
-          self-submitting page → PayFast.  Avoids Chromium "user activation
-          consumed" issue that silently blocks form.submit() after `await`.
-        */}
-        <form action="/api/payfast-redirect" method="POST" style={{ margin: 0 }}>
-          <input type="hidden" name="userId"    value={userId} />
-          <input type="hidden" name="email"     value={email} />
-          <input type="hidden" name="firstName" value={firstName} />
-          <input type="hidden" name="lastName"  value={lastName} />
-
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            style={{
-              width: '100%',
-              background: canSubmit ? BRAND.teal : BRAND.light,
-              color: BRAND.bg, border: 'none', borderRadius: 10,
-              padding: '0.875rem', fontSize: '1rem', fontWeight: 700,
-              cursor: canSubmit ? 'pointer' : 'not-allowed',
-              fontFamily: 'Roboto, sans-serif',
-            }}
-          >
-            Subscribe — R79/month
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={handleSubscribe}
+          disabled={!canSubmit}
+          style={{
+            width: '100%',
+            background: canSubmit ? BRAND.teal : BRAND.light,
+            color: BRAND.bg, border: 'none', borderRadius: 10,
+            padding: '0.875rem', fontSize: '1rem', fontWeight: 700,
+            cursor: canSubmit ? 'pointer' : 'not-allowed',
+            fontFamily: 'Roboto, sans-serif',
+          }}
+        >
+          {loading ? 'Redirecting to PayFast…' : 'Subscribe — R79/month'}
+        </button>
 
         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: BRAND.grey, marginTop: '0.75rem', marginBottom: 0 }}>
           Secured by PayFast · Cancel anytime from your billing page

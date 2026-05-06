@@ -90,18 +90,20 @@ export default function handler(req, res) {
 
     const finalParams = { ...cleaned, signature };
 
-    // PayFast /eng/process accepts both POST and GET; the signature is
-    // computed identically. Earlier we used a self-submitting POST form,
-    // but POST navigations were being blocked client-side (stale SW /
-    // extension / CSP — multiple suspects). GET via redirect is rock-solid.
+    // PayFast /eng/process accepts both POST and GET; the MD5 signature is
+    // computed identically for both. Earlier iterations used a self-
+    // submitting form / 303 redirect, but multiple browser-side things
+    // (stale SW, extensions, CSP) ate the navigation silently. The most
+    // bullet-proof path is: return JSON with the fully-signed GET URL,
+    // and let the client do `window.location.href = url`.
     const queryString = Object.entries(finalParams)
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
       .join('&');
-    const getUrl = `${payfastUrl}?${queryString}`;
+    const url = `${payfastUrl}?${queryString}`;
 
     res.setHeader('Cache-Control', 'no-store');
-    res.setHeader('Location', getUrl);
-    return res.status(303).end();
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({ url });
 
   } catch (err) {
     console.error('payfast-redirect error:', err);
