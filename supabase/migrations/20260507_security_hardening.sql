@@ -62,8 +62,12 @@ RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  -- Service role / SQL editor maintenance can still update privileged fields.
-  IF auth.role() = 'service_role' THEN
+  -- Allow server-side maintenance contexts:
+  -- - PostgREST service role
+  -- - Supabase dashboard / SQL editor (typically postgres / supabase_admin)
+  IF auth.role() = 'service_role'
+     OR current_user IN ('postgres', 'supabase_admin')
+  THEN
     RETURN NEW;
   END IF;
 
