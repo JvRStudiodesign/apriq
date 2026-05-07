@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { logoUrlToDataUri } from '../utils/logoPdf';
 import { isPro as isProUser } from '../utils/tier';
 
 const FREE_LIMIT = 3;
@@ -88,11 +89,18 @@ function PDFBtn({ estimate, project, profile, userEmail }) {
         import('@react-pdf/renderer'),
         import('../components/EstimatePDF'),
       ]);
+
+      let logoPdf = '';
+      if (profile?.logo_url) {
+        logoPdf = await logoUrlToDataUri(profile.logo_url);
+      }
+      const ud = { ...profile, email: userEmail, logo_url: logoPdf || '' };
+
       const doc = (
         <EstimatePDFComponent
           inputs={inputs}
           result={result}
-          userDetails={{ ...profile, email: userEmail }}
+          userDetails={ud}
           project={project}
           client={project.clients || null}
           reference={ref}
@@ -146,10 +154,34 @@ export default function Projects() {
     if (!user?.id) return;
     setLoading(true);
     const [{ data: p }, { data: c }] = await Promise.all([
-      supabase.from('projects').select('*, clients(company_name,contact_name,email,address), project_estimates(id,total_project_cost,inputs_json,result_json,saved_at,is_latest)').eq('user_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('projects').select('*, clients(company_name,contact_name,email,address)').eq('user_id', user.id).order('created_at', { ascending: false }),
       supabase.from('clients').select('id,company_name').eq('user_id', user.id).order('company_name'),
     ]);
-    setProjects((p || []).map(proj => ({ ...proj, latestEstimate: (proj.project_estimates || []).find(e => e.is_latest) || null })));
+    const projList = p || [];
+    const ids = projList.map((pr) => pr.id);
+    const byProjectId = {};
+    if (ids.length > 0) {
+      const { data: rows } = await supabase
+        .from('estimates')
+        .select('id, project_id, total_project_cost, inputs_json, result_json, created_at, is_latest, included_in_project')
+        .eq('user_id', user.id)
+        .in('project_id', ids);
+      for (const row of rows || []) {
+        if (!byProjectId[row.project_id]) byProjectId[row.project_id] = [];
+        byProjectId[row.project_id].push(row);
+      }
+    }
+
+    const mapped = projList.map((proj) => {
+      const list = byProjectId[proj.id] || [];
+      const inWorkspace = list.filter((e) => e.included_in_project !== false);
+      const latestEstimate =
+        inWorkspace.find((e) => e.is_latest)
+        || [...inWorkspace].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0]
+        || null;
+      return { ...proj, latestEstimate };
+    });
+    setProjects(mapped);
     setClients(c || []);
     setLoading(false);
   }, [user?.id]);
@@ -173,7 +205,7 @@ export default function Projects() {
 
   async function handleDelete(id) {
     if (!confirm('Delete this project and all its saved estimates?')) return;
-    await supabase.from('project_estimates').delete().eq('project_id', id);
+    await supabase.from('estimates').delete().eq('project_id', id);
     await supabase.from('projects').delete().eq('id', id);
     load();
   }
@@ -242,7 +274,11 @@ export default function Projects() {
                 <div>
                   <p style={{ fontSize:'0.7rem', color:'#aaa', marginBottom:'2px' }}>Latest estimate</p>
                   <p style={{ fontSize:'1rem', fontWeight:'700', color:'#111111' }}>{fmtZAR(proj.latestEstimate.total_project_cost)}</p>
-                  <p style={{ fontSize:'0.68rem', color:'#bbb', marginTop:'1px' }}>{new Date(proj.latestEstimate.saved_at).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' })}</p>
+                  <p style={{ fontSize:'0.68rem', color:'#bbb', marginTop:'1px' }}>{
+                    (proj.latestEstimate.created_at || proj.latestEstimate.saved_at)
+                      ? new Date(proj.latestEstimate.created_at || proj.latestEstimate.saved_at).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' })
+                      : '—'
+                  }</p>
                 </div>
                 <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
                   <button onClick={() => navigate(`/?edit=${proj.latestEstimate.id}`)} style={{ padding:'6px 12px', borderRadius:'9px', border:'1.5px solid #111111', background:'#F9FAFA', fontSize:'0.78rem', fontWeight:'500', cursor:'pointer', fontFamily:'inherit', color:'#111111' }}>

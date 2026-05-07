@@ -29,13 +29,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function fetchProfile(userId) {
-    // Try profiles first (new schema), fall back to users (old schema)
-    let { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (!data) {
-      const res = await supabase.from('users').select('*').eq('id', userId).single();
-      data = res.data;
-    }
-    setProfile(data);
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+    if (error) console.warn('fetchProfile:', error.message);
+    setProfile(data ?? null);
     // Tier is always read from server profile — never cached locally
     // Trial email triggers — fire-and-forget after profile loads
     if (data) {

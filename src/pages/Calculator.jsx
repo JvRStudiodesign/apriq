@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef, Suspense, lazy } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { isPro as isProUser, trialDaysLeft } from '../utils/tier';
+import { logoUrlToDataUri } from '../utils/logoPdf';
+import { isPro as isProUser } from '../utils/tier';
 import { calculate } from '../engine/calculator';
 import {
   CATEGORIES, QUALITY, SITE_ACCESS, PROJECT_TYPE,
@@ -36,6 +37,24 @@ function fmtX(n) {
   if (!v || isNaN(v)) return '(x 1.00)';
   return `(x ${v.toFixed(2)})`;
 }
+
+/** Parse JSON columns that may arrive as JSONB objects or legacy text. */
+function parseStoredJson(raw) {
+  if (raw == null) return null;
+  if (typeof raw === 'object') return raw;
+  if (typeof raw === 'string') {
+    try {
+      const o = JSON.parse(raw);
+      return o && typeof o === 'object' ? o : null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/** Max simultaneous “workspace” saves per project; archived rows stay in DB. */
+const ESTIMATE_WORKSPACE_LIMIT = 5;
 
 function BtnGroup({ label, value, onChange, options, locked, cols, getDesc }) {
   const desc = getDesc ? getDesc(value) : options.find(o => o.value === value)?.desc || null;
@@ -306,6 +325,7 @@ function useDebouncedValue(value, delayMs) {
 
 export default function Calculator() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, profile } = useAuth();
   const estimatedStartDateRef = useRef(null);
   const [inputs, setInputs]   = useState(DEFAULT);
@@ -322,7 +342,6 @@ export default function Calculator() {
   const [clients, setClients]       = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [pdfRef] = useState('APR-' + Date.now().toString(36).toUpperCase());
-  const [editEstimateId, setEditEstimateId]   = useState(null);
   const [showNewProj, setShowNewProj] = useState(false);
   const [showNewClientInCalc, setShowNewClientInCalc] = useState(false);
   const [newProjForm, setNewProjForm] = useState({ project_name:'', reference_number:'', address:'', client_id:'' });
@@ -341,7 +360,6 @@ export default function Calculator() {
   const [includeAdvisorSummaryInPdf, setIncludeAdvisorSummaryInPdf] = useState(false);
 
   const isPro    = isProUser(profile);
-  const daysLeft = trialDaysLeft(profile);
 
   // Debounce heavy recalculation work so typing/sliders stay responsive.
   // UI inputs update immediately; only the calculated output is slightly delayed.
@@ -352,10 +370,15 @@ export default function Calculator() {
   useEffect(() => {
     if (!user?.id) return;
     loadProjectsAndClients();
-    const params = new URLSearchParams(window.location.search);
-    const editId = params.get('edit');
-    if (editId) loadEstimate(editId);
   }, [user?.id]);
+
+  // Re-run when navigating from Projects with ?edit=… so inputs always reload.
+  useEffect(() => {
+    if (!user?.id) return;
+    const editId = new URLSearchParams(location.search).get('edit');
+    if (!editId) return;
+    loadEstimate(editId);
+  }, [user?.id, location.search]);
 
   async function loadProjectsAndClients() {
     if (!user?.id) return;
@@ -368,17 +391,22 @@ export default function Calculator() {
   }
 
   async function loadEstimate(id) {
-    // `estimates` is the canonical source of truth. The legacy
-    // `project_estimates` table is no longer written to and is dropped by
-    // the 20260507 migration.
-    const res = await supabase.from('estimates').select('*').eq('id', id).single();
-    const data = res.data;
-    if (!data) return;
-    const saved = typeof data.inputs_json === 'string' ? JSON.parse(data.inputs_json) : data.inputs_json;
-    if (saved && Object.keys(saved).length > 0) {
-      setInputs({ ...DEFAULT, ...saved });
-      setNumCats([saved.use1Category, saved.use2Category, saved.use3Category].filter(Boolean).length || 1);
+    const { data, error } = await supabase.from('estimates').select('*').eq('id', id).maybeSingle();
+    if (error) {
+      console.error('loadEstimate:', error.code, error.message);
+      return;
     }
+    if (!data) {
+      console.warn('loadEstimate: no estimate row for id', id);
+      return;
+    }
+    const saved = parseStoredJson(data.inputs_json);
+    if (!saved || Object.keys(saved).length === 0) {
+      console.warn('loadEstimate: empty inputs_json');
+      return;
+    }
+    setInputs({ ...DEFAULT, ...saved });
+    setNumCats([saved.use1Category, saved.use2Category, saved.use3Category].filter(Boolean).length || 1);
     if (data.project_id) setSelectedProjectId(data.project_id);
   }
 
@@ -472,10 +500,48 @@ export default function Calculator() {
     const selectedProject = projects.find(p => p.id === selectedProjectId);
     const ref = selectedProject?.reference_number || pdfRef;
 
-    // Mark all previous estimates for this project as not latest, then
-    // insert the new version. We never delete estimates — full history is
-    // retained until the user deletes their account (FK CASCADE on
-    // auth.users(id) takes care of that automatically).
+    // Max ESTIMATE_WORKSPACE_LIMIT “active” rows per project — older rows stay
+    // in the DB when user sets included_in_project = false via the prompt below.
+    const { data: wsRows, error: wsErr } = await supabase
+      .from('estimates')
+      .select('id, created_at, total_project_cost')
+      .eq('project_id', selectedProjectId)
+      .eq('user_id', user.id)
+      .or('included_in_project.is.null,included_in_project.eq.true')
+      .order('created_at', { ascending: true });
+    if (wsErr) console.error('workspace list error:', wsErr);
+
+    if ((wsRows?.length || 0) >= ESTIMATE_WORKSPACE_LIMIT) {
+      const lines = wsRows.map((r, i) =>
+        `${i + 1}. ${new Date(r.created_at || 0).toLocaleString()} — ${fmtZAR(r.total_project_cost)}`,
+      ).join('\n');
+      const ans = window.prompt(
+        `This project already has ${ESTIMATE_WORKSPACE_LIMIT} estimates in your workspace.\n` +
+          'Pick one to archive (still kept in our database).\nEnter 1–5:\n\n' +
+          `${lines}`,
+      );
+      if (ans === null || ans === '') {
+        setSaving(false);
+        return;
+      }
+      const idx = parseInt(ans, 10) - 1;
+      if (Number.isNaN(idx) || idx < 0 || idx >= wsRows.length) {
+        alert('Invalid choice. Save cancelled.');
+        setSaving(false);
+        return;
+      }
+      const { error: archErr } = await supabase
+        .from('estimates')
+        .update({ included_in_project: false })
+        .eq('id', wsRows[idx].id);
+      if (archErr) {
+        console.error('archive estimate:', archErr);
+        alert(`Could not archive slot: ${archErr.message}`);
+        setSaving(false);
+        return;
+      }
+    }
+
     const { error: markErr } = await supabase
       .from('estimates')
       .update({ is_latest: false })
@@ -483,12 +549,6 @@ export default function Calculator() {
       .eq('user_id', user.id);
     if (markErr) console.error('Mark not-latest error:', markErr);
 
-    // Canonical insert: minimal columns the table is guaranteed to have,
-    // plus the FULL inputs + result blobs as JSONB. Every category,
-    // multiplier, base rate, breakdown line and adjustment is preserved
-    // verbatim inside inputs_json + result_json, so no information is lost
-    // even though we no longer mirror dedicated columns. total_project_cost
-    // stays as a top-level column for sorting / dashboard queries.
     const payload = {
       user_id: user.id,
       project_id: selectedProjectId,
@@ -500,11 +560,34 @@ export default function Calculator() {
       is_latest: true,
       shared: false,
       pdf_generated: false,
+      included_in_project: true,
+      building_category: inputs.use1Category,
+      building_subtype: inputs.use1Subtype,
+      floor_area: inputs.floorArea,
+      is_mixed_use: numCats > 1,
+      quality_multiplier: result.qualityMultiplier,
+      site_access_multiplier: result.siteMultiplier,
+      project_type_multiplier: result.projectTypeMultiplier,
+      complexity_multiplier: result.complexityMultiplier,
+      land_type: inputs.landProcurementType,
+      land_area: inputs.landArea,
+      contingency_pct: inputs.contingencyPct * 100,
+      profit_pct: inputs.profitPct * 100,
+      fees_pct: inputs.feesPct * 100,
+      vat_pct: inputs.vatPct * 100,
+      base_construction_cost: result.constructionCost,
+      land_cost: result.landProcurementCost,
+      contingency_amount: result.contingencyAmount,
+      profit_amount: result.contractorProfit,
+      fees_amount: result.professionalFees,
+      vat_amount: result.vatAmount,
+      escalated_total: result.escalatedTotal,
+      cost_breakdown: result.elementBreakdown,
     };
     const { error: insErr } = await supabase.from('estimates').insert(payload);
     if (insErr) {
       console.error('Estimate save error:', insErr);
-      alert('Could not save the estimate. Please try again.');
+      alert(`Could not save the estimate (${insErr.message || insErr.code || 'unknown error'}). If this persists, run the latest Supabase migration (included_in_project column).`);
       setSaving(false);
       return;
     }
@@ -592,29 +675,11 @@ export default function Calculator() {
         import('../components/EstimatePDF'),
       ]);
 
-      // Pre-fetch the company logo as a data URL before rendering the PDF.
-      // @react-pdf/renderer's <Image src=...> sometimes fails on remote
-      // Supabase Storage URLs (CORS, redirects, cache-busters) — pulling
-      // the bytes ourselves and passing a data: URI is bullet-proof.
       let logoForPdf = '';
       if (userDetails?.logo_url) {
-        try {
-          const r = await fetch(userDetails.logo_url, { cache: 'no-store' });
-          if (r.ok) {
-            const buf = await r.arrayBuffer();
-            const bytes = new Uint8Array(buf);
-            let binary = '';
-            for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-            const b64 = btoa(binary);
-            const ct = (r.headers.get('content-type') || 'image/png').split(';')[0].trim();
-            logoForPdf = `data:${ct};base64,${b64}`;
-          }
-        } catch (e) {
-          console.warn('Could not pre-fetch logo for PDF, falling back to URL:', e);
-          logoForPdf = userDetails.logo_url;
-        }
+        logoForPdf = await logoUrlToDataUri(userDetails.logo_url);
       }
-      const userDetailsForPdf = { ...userDetails, logo_url: logoForPdf };
+      const userDetailsForPdf = { ...userDetails, logo_url: logoForPdf || userDetails.logo_url };
 
       const doc = (
         <EstimatePDFComponent
