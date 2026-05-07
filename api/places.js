@@ -1,10 +1,17 @@
+import { rateLimitAsync, getClientIP } from './_rate-limit.js';
+
 export const config = { runtime: 'nodejs' };
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
+  const ip = getClientIP(req);
+  const rl = await rateLimitAsync(`places:${ip}`, 60, 60000);
+  if (!rl.allowed) return res.status(429).json({ error: 'Too many requests' });
+
   const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
   if (!q || q.length < 2) return res.status(400).json({ error: 'Query too short' });
+  if (q.length > 120) return res.status(413).json({ error: 'Query too long' });
 
   const key = process.env.GOOGLE_PLACES_KEY;
   if (!key) return res.status(503).json({ error: 'Places not configured' });

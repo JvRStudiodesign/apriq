@@ -14,16 +14,36 @@
 // Field order: PayFast Custom-Integration documented order (NOT
 // alphabetical). Alphabetical (ksort) is for their API integration only.
 import crypto from 'crypto';
+import { rateLimitAsync, getClientIP } from './_rate-limit.js';
 
 export const config = { runtime: 'nodejs' };
 
-export default function handler(req, res) {
+async function getSessionUserIdFromBearer(req) {
+  const supabaseUrl = (process.env.SUPABASE_URL || '').trim();
+  const serviceKey  = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  const authHeader  = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!supabaseUrl || !serviceKey || !token) return null;
+
+  const r = await fetch(`${supabaseUrl}/auth/v1/user`, {
+    headers: { apikey: serviceKey, Authorization: `Bearer ${token}` },
+  });
+  if (!r.ok) return null;
+  const u = await r.json();
+  return u?.id || null;
+}
+
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).send('Method not allowed');
   }
 
   try {
+    const ip = getClientIP(req);
+    const rl = await rateLimitAsync(`payfast_redirect:${ip}`, 10, 60000);
+    if (!rl.allowed) return errorPage(res, 429, 'Too many requests. Please try again in a minute.');
+
     const merchantId  = (process.env.PAYFAST_MERCHANT_ID  || '').trim();
     const merchantKey = (process.env.PAYFAST_MERCHANT_KEY || '').trim();
     const passphrase  = (process.env.PAYFAST_PASSPHRASE   || '').trim();
@@ -38,14 +58,18 @@ export default function handler(req, res) {
     }
 
     const body = req.body || {};
-    const userId    = String(body.userId    || '').trim();
+    const userId = await getSessionUserIdFromBearer(req);
     const email     = String(body.email     || '').trim();
     const firstName = String(body.firstName || '').trim();
     const lastName  = String(body.lastName  || '').trim();
 
-    if (!userId || !email) {
-      console.error('payfast-redirect: missing userId or email in body');
-      return errorPage(res, 400, 'Missing required user details. Please log in again.');
+    if (!userId) {
+      console.warn('payfast-redirect: missing/invalid bearer session');
+      return errorPage(res, 401, 'Please sign in again and retry your upgrade.');
+    }
+    if (!email) {
+      console.error('payfast-redirect: missing email in body');
+      return errorPage(res, 400, 'Missing required user details. Please try again.');
     }
 
     const mPaymentId = `${userId}-${Date.now()}`;
@@ -83,10 +107,8 @@ export default function handler(req, res) {
       : 'https://www.payfast.co.za/eng/process';
 
     console.log(
-      `payfast-redirect OK — user=${userId} sandbox=${isSandbox} ` +
-      `passphrase=${passphrase ? 'yes' : 'no'} sig=${signature.substring(0, 12)}...`
+      `payfast-redirect OK — user=${userId} sandbox=${isSandbox} passphrase=${passphrase ? 'yes' : 'no'}`
     );
-    console.log(`payfast-redirect string-to-hash: ${getString}`);
 
     const finalParams = { ...cleaned, signature };
 

@@ -1,3 +1,5 @@
+import { rateLimitAsync, getClientIP } from './_rate-limit.js';
+
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
 
 export default async function handler(req, res) {
@@ -8,6 +10,16 @@ export default async function handler(req, res) {
   if (!message) return res.status(400).json({ error: 'Missing message' });
 
   try {
+    const ip = getClientIP(req);
+    const rl = await rateLimitAsync(`public_advisor:${ip}`, 20, 60000);
+    if (!rl.allowed) return res.status(429).json({ error: 'Too many requests' });
+    if (typeof message === 'string' && message.length > 2000) {
+      return res.status(413).json({ error: 'Message too long' });
+    }
+    if (Array.isArray(conversationHistory) && conversationHistory.length > 30) {
+      return res.status(413).json({ error: 'Conversation too long' });
+    }
+
     const promptLines = [
       'You are AprIQ Intelligence, a professional construction cost assistant for the South African market. You are embedded on the AprIQ landing page and speak to visitors who may be architects, quantity surveyors, developers, contractors, or homeowners.',
       '',

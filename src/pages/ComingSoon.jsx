@@ -10,7 +10,9 @@ export default function ComingSoon() {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    const { error } = await supabase.from('waitlist').insert({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const r = await supabase.rpc('waitlist_join', { p_email: normalizedEmail, p_name: null, p_profession: null });
+    const error = r?.error || null;
     if (error) console.error('Waitlist error:', error);
     setLoading(false);
     setSubmitted(true);

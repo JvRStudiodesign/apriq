@@ -36,15 +36,14 @@ export default async function handler(req, res) {
 
   // Read raw body bytes
   const raw = await readRawBody(req);
-  console.log(`[itn] received ${raw.length} bytes from ${req.headers['x-forwarded-for'] || 'unknown'}`);
-  console.log(`[itn] raw body: ${raw.substring(0, 800)}${raw.length > 800 ? '...[truncated]' : ''}`);
+  console.log(`[itn] received ITN (${raw.length} bytes)`);
 
   // Parse it into ordered key/value pairs (preserves PayFast's insertion order)
   const pairs = parseFormBody(raw);
   const params = Object.fromEntries(pairs);
   const safeParams = { ...params };
   if (safeParams.signature) safeParams.signature = `${String(safeParams.signature).substring(0, 8)}…`;
-  console.log('[itn] parsed params:', safeParams);
+  console.log('[itn] parsed params keys:', Object.keys(safeParams).slice(0, 30));
 
   try {
     const passphrase = (process.env.PAYFAST_PASSPHRASE || '').trim();

@@ -266,17 +266,21 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
     if (!email) return;
     setSaving(true);
     setWaitlistError('');
-    // Upsert by email so duplicates silently merge instead of erroring.
-    // Requires a unique constraint on waitlist(email) — handled by migration.
-    // If the email already exists, the row is updated with the latest name +
-    // profession (so the user always sees the same "you're on the list" UX).
     const normalizedEmail = email.trim().toLowerCase();
-    const { error } = await supabase
-      .from('waitlist')
-      .upsert(
-        { email: normalizedEmail, name, profession, updated_at: new Date().toISOString() },
-        { onConflict: 'email' }
-      );
+    // Security: avoid anon UPDATE policies. Use a SECURITY DEFINER RPC that
+    // performs a normalized upsert server-side.
+    let error = null;
+    const r = await supabase.rpc('waitlist_join', {
+      p_email: normalizedEmail,
+      p_name: name,
+      p_profession: profession,
+    });
+    error = r?.error || null;
+    // Back-compat fallback if RPC isn't deployed yet.
+    if (error) {
+      const fallback = await supabase.from('waitlist').insert({ email: normalizedEmail, name, profession, updated_at: new Date().toISOString() });
+      error = fallback?.error || null;
+    }
     if (error) {
       console.error('Waitlist error:', error);
       // Don't block the user — fall through to "submitted" anyway. Their email

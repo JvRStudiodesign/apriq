@@ -6,14 +6,8 @@ export default async function handler(req, res) {
   const rl = rateLimit(`admin:${ip}`, 30, 60000);
   if (!rl.allowed) return res.status(429).end('Too many requests');
 
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  const providedPassword = req.headers['x-admin-password'];
-  if (!adminPassword || providedPassword !== adminPassword) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const url = 'https://cocugdgelatgjzgkyhpz.supabase.co';
+  const url = process.env.SUPABASE_URL || 'https://cocugdgelatgjzgkyhpz.supabase.co';
   if (!serviceKey) return res.status(503).json({ error: 'Service key not configured' });
 
   const h = {
@@ -21,6 +15,34 @@ export default async function handler(req, res) {
     'Authorization': `Bearer ${serviceKey}`,
     'Content-Type': 'application/json'
   };
+
+  // Auth option A (existing): shared founder password header.
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const providedPassword = req.headers['x-admin-password'];
+  const passwordOk = !!adminPassword && providedPassword === adminPassword;
+
+  // Auth option B: signed-in admin user (profiles.is_admin = true).
+  let bearerOk = false;
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    if (token) {
+      const u = await fetch(`${url}/auth/v1/user`, { headers: { apikey: serviceKey, Authorization: `Bearer ${token}` } });
+      if (u.ok) {
+        const user = await u.json();
+        const uid = user?.id;
+        if (uid) {
+          const p = await fetch(`${url}/rest/v1/profiles?id=eq.${encodeURIComponent(uid)}&select=is_admin`, { headers: h });
+          const rows = await p.json();
+          bearerOk = Array.isArray(rows) && rows[0]?.is_admin === true;
+        }
+      }
+    }
+  } catch { /* ignore */ }
+
+  if (!passwordOk && !bearerOk) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   async function q(path) {
     try {
@@ -82,7 +104,7 @@ export default async function handler(req, res) {
       referrals,
     });
   } catch (err) {
-    console.error('Admin stats error:', err.message);
-    return res.status(500).json({ error: 'Internal error', detail: err.message });
+    console.error('Admin stats error');
+    return res.status(500).json({ error: 'Internal error' });
   }
 }
