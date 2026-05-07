@@ -2,6 +2,8 @@
 // Allowlist only Supabase Storage public URLs to avoid open-proxy abuse.
 
 export const config = { runtime: 'nodejs' };
+
+function allowlisted(target) {
   try {
     const u = new URL(target);
     if (u.protocol !== 'https:') return false;
