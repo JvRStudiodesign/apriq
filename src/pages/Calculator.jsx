@@ -368,11 +368,11 @@ export default function Calculator() {
   }
 
   async function loadEstimate(id) {
-    let data = null;
-    for (const tbl of ['project_estimates', 'estimates']) {
-      const res = await supabase.from(tbl).select('*').eq('id', id).single();
-      if (res.data) { data = res.data; break; }
-    }
+    // `estimates` is the canonical source of truth. The legacy
+    // `project_estimates` table is no longer written to and is dropped by
+    // the 20260507 migration.
+    const res = await supabase.from('estimates').select('*').eq('id', id).single();
+    const data = res.data;
     if (!data) return;
     const saved = typeof data.inputs_json === 'string' ? JSON.parse(data.inputs_json) : data.inputs_json;
     if (saved && Object.keys(saved).length > 0) {
@@ -471,37 +471,45 @@ export default function Calculator() {
     setSaving(true);
     const selectedProject = projects.find(p => p.id === selectedProjectId);
     const ref = selectedProject?.reference_number || pdfRef;
-    // Mark all previous estimates for this project as not latest
-    await supabase.from('estimates').update({ is_latest: false }).eq('project_id', selectedProjectId).eq('user_id', user.id);
-    // Insert new version
-    await supabase.from('estimates').insert({
-      user_id: user.id, reference_number: ref,
+
+    // Mark all previous estimates for this project as not latest, then
+    // insert the new version. We never delete estimates — full history is
+    // retained until the user deletes their account (FK CASCADE on
+    // auth.users(id) takes care of that automatically).
+    const { error: markErr } = await supabase
+      .from('estimates')
+      .update({ is_latest: false })
+      .eq('project_id', selectedProjectId)
+      .eq('user_id', user.id);
+    if (markErr) console.error('Mark not-latest error:', markErr);
+
+    // Canonical insert: minimal columns the table is guaranteed to have,
+    // plus the FULL inputs + result blobs as JSONB. Every category,
+    // multiplier, base rate, breakdown line and adjustment is preserved
+    // verbatim inside inputs_json + result_json, so no information is lost
+    // even though we no longer mirror dedicated columns. total_project_cost
+    // stays as a top-level column for sorting / dashboard queries.
+    const payload = {
+      user_id: user.id,
       project_id: selectedProjectId,
       client_id: selectedProject?.client_id || null,
-      inputs_json: JSON.stringify(inputs),
-      result_json: JSON.stringify(result),
+      reference_number: ref,
+      inputs_json: inputs,
+      result_json: result,
+      total_project_cost: result.totalProjectCost,
       is_latest: true,
-      building_category: inputs.use1Category, building_subtype: inputs.use1Subtype,
-      floor_area: inputs.floorArea, is_mixed_use: numCats > 1,
-      quality_multiplier: result.qualityMultiplier, site_access_multiplier: result.siteMultiplier,
-      project_type_multiplier: result.projectTypeMultiplier, complexity_multiplier: result.complexityMultiplier,
-      land_type: inputs.landProcurementType, land_area: inputs.landArea,
-      contingency_pct: inputs.contingencyPct * 100, profit_pct: inputs.profitPct * 100,
-      fees_pct: inputs.feesPct * 100, vat_pct: inputs.vatPct * 100,
-      base_construction_cost: result.constructionCost,
-      land_cost: result.landProcurementCost, contingency_amount: result.contingencyAmount,
-      profit_amount: result.contractorProfit, fees_amount: result.professionalFees,
-      vat_amount: result.vatAmount, total_project_cost: result.totalProjectCost,
-      escalated_total: result.escalatedTotal, cost_breakdown: result.elementBreakdown,
-    });
-    // Never delete estimates — keep full history
-    await supabase.from('project_estimates').insert({
-      user_id: user.id, project_id: selectedProjectId,
-      client_id: projects.find(p => p.id === selectedProjectId)?.client_id || null,
-      inputs_json: JSON.stringify(inputs), result_json: JSON.stringify(result),
-      is_latest: true, total_project_cost: result.totalProjectCost,
-    });
-    setSaving(false); setSaved(true);
+      shared: false,
+      pdf_generated: false,
+    };
+    const { error: insErr } = await supabase.from('estimates').insert(payload);
+    if (insErr) {
+      console.error('Estimate save error:', insErr);
+      alert('Could not save the estimate. Please try again.');
+      setSaving(false);
+      return;
+    }
+    setSaving(false);
+    setSaved(true);
   }
 
   async function handleCreateProjectInCalc() {
@@ -584,11 +592,35 @@ export default function Calculator() {
         import('../components/EstimatePDF'),
       ]);
 
+      // Pre-fetch the company logo as a data URL before rendering the PDF.
+      // @react-pdf/renderer's <Image src=...> sometimes fails on remote
+      // Supabase Storage URLs (CORS, redirects, cache-busters) — pulling
+      // the bytes ourselves and passing a data: URI is bullet-proof.
+      let logoForPdf = '';
+      if (userDetails?.logo_url) {
+        try {
+          const r = await fetch(userDetails.logo_url, { cache: 'no-store' });
+          if (r.ok) {
+            const buf = await r.arrayBuffer();
+            const bytes = new Uint8Array(buf);
+            let binary = '';
+            for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+            const b64 = btoa(binary);
+            const ct = (r.headers.get('content-type') || 'image/png').split(';')[0].trim();
+            logoForPdf = `data:${ct};base64,${b64}`;
+          }
+        } catch (e) {
+          console.warn('Could not pre-fetch logo for PDF, falling back to URL:', e);
+          logoForPdf = userDetails.logo_url;
+        }
+      }
+      const userDetailsForPdf = { ...userDetails, logo_url: logoForPdf };
+
       const doc = (
         <EstimatePDFComponent
           inputs={inputs}
           result={result}
-          userDetails={userDetails}
+          userDetails={userDetailsForPdf}
           project={selectedProject}
           client={selectedClient}
           reference={pdfRef_display}

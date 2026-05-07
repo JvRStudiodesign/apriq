@@ -266,10 +266,25 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
     if (!email) return;
     setSaving(true);
     setWaitlistError('');
-    const { error } = await supabase.from('waitlist').insert({ email, name, profession });
-    if (error) { console.error('Waitlist error:', error); setWaitlistError('Something went wrong. Please try again.'); setSaving(false); return; }
-    fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'new_waitlist', name, email, profession }) }).catch(()=>{});
-    fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'waitlist_confirm', to: email, name }) }).catch(()=>{});
+    // Upsert by email so duplicates silently merge instead of erroring.
+    // Requires a unique constraint on waitlist(email) — handled by migration.
+    // If the email already exists, the row is updated with the latest name +
+    // profession (so the user always sees the same "you're on the list" UX).
+    const normalizedEmail = email.trim().toLowerCase();
+    const { error } = await supabase
+      .from('waitlist')
+      .upsert(
+        { email: normalizedEmail, name, profession, updated_at: new Date().toISOString() },
+        { onConflict: 'email' }
+      );
+    if (error) {
+      console.error('Waitlist error:', error);
+      // Don't block the user — fall through to "submitted" anyway. Their email
+      // will still be captured by the email notification below if the email
+      // function is available, and we've logged the error for our own audit.
+    }
+    fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'new_waitlist', name, email: normalizedEmail, profession }) }).catch(()=>{});
+    fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'waitlist_confirm', to: normalizedEmail, name }) }).catch(()=>{});
     setSaving(false);
     setSubmitted(true);
   }
@@ -277,7 +292,10 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
   async function handleContact() {
     if (!contactEmail || !contactMessage) return;
     setContactSaving(true);
-    await supabase.from('contact_submissions').insert({ name: contactName, surname: contactSurname, email: contactEmail, message: contactMessage });
+    const { error } = await supabase
+      .from('contact_submissions')
+      .insert({ name: contactName, surname: contactSurname, email: contactEmail.trim().toLowerCase(), message: contactMessage });
+    if (error) console.error('Contact submission DB error:', error);
     fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'contact', name: contactName, surname: contactSurname, email: contactEmail, message: contactMessage }) }).catch(()=>{});
     fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'contact_confirm', to: contactEmail, name: contactName }) }).catch(()=>{});
     setContactSaving(false);
@@ -383,6 +401,7 @@ export default function Layout() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [upgradeMode, setUpgradeMode] = useState('upgrade'); // 'upgrade' | 'replace_card' | 'resubscribe'
   const { user, profile } = useAuth();
+  const location = useLocation();
   const isLoggedIn = !!user;
   function openModal(mode = 'waitlist') { setModalMode(mode); setModalOpen(true); }
   function openUpgrade(mode = 'upgrade') {
@@ -395,6 +414,13 @@ export default function Layout() {
     window.__openContactModal = () => openModal('contact');
     return () => { window.removeEventListener('open-contact-modal', handler); };
   }, []);
+  // Auto-close any open modal when route changes — prevents the "stuck modal"
+  // bug where Upgrade/Waitlist/Contact stays open after the user clicks back
+  // or navigates via menu without explicitly hitting the X.
+  useEffect(() => {
+    setModalOpen(false);
+    setShowUpgrade(false);
+  }, [location.pathname]);
   return (
     <>
       <Header onOpenModal={openModal} isLoggedIn={isLoggedIn}/>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import PlacesAutocomplete from '../components/PlacesAutocomplete';
 import { isPro as isProUser } from '../utils/tier';
 
 const FREE_LIMIT = 3;
@@ -33,7 +33,13 @@ function ClientForm({ initial, onSave, onCancel, saving }) {
       ))}
       <div style={{ marginBottom:'1.25rem' }}>
         <label style={lbl}>Address</label>
-        <textarea value={form.address} onChange={e => upd('address', e.target.value)} placeholder="123 Main Street, Sandton, 2196" rows={2} style={{ ...inp, resize:'vertical' }} />
+        <PlacesAutocomplete
+          value={form.address}
+          onChange={(v) => upd('address', v)}
+          onSelect={(v) => upd('address', v)}
+          placeholder="123 Main Street, Sandton, 2196"
+          style={inp}
+        />
       </div>
       <div style={{ display:'flex', gap:'8px' }}>
         <button onClick={() => onSave(form)} disabled={saving || !form.company_name.trim()}
@@ -48,7 +54,6 @@ function ClientForm({ initial, onSave, onCancel, saving }) {
 
 export default function Clients() {
   const { user, profile } = useAuth();
-  const navigate = useNavigate();
   const isPro = isProUser(profile);
   const limit = isPro ? PRO_LIMIT : FREE_LIMIT;
 

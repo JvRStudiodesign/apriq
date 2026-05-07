@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { InstallPWA } from '../components/InstallPWA';
+import PlacesAutocomplete from '../components/PlacesAutocomplete';
 import { isPro as isProUser } from '../utils/tier';
 
 const card = { background: '#F9FAFA', borderRadius: '16px', padding: '1.5rem', border: '1px solid #E4E5E5', marginBottom: '1rem' };
@@ -13,16 +13,25 @@ const PRO_BADGE = <span style={{ marginLeft: '6px', fontSize: '0.6rem', backgrou
 
 export default function UserProfile() {
   const { user, profile } = useAuth();
-  const navigate = useNavigate();
   const isPro = isProUser(profile);
 
-  const [form, setForm] = useState({ full_name: '', company_name: '', phone: '', profession: '', address: '', newPassword: '', confirmPassword: '' });
+  const [form, setForm] = useState({ full_name: '', company_name: '', phone: '', profession: '', address: '' });
   const [logoPreview, setLogoPreview] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef();
+
+  // Password change is fully decoupled from profile save. Browsers were
+  // autofilling the New password field on profile load, which then triggered
+  // a "passwords don't match" alert when the user clicked Save profile after
+  // editing their address / name / profession. Splitting into a separate
+  // form + button removes that footgun completely.
+  const [pwForm, setPwForm] = useState({ newPassword: '', confirmPassword: '' });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwError, setPwError] = useState('');
+  const [pwSaved, setPwSaved] = useState(false);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteErr, setDeleteErr] = useState('');
@@ -66,10 +75,15 @@ export default function UserProfile() {
       const { error } = await supabase.storage.from('logos').upload(path, logoFile, { upsert: true, contentType: logoFile.type });
       if (!error) {
         const { data } = supabase.storage.from('logos').getPublicUrl(path);
-        logo_url = data.publicUrl + '?v=' + Date.now();
+        // No cache-buster: react-pdf's <Image src> is happier with a stable
+        // URL, and the bucket is upserted so the public URL is canonical.
+        logo_url = data.publicUrl;
       }
       setUploading(false);
       setLogoFile(null);
+    } else if (logoPreview === null && profile?.logo_url) {
+      // User clicked "Remove logo" — clear the URL.
+      logo_url = '';
     }
 
     const updates = { full_name: form.full_name, company_name: form.company_name, phone: form.phone, profession: form.profession, address: form.address, updated_at: new Date().toISOString() };
@@ -78,19 +92,36 @@ export default function UserProfile() {
     const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
     if (error) console.error('Profile save error:', error);
     setSaving(false);
-    // Change password if filled
-    if (form.newPassword) {
-      if (form.newPassword !== form.confirmPassword) {
-        alert('Passwords do not match'); setSaving(false); return;
-      }
-      if (form.newPassword.length < 6) {
-        alert('Password must be at least 6 characters'); setSaving(false); return;
-      }
-      await supabase.auth.updateUser({ password: form.newPassword });
-      upd('newPassword', ''); upd('confirmPassword', '');
-    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  }
+
+  async function handleChangePassword() {
+    if (pwSaving) return;
+    setPwError('');
+    setPwSaved(false);
+    if (!pwForm.newPassword || !pwForm.confirmPassword) {
+      setPwError('Enter and confirm your new password.');
+      return;
+    }
+    if (pwForm.newPassword !== pwForm.confirmPassword) {
+      setPwError('Passwords do not match.');
+      return;
+    }
+    if (pwForm.newPassword.length < 6) {
+      setPwError('Password must be at least 6 characters.');
+      return;
+    }
+    setPwSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: pwForm.newPassword });
+    setPwSaving(false);
+    if (error) {
+      setPwError(error.message || 'Could not update password. Please try again.');
+      return;
+    }
+    setPwForm({ newPassword: '', confirmPassword: '' });
+    setPwSaved(true);
+    setTimeout(() => setPwSaved(false), 3000);
   }
 
   async function handleDeleteAccount() {
@@ -98,27 +129,17 @@ export default function UserProfile() {
     setDeleting(true);
     setDeleteErr('');
     try {
-      // 1) Delete saved estimates (table may not exist in all deployments)
-      const delSaved = await supabase.from('saved_estimates').delete().eq('user_id', user.id);
-      if (delSaved?.error) {
-        const msg = String(delSaved.error?.message || '');
-        const isMissingTable = msg.toLowerCase().includes('saved_estimates') && msg.toLowerCase().includes('does not exist');
-        if (!isMissingTable) throw delSaved.error;
-      }
-
-      // 2) Delete user row
-      const delUser = await supabase.from('users').delete().eq('id', user.id);
-      if (delUser?.error) throw delUser.error;
-
-      // 3) Delete auth user (requires an existing RPC)
+      // All app tables (estimates, saved_estimates, estimate_snapshots,
+      // projects, clients, profiles, etc.) are FK'd to auth.users(id) with
+      // ON DELETE CASCADE. So we just need to delete the auth.users row and
+      // every owned row goes with it. The `delete_user` RPC must be set up
+      // in Supabase as a SECURITY DEFINER function calling
+      // `auth.admin.deleteUser(auth.uid())`.
       const rpc = await supabase.rpc('delete_user');
       if (rpc?.error) throw rpc.error;
 
-      // 4) Sign out
       await supabase.auth.signOut();
-
-      // 5) Redirect
-      navigate('/');
+      window.location.replace('/home');
     } catch (e) {
       console.error('Delete account failed:', e);
       setDeleteErr('Something went wrong. Please try again or contact hello@apriq.co.za');
@@ -178,13 +199,22 @@ export default function UserProfile() {
             { label: 'Full name', field: 'full_name', placeholder: 'Name Surname' },
             { label: 'Company / firm name', field: 'company_name', placeholder: 'Your practice or company' },
             { label: 'Phone', field: 'phone', placeholder: '+27 82 000 0000' },
-            { label: 'Address', field: 'address', placeholder: '123 Street, City, Province' },
           ].map(f => (
             <div key={f.field} style={{ marginBottom: '1rem' }}>
               <label style={lbl}>{f.label}</label>
               <input style={inp} value={form[f.field]} onChange={e => upd(f.field, e.target.value)} placeholder={f.placeholder} />
             </div>
           ))}
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={lbl}>Address</label>
+            <PlacesAutocomplete
+              value={form.address}
+              onChange={(v) => upd('address', v)}
+              onSelect={(v) => upd('address', v)}
+              placeholder="123 Street, City, Province"
+              style={inp}
+            />
+          </div>
           <div style={{ marginBottom: '1rem' }}>
             <label style={lbl}>Email</label>
             <input style={{ ...inp, background: '#E4E5E5', color: '#979899' }} value={user?.email || ''} disabled />
@@ -204,22 +234,68 @@ export default function UserProfile() {
             <option value="Other">Other</option>
           </select>
         </div>
-        {/* Change password */}
-        <div style={card}>
-          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Change password</span>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={lbl}>New password</label>
-            <input type="password" style={inp} value={form.newPassword} onChange={e => upd('newPassword', e.target.value)} placeholder="Min. 6 characters" />
-          </div>
-          <div style={{ marginBottom: '0.25rem' }}>
-            <label style={lbl}>Confirm new password</label>
-            <input type="password" style={inp} value={form.confirmPassword} onChange={e => upd('confirmPassword', e.target.value)} placeholder="Repeat new password" />
-          </div>
-        </div>
         <button onClick={handleSave} disabled={saving || uploading}
           style={{ width: '100%', padding: '0.875rem', background: saved ? '#0F4C5C' : '#111111', color: '#F9FAFA', border: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
           {uploading ? 'Uploading logo...' : saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save profile'}
         </button>
+
+        {/* Change password — fully decoupled from profile save */}
+        <form
+          autoComplete="off"
+          onSubmit={(e) => { e.preventDefault(); handleChangePassword(); }}
+          style={{ ...card, marginTop: '1rem' }}
+        >
+          <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111111', display: 'block', marginBottom: '1.25rem' }}>Change password</span>
+          {/* Hidden honeypot fields stop Chrome/Safari/iOS from autofilling
+              the visible password fields with the user's saved login.
+              See https://stackoverflow.com/a/44004531 — same-origin trick. */}
+          <input type="text" name="username" autoComplete="username" defaultValue={user?.email || ''} style={{ display: 'none' }} readOnly />
+          <input type="password" name="password" autoComplete="current-password" defaultValue="" style={{ display: 'none' }} readOnly />
+          {pwError && (
+            <div style={{ background: 'rgba(255, 130, 16, 0.30)', border: '1px solid rgba(255, 130, 16, 0.55)', borderRadius: 10, padding: '0.625rem 0.875rem', marginBottom: '0.875rem', fontSize: '0.8rem', color: '#111111' }}>
+              {pwError}
+            </div>
+          )}
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={lbl}>New password</label>
+            <input
+              type="password"
+              autoComplete="new-password"
+              name="apriq-new-password"
+              style={inp}
+              value={pwForm.newPassword}
+              onChange={e => { setPwForm(p => ({ ...p, newPassword: e.target.value })); setPwError(''); setPwSaved(false); }}
+              placeholder="Min. 6 characters"
+            />
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={lbl}>Confirm new password</label>
+            <input
+              type="password"
+              autoComplete="new-password"
+              name="apriq-confirm-password"
+              style={inp}
+              value={pwForm.confirmPassword}
+              onChange={e => { setPwForm(p => ({ ...p, confirmPassword: e.target.value })); setPwError(''); setPwSaved(false); }}
+              placeholder="Repeat new password"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={pwSaving || !pwForm.newPassword}
+            style={{
+              width: '100%', padding: '0.75rem',
+              background: pwSaved ? '#0F4C5C' : '#111111',
+              color: '#F9FAFA', border: 'none', borderRadius: '12px',
+              fontSize: '0.85rem', fontWeight: '600',
+              cursor: pwSaving || !pwForm.newPassword ? 'not-allowed' : 'pointer',
+              opacity: pwSaving || !pwForm.newPassword ? 0.6 : 1,
+              fontFamily: 'inherit',
+            }}
+          >
+            {pwSaving ? 'Updating...' : pwSaved ? 'Password updated ✓' : 'Update password'}
+          </button>
+        </form>
         <div style={{ background:'#F9FAFA', borderRadius:'16px', padding:'1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem', marginTop:'1rem' }}>
           <span style={{ fontSize:'0.85rem', fontWeight:'600', color:'#111111', display:'block', marginBottom:'0.5rem' }}>Install app</span>
           <p style={{ fontSize:'0.78rem', color:'#979899', marginBottom:'0.75rem', lineHeight:'1.5' }}>Add AprIQ to your home screen for instant access and limited offline use.</p>
