@@ -1,9 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
 import { buildAdvisorSignals } from '../src/utils/advisorSignals.js';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabase    = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
+export const config = { runtime: 'nodejs' };
+
+/**
+ * Matches api/admin-stats.js, api/save-estimate.js & PayFast handlers: server routes must
+ * resolve the project URL reliably. Prefer SUPABASE_URL (Vercel/Supabase integration);
+ * fall back to VITE_SUPABASE_URL (single-env setups); then canonical project URL so the
+ * advisor never dies with supabase=null when only SUPABASE_* is configured.
+ */
+const DEFAULT_SUPABASE_URL = 'https://cocugdgelatgjzgkyhpz.supabase.co';
+
+function resolveSupabaseUrl() {
+  const raw = (
+    process.env.SUPABASE_URL ||
+    process.env.VITE_SUPABASE_URL ||
+    ''
+  ).trim();
+  return raw || DEFAULT_SUPABASE_URL;
+}
+
+const supabaseUrl = resolveSupabaseUrl();
+const serviceKey  = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+const supabase    = serviceKey ? createClient(supabaseUrl, serviceKey) : null;
 
 // Pro & override emails get 20 questions/day for the entire 30-day trial /
 // active subscription. Trial users get 5 questions/day for the FIRST 7 days
@@ -25,6 +44,93 @@ function envInt(name, fallback) {
   if (raw == null || raw === '') return fallback;
   const n = Number.parseInt(String(raw), 10);
   return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+function parseGeminiAdvisorModels() {
+  const rawTrim = (process.env.GEMINI_ADVISOR_MODELS || '').trim();
+  const source = rawTrim || 'gemini-2.5-flash,gemini-2.0-flash';
+  const pieces = source
+    .split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return pieces.length ? pieces : ['gemini-2.5-flash', 'gemini-2.0-flash'];
+}
+
+function mergeGeminiParts(parts) {
+  if (!Array.isArray(parts)) return '';
+  return parts
+    .map((part) => (part && typeof part.text === 'string' ? part.text : ''))
+    .join('')
+    .trim();
+}
+
+async function advisorGeminiAttempt(apiKey, modelId, contents, generationConfig) {
+  const url =
+    'https://generativelanguage.googleapis.com/v1beta/models/' +
+    encodeURIComponent(modelId) +
+    ':generateContent?key=' +
+    encodeURIComponent(apiKey);
+  const geminiRes = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents, generationConfig }),
+  });
+  const geminiData = await geminiRes.json().catch(() => ({}));
+  return { ok: geminiRes.ok, status: geminiRes.status, modelId, generationConfig, data: geminiData };
+}
+
+async function generateAdvisorGeminiCompletion(apiKey, contents, maxOutputTokens) {
+  const models = parseGeminiAdvisorModels();
+  const configVariants = [
+    { temperature: 0.35, maxOutputTokens, thinkingConfig: { thinkingBudget: 0 } },
+    { temperature: 0.35, maxOutputTokens },
+  ];
+
+  let lastHardError = null;
+  for (const modelId of models) {
+    for (const gc of configVariants) {
+      const attempt = await advisorGeminiAttempt(apiKey, modelId, contents, gc);
+
+      if (!attempt.ok) {
+        const msgStr = typeof attempt.data?.error?.message === 'string' ? attempt.data.error.message : '';
+        console.error('Gemini attempt failed:', modelId, attempt.status, msgStr || attempt.data);
+        lastHardError = attempt;
+        if (attempt.status === 404) break;
+
+        continue;
+      }
+
+      const cand = attempt.data?.candidates?.[0];
+      const text = mergeGeminiParts(cand?.content?.parts);
+
+      const feedbackBlock = attempt.data?.promptFeedback?.blockReason;
+      if (feedbackBlock && !text) {
+        console.warn('Gemini blocked:', modelId, feedbackBlock);
+        lastHardError = attempt;
+        continue;
+      }
+
+      if (!text && cand?.finishReason === 'SAFETY') {
+        console.warn('Gemini SAFETY empty:', modelId);
+        lastHardError = attempt;
+        continue;
+      }
+
+      const finishReason = cand?.finishReason;
+      const usableTrimmed = !!(text || finishReason === 'MAX_TOKENS');
+      if (usableTrimmed) {
+        if (attempt.data?.usageMetadata) console.info('Gemini usage:', attempt.data.usageMetadata);
+        if (finishReason && finishReason !== 'STOP') console.warn('Gemini finish reason:', finishReason);
+        return { text: text || '', finishReason: finishReason || 'STOP', data: attempt.data, modelId, generationConfig: gc };
+      }
+
+      console.warn('Gemini no usable reply:', modelId, finishReason, attempt.data?.promptFeedback);
+      lastHardError = attempt;
+    }
+  }
+
+  if (lastHardError) console.error('All Gemini advisor attempts exhausted:', lastHardError?.status);
+  return null;
 }
 
 function asNumber(value) {
@@ -317,7 +423,8 @@ function buildLocationProfileHint(estimateState, advisorSignals) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!supabase)             return res.status(503).json({ error: 'Server not configured' });
-  if (!process.env.GEMINI_API_KEY) return res.status(503).json({ error: 'AI not configured' });
+  const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
+  if (!geminiKey)             return res.status(503).json({ error: 'AI not configured' });
 
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
@@ -416,46 +523,12 @@ export default async function handler(req, res) {
 
     const maxOutputTokens = envInt('GEMINI_MAX_OUTPUT_TOKENS', DEFAULT_MAX_OUTPUT_TOKENS);
 
-    const generationConfig = {
-      temperature: 0.35,
-      maxOutputTokens,
-      // Gemini 2.5: internal "thinking" can consume output budget unless disabled.
-      thinkingConfig: { thinkingBudget: 0 },
-    };
+    let geminiOutcome = await generateAdvisorGeminiCompletion(geminiKey, contents, maxOutputTokens);
+    if (!geminiOutcome) return res.status(502).json({ error: 'AI service unavailable' });
 
-    const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + process.env.GEMINI_API_KEY;
+    let aiReply = geminiOutcome.text;
+    let finishReason = geminiOutcome.finishReason;
 
-    async function callGemini(contentsPayload) {
-      const geminiRes = await fetch(geminiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: contentsPayload, generationConfig }),
-      });
-      const geminiData = await geminiRes.json().catch(() => ({}));
-      return { ok: geminiRes.ok, status: geminiRes.status, data: geminiData };
-    }
-
-    let { ok, status, data: geminiData } = await callGemini(contents);
-    if (!ok) {
-      console.error('Gemini HTTP error:', status, geminiData);
-      return res.status(502).json({ error: 'AI service unavailable' });
-    }
-
-    let candidate = geminiData?.candidates?.[0];
-    let finishReason = candidate?.finishReason;
-    const usage = geminiData?.usageMetadata;
-    if (usage) console.info('Gemini usage:', usage);
-    if (finishReason && finishReason !== 'STOP') console.warn('Gemini finish reason:', finishReason);
-    if (!candidate && geminiData?.promptFeedback) {
-      console.warn('Gemini promptFeedback:', geminiData.promptFeedback);
-    }
-
-    let aiReply = candidate?.content?.parts
-      ?.map((part) => part.text || '')
-      .join('')
-      .trim();
-
-    // If the model hits MAX_TOKENS, do one continuation pass (still counts as a single user question).
     if (finishReason === 'MAX_TOKENS' && aiReply) {
       const continueContents = prefixContents.concat([
         userTurn,
@@ -463,25 +536,12 @@ export default async function handler(req, res) {
         { role: 'user', parts: [{ text: 'Your previous answer was cut off due to length limits. Continue from the next sentence. Do not repeat what you already wrote. Keep the same tone and constraints.' }] },
       ]);
 
-      const second = await callGemini(continueContents);
-      if (second.ok) {
-        const c2 = second.data?.candidates?.[0];
-        const fr2 = c2?.finishReason;
-        const u2 = second.data?.usageMetadata;
-        if (u2) console.info('Gemini usage (continuation):', u2);
-        if (fr2 && fr2 !== 'STOP') console.warn('Gemini finish reason (continuation):', fr2);
-
-        const extra = c2?.content?.parts
-          ?.map((part) => part.text || '')
-          .join('')
-          .trim();
-
-        if (extra) {
-          aiReply = `${aiReply}\n\n${extra}`;
-          finishReason = fr2 || finishReason;
-        }
-      } else {
-        console.error('Gemini continuation HTTP error:', second.status, second.data);
+      const contOutcome = await generateAdvisorGeminiCompletion(geminiKey, continueContents, maxOutputTokens);
+      if (contOutcome?.text) {
+        aiReply = `${aiReply}\n\n${contOutcome.text}`;
+        finishReason = contOutcome.finishReason || finishReason;
+      } else if (contOutcome) {
+        console.error('Gemini continuation returned unusable:', contOutcome.finishReason);
       }
     }
 

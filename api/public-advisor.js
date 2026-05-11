@@ -1,6 +1,6 @@
 import { rateLimitAsync, getClientIP } from './_rate-limit.js';
 
-const GEMINI_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_KEY = (process.env.GEMINI_API_KEY || '').trim();
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });

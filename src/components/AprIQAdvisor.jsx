@@ -75,7 +75,7 @@ function stripAiFormatting(text) {
 }
 
 export default function AprIQAdvisor({ estimateState, messages, setMessages, onClose }) {
-  const { user, profile } = useAuth();
+  const { user, profile, fetchProfile } = useAuth();
   const hasUnlimitedAi = (profile?.email || '').toLowerCase() === UNLIMITED_AI_EMAIL;
   const [stage, setStage] = useState(() => messages.length > 0 ? 'chat' : 'prompt');
   const [input, setInput] = useState('');
@@ -145,6 +145,11 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
   const sendMessage = async (text) => {
     const userMsg = text || input.trim();
     if (!userMsg || loading || atLimit) return;
+    if (!user?.id) {
+      setStage('chat');
+      setMessages(prev => [...prev, { role: 'assistant', content: 'You need to be signed in to use the advisor. Sign in from the profile menu and try again.' }]);
+      return;
+    }
     setInput('');
     setStage('chat');
     // Record the scroll height before the assistant reply arrives,
@@ -163,29 +168,92 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
         source: configuredLocation ? 'configured_project' : locationForRequest ? 'manual_chat' : 'missing',
       },
     };
+    const prevMessagesSnapshot = messages;
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      const res = await fetch('/api/ai-advisor', {
+    const advisorPayload = JSON.stringify({
+      message: userMsg,
+      estimateState: nextEstimateState,
+      conversationHistory: prevMessagesSnapshot,
+      userId: user.id,
+    });
+
+    async function advisorFetch(accessToken) {
+      return fetch('/api/ai-advisor', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ message: userMsg, estimateState: nextEstimateState, conversationHistory: messages, userId: user.id })
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: advisorPayload,
       });
-      const data = await res.json();
+    }
+
+    try {
+      let { data: { session } } = await supabase.auth.getSession();
+      let token = session?.access_token;
+
+      let res = await advisorFetch(token);
+      if (res.status === 401 && user?.id) {
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        token = refreshed?.session?.access_token;
+        if (token) res = await advisorFetch(token);
+      }
+
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = {};
+      }
+
       if (res.status === 429) {
-        const lim = data?.limit || dailyLimit;
+        const lim = data?.limit ?? dailyLimit;
         if (!hasUnlimitedAi) setQuestionsUsed(lim);
         setMessages(prev => [...prev, { role: 'assistant', content: `You have reached your ${lim} question limit for today. Your limit resets tomorrow.` }]);
         return;
       }
-      if (!res.ok) { setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong. Please try again in a moment.' }]); return; }
+
+      if (res.status === 403) {
+        const code = data?.error;
+        if (code === 'upgrade_required' || code === 'trial_ai_expired') {
+          await fetchProfile?.(user.id);
+          setMessages(prevMessagesSnapshot);
+          setStage('locked');
+          return;
+        }
+        setMessages(prev => [...prev, { role: 'assistant', content: 'The advisor could not authorise this request. Please refresh the page after signing in, or upgrade if your trial has ended.' }]);
+        return;
+      }
+
+      if (res.status === 503) {
+        const code = data?.error;
+        if (code === 'AI not configured' || code === 'Server not configured') {
+          console.error('Advisor configuration error:', code);
+        }
+        setMessages(prev => [...prev, { role: 'assistant', content: 'The advisor cannot start right now because the connection to AprIQ\'s AI service is unavailable. Try again shortly; our team monitors this continuously.' }]);
+        return;
+      }
+
+      if (res.status === 401) {
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Your session could not be verified. Refresh the page, sign in again, then reopen the advisor.' }]);
+        return;
+      }
+
+      if (!res.ok) {
+        setMessages(prev => [...prev, { role: 'assistant', content: 'The advisor could not get a usable reply from AI just now. Please try sending your question again.' }]);
+        return;
+      }
+
       setQuestionsUsed(hasUnlimitedAi ? 0 : data.questionsUsed);
       setMessages(prev => [...prev, { role: 'assistant', content: stripAiFormatting(data.reply) }]);
-    } catch { setMessages(prev => [...prev, { role: 'assistant', content: 'Unable to connect. Please check your connection and try again.' }]); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.warn('Advisor fetch failed:', err);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Unable to reach the advisor. Check your internet connection and try again.' }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSummary = () => {
