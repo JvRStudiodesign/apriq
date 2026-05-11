@@ -1,5 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { buildAdvisorSignals } from '../src/utils/advisorSignals.js';
+import {
+  normalizeAdvisorUserMessage,
+  sanitizeEstimateLocationInState,
+} from '../src/utils/advisorLocation.js';
 
 export const config = { runtime: 'nodejs' };
 
@@ -440,7 +444,14 @@ export default async function handler(req, res) {
   const hasUnlimitedAi = UNLIMITED_AI_EMAILS.has(sessionEmail);
 
   const { message, estimateState, conversationHistory, userId } = req.body || {};
-  if (!message || !estimateState || !userId) return res.status(400).json({ error: 'Missing required fields' });
+  if (!estimateState || typeof estimateState !== 'object' || !userId) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  const safeMessage = normalizeAdvisorUserMessage(
+    typeof message === 'string' ? message : String(message ?? ''),
+  );
+  if (!safeMessage) return res.status(400).json({ error: 'Missing required fields' });
+  const safeEstimateState = sanitizeEstimateLocationInState(estimateState);
   if (userId !== sessionUser.id) return res.status(403).json({ error: 'Forbidden' });
 
   try {
@@ -486,10 +497,10 @@ export default async function handler(req, res) {
     }
 
     // Compact JSON reduces token usage vs pretty-printed JSON — important as chat history grows.
-    const estimateJson = JSON.stringify(estimateState);
-    const advisorSignals = buildAdvisorSignals(estimateState);
+    const estimateJson = JSON.stringify(safeEstimateState);
+    const advisorSignals = buildAdvisorSignals(safeEstimateState);
     const signalsJson = JSON.stringify(advisorSignals);
-    const locationProfileHint = buildLocationProfileHint(estimateState, advisorSignals);
+    const locationProfileHint = buildLocationProfileHint(safeEstimateState, advisorSignals);
 
     const prompt = [
       APRIQ_INTELLIGENCE_PROMPT,
@@ -518,7 +529,7 @@ export default async function handler(req, res) {
       { role: 'model', parts: [{ text: 'Understood. I will interpret the supplied estimate using the advisor signals and produce feasibility-grade, location-contextual feedback without generating new numbers.' }] },
     ].concat(history);
 
-    const userTurn = { role: 'user', parts: [{ text: message }] };
+    const userTurn = { role: 'user', parts: [{ text: safeMessage }] };
     const contents = prefixContents.concat([userTurn]);
 
     const maxOutputTokens = envInt('GEMINI_MAX_OUTPUT_TOKENS', DEFAULT_MAX_OUTPUT_TOKENS);

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-export default function PlacesAutocomplete({ value, onChange, onSelect, placeholder, style = {}, disabled = false, autoFocus = false }) {
+export default function PlacesAutocomplete({ value, onChange, onSelect, onKeyDown, placeholder, style = {}, disabled = false, autoFocus = false }) {
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
   const debounceRef = useRef(null);
@@ -36,7 +36,8 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
     search(val);
   };
 
-  const handleSelect = (item) => {
+  const handleSelect = (item, e) => {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
     const val = item.full || (item.label + ', South Africa');
     if (onChange) onChange(val);
     if (onSelect) onSelect(val);
@@ -56,6 +57,9 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
         style={style}
         disabled={disabled}
         autoComplete="off"
+        onKeyDown={(e) => {
+          onKeyDown?.(e);
+        }}
       />
       {open && suggestions.length > 0 && (
         <div style={{
@@ -67,7 +71,9 @@ export default function PlacesAutocomplete({ value, onChange, onSelect, placehol
           {suggestions.map((item, i) => (
             <div
               key={i}
-              onMouseDown={() => handleSelect(item)}
+              onPointerDown={(e) => handleSelect(item, e)}
+              role="option"
+              tabIndex={-1}
               style={{
                 padding: '10px 14px', fontSize: '13px', color: '#111111',
                 fontFamily: "'Roboto',system-ui,sans-serif", cursor: 'pointer',

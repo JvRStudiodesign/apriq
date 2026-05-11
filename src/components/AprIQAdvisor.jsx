@@ -1,8 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import PlacesAutocomplete from './PlacesAutocomplete';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { effectiveTier } from '../utils/tier';
+import {
+  normalizeAdvisorLocation,
+  normalizeAdvisorUserMessage,
+  sanitizeEstimateLocationInState,
+} from '../utils/advisorLocation';
 
 const PRO_DAILY_LIMIT   = 20;
 const TRIAL_DAILY_LIMIT = 5;
@@ -56,7 +62,8 @@ const LockIcon = () => (
 
 function extractManualLocation(messages) {
   const locationMsg = [...messages].reverse().find(msg => msg.role === 'user' && msg.type === 'location');
-  return locationMsg?.content?.replace(/^Project location:\s*/i, '').trim() || '';
+  const raw = locationMsg?.content?.replace(/^Project location:\s*/i, '').trim() || '';
+  return normalizeAdvisorLocation(raw);
 }
 
 function stripAiFormatting(text) {
@@ -83,12 +90,15 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
   const [questionsUsed, setQuestionsUsed] = useState(hasUnlimitedAi ? 0 : (profile?.ai_questions_used || 0));
   const bodyRef = useRef(null);
   const assistantAnchorRef = useRef(0);
-  const configuredLocation = estimateState?.projectLocation?.address?.trim() || '';
+  /** Last address chosen from Places (sync with Send; avoids stale React state on pick+send). */
+  const locationPickCommitRef = useRef(null);
+  const configuredLocation = normalizeAdvisorLocation(estimateState?.projectLocation?.address || '');
   const manualLocation = extractManualLocation(messages);
   const activeLocation = configuredLocation || manualLocation;
   const needsLocation = !activeLocation;
   const isLocationReplyMode = needsLocation && stage === 'chat';
   const resetChat = () => {
+    locationPickCommitRef.current = null;
     setMessages([]);
     setInput('');
     setLoading(false);
@@ -142,8 +152,40 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
     ]);
   };
 
+  const handlePlacesInputChange = (v) => {
+    locationPickCommitRef.current = null;
+    setInput(v);
+  };
+
+  const handlePlacesSelect = (v) => {
+    const normalized = normalizeAdvisorLocation(v);
+    locationPickCommitRef.current = normalized;
+    flushSync(() => {
+      setInput(normalized);
+    });
+  };
+
   const sendMessage = async (text) => {
-    const userMsg = text || input.trim();
+    const pickerCommit =
+      typeof locationPickCommitRef.current === 'string' && locationPickCommitRef.current.trim() !== ''
+        ? locationPickCommitRef.current.trim()
+        : '';
+    locationPickCommitRef.current = null;
+
+    const rawChosen =
+      (typeof text === 'string' && text.trim() !== '' ? text.trim() : '')
+      || pickerCommit
+      || input.trim();
+
+    const isLocationReply =
+      needsLocation &&
+      messages[messages.length - 1]?.role === 'assistant' &&
+      messages[messages.length - 1]?.content?.includes('what is the project location');
+
+    const userMsg = isLocationReply
+      ? normalizeAdvisorLocation(rawChosen)
+      : normalizeAdvisorUserMessage(rawChosen);
+
     if (!userMsg || loading || atLimit) return;
     if (!user?.id) {
       setStage('chat');
@@ -155,19 +197,18 @@ export default function AprIQAdvisor({ estimateState, messages, setMessages, onC
     // Record the scroll height before the assistant reply arrives,
     // so we can anchor the view to the start of the next assistant message.
     assistantAnchorRef.current = bodyRef.current?.scrollHeight || 0;
-    const isLocationReply = needsLocation && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content?.includes('what is the project location');
     const userMessage = isLocationReply
       ? { role: 'user', content: `Project location: ${userMsg}`, type: 'location' }
       : { role: 'user', content: userMsg };
     const locationForRequest = configuredLocation || (isLocationReply ? userMsg : manualLocation);
-    const nextEstimateState = {
+    const nextEstimateState = sanitizeEstimateLocationInState({
       ...estimateState,
       projectLocation: {
         ...(estimateState?.projectLocation || {}),
         address: locationForRequest || '',
         source: configuredLocation ? 'configured_project' : locationForRequest ? 'manual_chat' : 'missing',
       },
-    };
+    });
     const prevMessagesSnapshot = messages;
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
@@ -392,8 +433,9 @@ if (stage === 'locked') return (
           {isLocationReplyMode ? (
             <PlacesAutocomplete
               value={input}
-              onChange={setInput}
-              onSelect={val => { setInput(val); }}
+              onChange={handlePlacesInputChange}
+              onSelect={handlePlacesSelect}
+              onKeyDown={handleKeyDown}
               placeholder="Start typing your project address..."
               style={{ ...s.input }}
               autoFocus={true}

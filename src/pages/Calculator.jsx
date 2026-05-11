@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { logoUrlToDataUri } from '../utils/logoPdf';
+import { normalizeAdvisorLocation } from '../utils/advisorLocation';
 import { isPro as isProUser } from '../utils/tier';
 import { calculate } from '../engine/calculator';
 import {
@@ -717,7 +718,7 @@ export default function Calculator() {
         buildingType: inputs.use1Category,
         buildingSubtype: inputs.use1Subtype,
         projectLocation: {
-          address: configuredProjectLocation,
+          address: normalizeAdvisorLocation(configuredProjectLocation),
           source: configuredProjectLocation ? 'configured_project' : 'missing',
           projectName: selectedProject?.project_name || '',
           projectReference: selectedProject?.reference_number || '',
