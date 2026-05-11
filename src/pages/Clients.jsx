@@ -102,11 +102,11 @@ export default function Clients() {
   }
 
   return (
-    <div style={{ minHeight:'100vh', background:'#F9FAFA', fontFamily:"'Roboto', system-ui, sans-serif" }}>
+    <div style={{ minHeight:'100vh', background:'#F9FAFA', fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif" }}>
 
       <div style={{ maxWidth:'960px', margin:'0 auto', padding:'1.5rem 24px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'0.25rem' }}>
-          <h1 style={{ fontSize:'1.375rem', fontWeight:'700', color:'#111111', letterSpacing:'-0.01em', fontFamily:"'Roboto', system-ui, sans-serif" }}>Clients</h1>
+          <h1 style={{ fontSize:'1.375rem', fontWeight:'700', color:'#111111', letterSpacing:'-0.01em', fontFamily:"'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif" }}>Clients</h1>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
             <span style={{ fontSize:'0.72rem', color:'#979899' }}>{clients.length}/{limit}</span>
             <button onClick={startNew} style={{ padding:'6px 14px', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'10px', fontSize:'0.78rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>+ Add client</button>

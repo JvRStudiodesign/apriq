@@ -144,7 +144,7 @@ export default function BillingPage() {
       <div style={s.pageTop} />
 
       {/* ── Current plan ─────────────────────────────────────────────────────── */}
-      <section style={s.section}><div className="wrap" ref={r1}><div style={s.panel} className="fi-group">
+      <section className="section"><div className="wrap" ref={r1}><div className="panel fi-group">
         <h1 style={s.h1} className="fi">Billing and plan</h1>
 
         <div style={s.currentRow} className="fi">
@@ -154,7 +154,7 @@ export default function BillingPage() {
           </div>
           {primaryCta && (
             <button
-              style={s.upgradeCta}
+              style={{ ...s.upgradeCta, transition: 'transform 160ms cubic-bezier(0.34,1.56,0.64,1), box-shadow 160ms ease, opacity 150ms ease' }}
               onClick={primaryCta.onClick}
               disabled={busy === 'trial'}
             >
@@ -168,7 +168,7 @@ export default function BillingPage() {
       </div></div></section>
 
       {/* ── Plans grid ──────────────────────────────────────────────────────── */}
-      <section style={s.section}><div className="wrap" ref={r2}><div style={s.panel} className="fi-group">
+      <section className="section"><div className="wrap" ref={r2}><div className="panel fi-group">
         <h2 style={s.h2} className="fi">Plans</h2>
         <p style={s.body} className="fi">
           Choose the plan that fits how you work.
@@ -197,7 +197,7 @@ export default function BillingPage() {
                 <div style={s.tierTop}>
                   <span style={s.tierName}>{t.name}</span>
                   <div style={s.tierPriceRow}>
-                    <span style={s.tierPrice}>{t.price}</span>
+                    <span className="fig" style={s.tierPrice}>{t.price}</span>
                     <span style={s.tierPeriod}>{t.period}</span>
                   </div>
                   {t.trialNote && eligibleForTrial && <p style={s.trialNote}>{t.trialNote}</p>}
@@ -232,7 +232,7 @@ export default function BillingPage() {
       </div></div></section>
 
       {/* ── Manage subscription (only for Pro / cancelled-active) ───────────── */}
-      <section style={{ ...s.section, paddingBottom: 80 }}><div className="wrap" ref={r3}><div style={s.panel} className="fi-group">
+      <section className="section section-page-end"><div className="wrap" ref={r3}><div className="panel fi-group">
         <h2 style={s.h2} className="fi">Manage subscription</h2>
 
         {/* Status banner — always visible so user can see the actual state.
@@ -342,40 +342,39 @@ export default function BillingPage() {
 }
 
 const s = {
-  pageTop: { height: 48 }, section: { padding: '0 0 16px' },
-  panel: { background: '#F9FAFA', border: '1px solid #E4E5E5', borderRadius: 16, padding: 32 },
-  h1: { fontFamily: "'Aptos','Segoe UI',system-ui,sans-serif", fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 24 },
-  h2: { fontFamily: "'Aptos','Segoe UI',system-ui,sans-serif", fontSize: 20, fontWeight: 600, color: '#111111', marginBottom: 12 },
-  body: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 14, color: '#979899', lineHeight: 1.7, marginBottom: 24 },
-  label: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 11, color: '#979899', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px' },
-  currentPlan: { fontFamily: "'Aptos','Segoe UI',system-ui,sans-serif", fontSize: 18, fontWeight: 600, color: '#111111' },
+  pageTop: { height: 48 },
+  h1: { fontFamily: "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", fontSize: 26, fontWeight: 700, color: '#111111', marginBottom: 24 },
+  h2: { fontFamily: "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", fontSize: 20, fontWeight: 600, color: '#111111', marginBottom: 12 },
+  body: { fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 14, color: '#979899', lineHeight: 1.7, marginBottom: 24 },
+  label: { fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 11, color: '#979899', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px' },
+  currentPlan: { fontFamily: "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", fontSize: 18, fontWeight: 600, color: '#111111' },
   currentRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 },
-  upgradeCta: { padding: '10px 22px', background: '#111111', color: '#F9FAFA', border: 'none', borderRadius: 12, fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer' },
-  errorBox: { marginTop: 16, background: 'rgba(255, 130, 16, 0.30)', border: '1px solid rgba(255, 130, 16, 0.55)', borderRadius: 8, padding: '0.75rem 1rem', fontSize: 13, color: '#111111' },
-  infoBox:  { marginTop: 16, background: 'rgba(191, 209, 214, 0.30)', border: '1px solid rgba(191, 209, 214, 0.55)', borderRadius: 8, padding: '0.75rem 1rem', fontSize: 13, color: '#111111' },
-  tierGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 16 },
-  tierCard: { border: '1px solid', borderRadius: 16, padding: 28, display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', background: '#F9FAFA' },
-  tierBadge: { position: 'absolute', top: -1, right: 20, background: '#0F4C5C', color: '#F9FAFA', fontSize: 11, fontWeight: 500, fontFamily: "'Roboto',system-ui,sans-serif", padding: '4px 12px', borderRadius: '0 0 10px 10px' },
+  upgradeCta: { padding: '10px 22px', background: '#111111', color: '#F9FAFA', border: 'none', borderRadius: 12, fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 13, fontWeight: 500, cursor: 'pointer' },
+  errorBox: { marginTop: 16, background: 'rgba(255, 130, 16, 0.30)', border: '1px solid rgba(255, 130, 16, 0.55)', borderRadius: 8, padding: '0.75rem 1rem', fontSize: 13, color: '#111111', fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif" },
+  infoBox:  { marginTop: 16, background: 'rgba(191, 209, 214, 0.30)', border: '1px solid rgba(191, 209, 214, 0.55)', borderRadius: 8, padding: '0.75rem 1rem', fontSize: 13, color: '#111111', fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif" },
+  tierGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 24 },
+  tierCard: { border: '1px solid', borderRadius: 16, padding: 28, display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', background: '#FFFFFF', boxShadow: '0 2px 12px rgba(15,76,92,0.08)', transition: 'box-shadow 150ms ease, transform 160ms cubic-bezier(0.34,1.56,0.64,1)' },
+  tierBadge: { position: 'absolute', top: -1, right: 20, background: '#0F4C5C', color: '#F9FAFA', fontSize: 11, fontWeight: 500, fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", padding: '4px 12px', borderRadius: '0 0 10px 10px' },
   tierTop: { display: 'flex', flexDirection: 'column', gap: 4 },
-  tierName: { fontFamily: "'Aptos','Segoe UI',system-ui,sans-serif", fontSize: 17, fontWeight: 600, color: '#111111' },
+  tierName: { fontFamily: "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", fontSize: 17, fontWeight: 600, color: '#111111' },
   tierPriceRow: { display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 4 },
-  tierPrice: { fontFamily: "'Aptos','Segoe UI',system-ui,sans-serif", fontSize: 28, fontWeight: 700, color: '#111111' },
-  tierPeriod: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 13, color: '#979899' },
-  trialNote: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 11, color: '#0F4C5C', marginTop: 4 },
-  tierDesc: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 13, color: '#979899', lineHeight: 1.6 },
+  tierPrice: { fontSize: 28, fontWeight: 700, color: '#111111' },
+  tierPeriod: { fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 13, color: '#979899' },
+  trialNote: { fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 11, color: '#0F4C5C', marginTop: 4 },
+  tierDesc: { fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 13, color: '#979899', lineHeight: 1.6 },
   featureList: { listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 },
   featureItem: { display: 'flex', alignItems: 'flex-start', gap: 10 },
-  featureText: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 13, color: '#111111', lineHeight: 1.4 },
-  tierCta: { width: '100%', padding: '11px', borderRadius: 12, fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 13, fontWeight: 500, marginTop: 8 },
+  featureText: { fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 13, color: '#111111', lineHeight: 1.4 },
+  tierCta: { width: '100%', padding: '11px', borderRadius: 12, fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 13, fontWeight: 500, marginTop: 8, transition: 'transform 160ms ease, box-shadow 160ms ease, opacity 150ms ease' },
   manageGrid: { display: 'flex', flexDirection: 'column', gap: 0 },
   manageCard: { display: 'flex', alignItems: 'center', gap: 16, padding: '18px 0', borderBottom: '1px solid #E4E5E5', flexWrap: 'wrap' },
-  manageIcon: { width: 40, height: 40, borderRadius: 12, border: '1px solid #E4E5E5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: '#F9FAFA' },
-  manageLabel: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 13, fontWeight: 500, color: '#111111', marginBottom: 2 },
-  manageSub: { fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 12, color: '#979899' },
-  manageBtn: { marginLeft: 'auto', padding: '8px 18px', border: '1px solid #E4E5E5', borderRadius: 10, background: '#F9FAFA', fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 12, color: '#111111', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' },
+  manageIcon: { width: 40, height: 40, borderRadius: 12, border: '1px solid #E4E5E5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: '#FFFFFF' },
+  manageLabel: { fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 13, fontWeight: 500, color: '#111111', marginBottom: 2 },
+  manageSub: { fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 12, color: '#979899' },
+  manageBtn: { marginLeft: 'auto', padding: '8px 18px', border: '1px solid #E4E5E5', borderRadius: 10, background: '#FFFFFF', fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 12, color: '#111111', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', transition: 'border-color 150ms ease, box-shadow 150ms ease' },
   statusBanner: {
     border: '1px solid', borderRadius: 10, padding: '0.75rem 1rem',
-    fontFamily: "'Roboto',system-ui,sans-serif", fontSize: 13, lineHeight: 1.5,
+    fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 13, lineHeight: 1.5,
     marginBottom: 16,
   },
 };

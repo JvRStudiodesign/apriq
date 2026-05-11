@@ -44,7 +44,7 @@ export default function Admin() {
       .catch(() => { setErr('Failed to load — add SUPABASE_SERVICE_ROLE_KEY to Vercel env vars'); setLoad(false); });
   }, [auth]);
 
-  const pg   = { maxWidth:'900px', margin:'0 auto', padding:'2rem 1.25rem 4rem', fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif' };
+  const pg   = { maxWidth:'900px', margin:'0 auto', padding:'2rem 1.25rem 4rem', fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif" };
   const grid = { display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:'0.875rem', marginBottom:'1.5rem' };
   const sh   = { fontSize:'0.72rem', fontWeight:'600', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'0.75rem' };
 

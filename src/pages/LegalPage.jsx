@@ -79,30 +79,29 @@ export default function LegalPage() {
   return (
     <div>
       <div style={s.pageTop}/>
-      <section style={s.section}><div className="wrap" ref={ref}>
+      <section className="section section-page-end"><div className="wrap" ref={ref}>
         <div style={s.tabRow} className="fi">
           {TABS.map((tab,i) => (
             <button key={tab} onClick={() => setActive(i)} style={{ ...s.tab, background:active===i?'#111111':'#F9FAFA', color:active===i?'#F9FAFA':'#979899', borderColor:active===i?'#111111':'#E4E5E5' }}>{tab}</button>
           ))}
         </div>
-        <div style={s.panel} className="fi">{CONTENT[active]}</div>
+        <div className="panel fi">{CONTENT[active]}</div>
       </div></section>
     </div>
   );
 }
 
 const s = {
-  pageTop:{ height:48 }, section:{ padding:'0 0 80px' },
+  pageTop:{ height:48 },
   tabRow:{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:20 },
-  tab:{ padding:'7px 18px', borderRadius:100, border:'1px solid', fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, cursor:'pointer', transition:'all 150ms ease', fontWeight:400 },
-  panel:{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:40 },
+  tab:{ padding:'7px 18px', borderRadius:100, border:'1px solid', fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize:13, cursor:'pointer', transition:'background 150ms ease, color 150ms ease, border-color 150ms ease', fontWeight:400 },
 };
 const ls = {
-  h2:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:26, fontWeight:700, color:'#111111', marginBottom:6, textDecoration:'underline' },
-  effective:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:12, color:'#979899', marginBottom:32 },
+  h2:{ fontFamily:"'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", fontSize:26, fontWeight:700, color:'#111111', marginBottom:6, textDecoration:'underline' },
+  effective:{ fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize:12, color:'#979899', marginBottom:32 },
   block:{ marginBottom:28 },
-  h3:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:14, fontWeight:500, color:'#111111', marginBottom:8 },
-  body:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#979899', lineHeight:1.72, marginBottom:8 },
+  h3:{ fontFamily:"'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", fontSize:14, fontWeight:600, color:'#111111', marginBottom:8 },
+  body:{ fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize:13, color:'#979899', lineHeight:1.72, marginBottom:8 },
   list:{ paddingLeft:20, display:'flex', flexDirection:'column', gap:6, marginTop:8 },
-  li:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#979899', lineHeight:1.6 },
+  li:{ fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize:13, color:'#979899', lineHeight:1.6 },
 };

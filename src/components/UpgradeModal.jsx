@@ -75,12 +75,12 @@ export default function UpgradeModal({ isOpen, onClose, user, profile, mode = 'u
           background: BRAND.bg, borderRadius: 16,
           border: `1px solid ${BRAND.border}`,
           width: '100%', maxWidth: 440,
-          padding: '2rem', fontFamily: 'Roboto, sans-serif',
+          padding: '2rem', fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif",
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: BRAND.teal, fontFamily: 'Aptos, sans-serif' }}>
+            <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: BRAND.teal, fontFamily: "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif" }}>
               {copy.title}
             </h2>
             <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: BRAND.grey }}>
@@ -135,7 +135,8 @@ export default function UpgradeModal({ isOpen, onClose, user, profile, mode = 'u
             color: BRAND.bg, border: 'none', borderRadius: 10,
             padding: '0.875rem', fontSize: '1rem', fontWeight: 700,
             cursor: canSubmit ? 'pointer' : 'not-allowed',
-            fontFamily: 'Roboto, sans-serif',
+            fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif",
+            transition: 'background 150ms ease, transform 160ms cubic-bezier(0.34,1.56,0.64,1), box-shadow 150ms ease',
           }}
         >
           {loading ? 'Redirecting to PayFast…' : copy.cta}

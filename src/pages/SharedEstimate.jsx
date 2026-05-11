@@ -29,7 +29,7 @@ export default function SharedEstimate() {
     load();
   }, [token]);
 
-  const pg     = { maxWidth:'720px', margin:'0 auto', padding:'2rem 1.25rem 4rem', fontFamily:"'Roboto', system-ui, sans-serif", fontSize:'0.875rem', color:'#1a1a18' };
+  const pg     = { maxWidth:'720px', margin:'0 auto', padding:'2rem 1.25rem 4rem', fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize:'0.875rem', color:'#1a1a18' };
   const card   = { background:'#F9FAFA', borderRadius:'16px', padding:'1.25rem 1.5rem', border:'1px solid #E4E5E5', marginBottom:'1rem' };
   const stitle = { fontSize:'0.72rem', fontWeight:'600', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'0.75rem' };
   const row    = { display:'flex', justifyContent:'space-between', padding:'0.35rem 0', borderBottom:'1px solid #E4E5E5' };

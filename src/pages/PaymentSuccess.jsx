@@ -82,9 +82,9 @@ export default function PaymentSuccess() {
 const wrap = {
   minHeight: '100vh',
   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-  background: '#F9FAFA', fontFamily: 'Roboto, sans-serif', padding: '2rem', textAlign: 'center',
+  background: '#F9FAFA', fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", padding: '2rem', textAlign: 'center',
 };
-const h1   = { color: '#0F4C5C', fontSize: '1.75rem', fontWeight: 600, marginBottom: '0.75rem' };
+const h1   = { color: '#0F4C5C', fontSize: '1.75rem', fontWeight: 600, marginBottom: '0.75rem', fontFamily: "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif" };
 const body = { color: '#979899', fontSize: '1rem', maxWidth: 480, lineHeight: 1.6 };
 const spinner = {
   marginTop: '1.5rem', width: 28, height: 28, borderRadius: '50%',

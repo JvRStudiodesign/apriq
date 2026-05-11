@@ -13,9 +13,9 @@ import {
 
 const AprIQAdvisor = lazy(() => import('../components/AprIQAdvisor'));
 
-const card    = { background: '#F9FAFA', borderRadius: '16px', padding: '1.5rem', border: '1px solid #E4E5E5', marginBottom: '1rem' };
+const card    = { background: '#FFFFFF', borderRadius: '16px', padding: '1.5rem', border: '0.5px solid #E4E5E5', marginBottom: '1rem', boxShadow: '0 2px 12px rgba(15,76,92,0.08)' };
 const lbl     = { display: 'block', fontSize: '0.7rem', fontWeight: '600', color: '#979899', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' };
-const sel     = { width: '100%', padding: '0.6rem 0.875rem', border: '1.5px solid #E4E5E5', borderRadius: '12px', fontSize: '0.875rem', background: '#F9FAFA', color: '#111111', fontFamily: 'inherit', outline: 'none', cursor: 'pointer' };
+const sel     = { width: '100%', padding: '0.6rem 0.875rem', border: '1.5px solid #E4E5E5', borderRadius: '12px', fontSize: '0.875rem', background: '#F9FAFA', color: '#111111', fontFamily: 'inherit', outline: 'none', cursor: 'pointer', transition: 'border-color 150ms ease, box-shadow 150ms ease' };
 const divider = { borderTop: '1px solid #E4E5E5', margin: '1.25rem 0' };
 const rowStyle = { display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid #E4E5E5', fontSize: '0.82rem' };
 const rowLbl   = { color: '#979899' };
@@ -66,7 +66,7 @@ function BtnGroup({ label, value, onChange, options, locked, cols, getDesc }) {
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(${gridCols}, 1fr)`, gap: '6px' }}>
         {options.map(o => (
           <button key={o.value} onClick={() => !locked && onChange(o.value)} disabled={locked}
-            style={{ padding: '0.5rem 0.35rem', borderRadius: '9px', border: value === o.value ? '1.5px solid #1a1a18' : '1.5px solid #e5e5e3', background: value === o.value ? '#1a1a18' : '#fff', color: value === o.value ? '#fff' : '#666', fontSize: '0.78rem', fontWeight: '500', cursor: locked ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.12s', opacity: locked ? 0.45 : 1 }}>
+            style={{ padding: '0.5rem 0.35rem', borderRadius: '9px', border: value === o.value ? '1.5px solid #1a1a18' : '1.5px solid #e5e5e3', background: value === o.value ? '#1a1a18' : '#fff', color: value === o.value ? '#fff' : '#666', fontSize: '0.78rem', fontWeight: '500', cursor: locked ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'border-color 150ms ease, background 150ms ease, color 150ms ease, transform 160ms cubic-bezier(0.34,1.56,0.64,1)', opacity: locked ? 0.45 : 1 }}>
             {o.label}
           </button>
         ))}
@@ -166,7 +166,7 @@ function RateRow({ rawRate, adjustedRate, adjustField, toggleField, adjValue, ad
         <span style={{ fontSize: '0.72rem', color: '#aaa' }}>Base rate</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {adjToggle && adjValue !== 0 && <span style={{ fontSize: '0.72rem', color: adjValue > 0 ? '#27ae60' : '#e74c3c', fontWeight: '600' }}>{adjValue > 0 ? '+' : ''}{adjValue}%</span>}
-          <span style={{ fontSize: '0.82rem', fontWeight: '600', color: '#1a1a18' }}>{fmtZAR(adjustedRate)} /m²</span>
+          <span className="fig" style={{ fontSize: '0.82rem', fontWeight: '600', color: '#1a1a18' }}>{fmtZAR(adjustedRate)} /m²</span>
           <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.7rem', color: '#aaa' }}>
             <input type="checkbox" checked={adjToggle} onChange={e => upd(toggleField, e.target.checked)} style={{ cursor: 'pointer' }} />
             Adjust
@@ -178,7 +178,7 @@ function RateRow({ rawRate, adjustedRate, adjustField, toggleField, adjValue, ad
           <Slider label="" value={adjValue} min={-30} max={30} step={1} onChange={v => upd(adjustField, v)} fmtFn={v => (v > 0 ? '+' : '') + v + '%'} />
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#aaa', marginTop: '-0.5rem' }}>
             <span>-30%</span>
-            <span style={{ color: '#1a1a18', fontWeight: '600' }}>{fmtZAR(rawRate * (1 + adjValue / 100))} /m²</span>
+            <span className="fig" style={{ color: '#1a1a18', fontWeight: '600' }}>{fmtZAR(rawRate * (1 + adjValue / 100))} /m²</span>
             <span>+30%</span>
           </div>
         </div>
@@ -261,7 +261,7 @@ function InstallPWA() {
             <button onClick={() => setOpen(false)} style={{ position:'absolute', top:16, right:16, background:'none', border:'none', cursor:'pointer', fontSize:18, color:'#999', lineHeight:1 }}>✕</button>
             <div style={{ marginBottom:16 }}>
               <img src="/logo-transparent.png" alt="AprIQ" style={{ height:32, mixBlendMode:'multiply', marginBottom:12 }} />
-              <h2 style={{ fontSize:18, fontWeight:700, color:'#111111', fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", marginBottom:4 }}>Installation Guide</h2>
+              <h2 style={{ fontSize:18, fontWeight:700, color:'#111111', fontFamily:"'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", marginBottom:4 }}>Installation Guide</h2>
               <p style={{ fontSize:13, color:'#979899', fontFamily:"'Roboto',system-ui,sans-serif" }}>Select your device to get started</p>
             </div>
             <div style={{ display:'flex', gap:8, marginBottom:20, flexWrap:'wrap' }}>
@@ -777,7 +777,7 @@ export default function Calculator() {
     {/* ── Total project cost hero ── */}
     <div style={{ background: '#111111', borderRadius: '14px', padding: '1.5rem', marginBottom: '0.75rem', color: '#F9FAFA' }}>
       <p style={{ fontSize: '0.68rem', color: '#979899', marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total project cost</p>
-      <p style={{ fontSize: '2rem', fontWeight: '700', letterSpacing: '-1px', lineHeight: 1.1, color: '#F9FAFA' }}>{fmtZAR(result.totalProjectCost)}</p>
+      <p className="fig" style={{ fontSize: '2rem', fontWeight: '700', letterSpacing: '-1px', lineHeight: 1.1, color: '#F9FAFA' }}>{fmtZAR(result.totalProjectCost)}</p>
       {isPro && <p style={{ fontSize: '0.68rem', color: '#979899', marginTop: '0.5rem' }}>Updates live as you adjust inputs</p>}
     </div>
 
@@ -806,7 +806,7 @@ export default function Calculator() {
           ) : (
             <span style={{ color: '#979899', fontSize: '0.75rem', minWidth: '44px', textAlign: 'right' }}>{pctFmt(el.defaultPct)}</span>
           )}
-          <span style={{ fontWeight: '600', color: '#111111', minWidth: '90px', textAlign: 'right' }}>{fmtZAR(el.amount)}</span>
+          <span className="fig" style={{ fontWeight: '600', color: '#111111', minWidth: '90px', textAlign: 'right' }}>{fmtZAR(el.amount)}</span>
         </div>
       ))}
 
@@ -822,24 +822,24 @@ export default function Calculator() {
           {result.newArea > 0 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0', fontSize: '0.82rem', fontWeight: '600', color: '#1a1a18' }}>
               <span>Construction cost — New ({result.newArea} m²)</span>
-              <span>{fmtZAR(result.baseConstructionCostNew)}</span>
+              <span className="fig">{fmtZAR(result.baseConstructionCostNew)}</span>
             </div>
           )}
           {result.renovArea > 0 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0', fontSize: '0.82rem', fontWeight: '600', color: '#1a1a18' }}>
               <span>Construction cost — Renovation ({result.renovArea} m²)</span>
-              <span>{fmtZAR(result.baseConstructionCostRenovation)}</span>
+              <span className="fig">{fmtZAR(result.baseConstructionCostRenovation)}</span>
             </div>
           )}
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.4rem', marginTop: '0.25rem', borderTop: '1px solid #eee', fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>
             <span>Construction cost total</span>
-            <span>{fmtZAR(result.constructionCost)}</span>
+            <span className="fig">{fmtZAR(result.constructionCost)}</span>
           </div>
         </div>
       ) : (
         <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>
           <span>Construction cost ({result.newArea} m²)</span>
-          <span>{fmtZAR(result.constructionCost)}</span>
+          <span className="fig">{fmtZAR(result.constructionCost)}</span>
         </div>
       )}
     </div>
@@ -856,12 +856,12 @@ export default function Calculator() {
       ].map((r, i, arr) => (
         <div key={r.label} style={{ ...rowStyle, borderBottom: i === arr.length - 1 ? 'none' : rowStyle.borderBottom }}>
           <span style={rowLbl}>{r.label}</span>
-          <span style={rowVal}>{fmtZAR(r.value)}</span>
+          <span className="fig" style={rowVal}>{fmtZAR(r.value)}</span>
         </div>
       ))}
       <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid #E4E5E5', fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>
         <span>Total financial additions</span>
-        <span>{fmtZAR((result.contingencyAmount || 0) + (result.contractorProfit || 0) + (result.preliminaries || 0) + (result.professionalFees || 0) + (result.vatAmount || 0))}</span>
+        <span className="fig">{fmtZAR((result.contingencyAmount || 0) + (result.contractorProfit || 0) + (result.preliminaries || 0) + (result.professionalFees || 0) + (result.vatAmount || 0))}</span>
       </div>
     </div>
 
@@ -874,7 +874,7 @@ export default function Calculator() {
       ].map((r, i, arr) => (
         <div key={r.label} style={{ ...rowStyle, borderBottom: i === arr.length - 1 ? 'none' : rowStyle.borderBottom }}>
           <span style={rowLbl}>{r.label}</span>
-          <span style={rowVal}>{fmtZAR(r.value)}</span>
+          <span className="fig" style={rowVal}>{fmtZAR(r.value)}</span>
         </div>
       ))}
       <div style={{ ...rowStyle, borderBottom: 'none' }}>
@@ -883,7 +883,7 @@ export default function Calculator() {
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid #E4E5E5', fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>
         <span>Total land cost</span>
-        <span>{fmtZAR(result.totalLandCost ?? ((result.landProcurementCost || 0) + (result.landDevelopmentCost || 0)))}</span>
+        <span className="fig">{fmtZAR(result.totalLandCost ?? ((result.landProcurementCost || 0) + (result.landDevelopmentCost || 0)))}</span>
       </div>
     </div>
 
@@ -891,7 +891,7 @@ export default function Calculator() {
     <div style={{ ...card, background: '#f9f9f7' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: '0.95rem', fontWeight: '700', color: '#1a1a18' }}>Total project cost</span>
-        <span style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.totalProjectCost)}</span>
+        <span className="fig" style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.totalProjectCost)}</span>
       </div>
     </div>
 
@@ -934,10 +934,10 @@ export default function Calculator() {
         <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#1a1a18', display: 'block', marginBottom: '0.25rem' }}>Escalation at {inputs.escalationRate}% p.a.</span>
         <p style={{ fontSize: '0.72rem', color: '#aaa', marginBottom: '1rem' }}>Base estimate: {new Date().toLocaleDateString('en-ZA', { year: 'numeric', month: 'long' })}</p>
         {result.escalationYears.map(y => (
-          <div key={y.year} style={rowStyle}><span style={rowLbl}>{y.label}</span><span style={rowVal}>{fmtZAR(y.total)}</span></div>
+          <div key={y.year} style={rowStyle}><span style={rowLbl}>{y.label}</span><span className="fig" style={rowVal}>{fmtZAR(y.total)}</span></div>
         ))}
         <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', fontSize: '0.9rem', fontWeight: '700', color: '#1a1a18' }}>
-          <span>Escalated total</span><span>{fmtZAR(result.escalatedTotal)}</span>
+          <span>Escalated total</span><span className="fig">{fmtZAR(result.escalatedTotal)}</span>
         </div>
       </div>
     )}
@@ -958,13 +958,13 @@ export default function Calculator() {
             )}
           </div>
           {/* Show the user-adjusted rate, not the raw rate */}
-          <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.weightedBaseRate)} /m²</span>
+          <span className="fig" style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.weightedBaseRate)} /m²</span>
         </div>
       ) : (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid #f5f5f3' }}>
             <span style={{ fontSize: '0.78rem', color: '#555' }}>Weighted base rate</span>
-            <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.weightedBaseRate)} /m²</span>
+            <span className="fig" style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.weightedBaseRate)} /m²</span>
           </div>
           {/* Composition */}
           {[
@@ -977,7 +977,7 @@ export default function Calculator() {
                 {u.sub} ({Math.round(u.alloc * 100)}%)
                 {u.adj !== 0 && <span style={{ color: u.adj > 0 ? '#27ae60' : '#e74c3c', marginLeft: '4px' }}>{u.adj > 0 ? '+' : ''}{u.adj}%</span>}
               </span>
-              <span>{fmtZAR(u.rate)} /m²</span>
+              <span className="fig">{fmtZAR(u.rate)} /m²</span>
             </div>
           ))}
         </>
@@ -996,7 +996,7 @@ export default function Calculator() {
         return (
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid #f5f5f3' }}>
             <span style={{ fontSize: '0.78rem', color: '#555' }}>Weighted project rate excluding land</span>
-            <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(weightedProjectRateExcludingLand)} /m²</span>
+            <span className="fig" style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(weightedProjectRateExcludingLand)} /m²</span>
           </div>
         );
       })()}
@@ -1013,7 +1013,7 @@ export default function Calculator() {
         return rows.map(r => (
           <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid #f5f5f3' }}>
             <span style={{ fontSize: '0.78rem', color: '#aaa' }}>{r.label}</span>
-            <span style={{ fontSize: '0.78rem', fontWeight: '500', color: r.uplift > 0 ? '#555' : r.uplift < 0 ? '#e74c3c' : '#ccc' }}>
+            <span className="fig" style={{ fontSize: '0.78rem', fontWeight: '500', color: r.uplift > 0 ? '#555' : r.uplift < 0 ? '#e74c3c' : '#ccc' }}>
               {r.uplift > 0 ? '+ ' : r.uplift < 0 ? '− ' : '  '}{fmtZAR(Math.abs(r.uplift))} /m²
             </span>
           </div>
@@ -1028,7 +1028,7 @@ export default function Calculator() {
         <span style={{ fontSize: '0.82rem', fontWeight: '600', color: '#1a1a18' }}>
           {isRenovation ? 'Construction rate — new work' : 'Total adjusted base rate'}
         </span>
-        <span style={{ fontSize: '0.95rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.totalAdjustedBaseRate)} /m²</span>
+        <span className="fig" style={{ fontSize: '0.95rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.totalAdjustedBaseRate)} /m²</span>
       </div>
 
       {/* Renovation rate block */}
@@ -1038,13 +1038,13 @@ export default function Calculator() {
             <span style={{ fontSize: '0.78rem', color: '#aaa' }}>
               Renovation — {inputs.renovationComplexityKey} (×{result.renovationMultiplier})
             </span>
-            <span style={{ fontSize: '0.78rem', fontWeight: '500', color: '#555' }}>
+            <span className="fig" style={{ fontSize: '0.78rem', fontWeight: '500', color: '#555' }}>
               + {fmtZAR(result.totalAdjustedBaseRate * (result.renovationMultiplier - 1))} /m²
             </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: '#f9f9f7', borderRadius: '10px', marginTop: '0.5rem' }}>
             <span style={{ fontSize: '0.82rem', fontWeight: '600', color: '#1a1a18' }}>Construction rate — renovation</span>
-            <span style={{ fontSize: '0.95rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.totalAdjustedBaseRate * result.renovationMultiplier)} /m²</span>
+            <span className="fig" style={{ fontSize: '0.95rem', fontWeight: '700', color: '#1a1a18' }}>{fmtZAR(result.totalAdjustedBaseRate * result.renovationMultiplier)} /m²</span>
           </div>
         </>
       )}
@@ -1146,7 +1146,7 @@ export default function Calculator() {
   </>);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif" }}>
       <style>{`@media(max-width:700px){.desktop-grid{display:block!important;}.desktop-right{display:none!important;}.mobile-summary{display:block!important;}}`}</style>
 
       {/* Nav handled by Layout */}
@@ -1286,9 +1286,9 @@ export default function Calculator() {
                   : landRate + ((landRate * landArea * (LAND_SLOPE[inputs.landSlopeKey]?.multiplier ?? 1) * devMult) / landArea);
                 return (
                   <>
-                    <span style={{ display: 'block' }}>Land cost: {fmtZARRate(landRate)}/m²</span>
+                    <span style={{ display: 'block' }}>Land cost: <span className="fig">{fmtZARRate(landRate)}</span>/m²</span>
                     <span style={{ display: 'block' }}>Land development allowance: {(devMult * 100).toFixed(0)}%</span>
-                    <span style={{ display: 'block' }}>Approximate land cost: {fmtZARRate(approx)}/m²</span>
+                    <span style={{ display: 'block' }}>Approximate land cost: <span className="fig">{fmtZARRate(approx)}</span>/m²</span>
                   </>
                 );
               })()}
@@ -1338,10 +1338,11 @@ export default function Calculator() {
                   <input
                     ref={estimatedStartDateRef}
                     type="date"
+                    className="apriq-date"
                     value={inputs.estimatedStartDate || ''}
                     onChange={e => isPro && upd('estimatedStartDate', e.target.value || null)}
                     disabled={!isPro}
-                    style={{ flex: 1, minWidth: 0, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#111111', WebkitTextFillColor: '#111111', background: '#F9FAFA', colorScheme: 'light', appearance: 'none', WebkitAppearance: 'none' }}
+                    style={{ flex: 1, minWidth: 0, padding: '0.6rem 0.875rem', border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'inherit', color: '#111111', WebkitTextFillColor: '#111111', background: '#F9FAFA', colorScheme: 'light' }}
                   />
                   <button
                     type="button"

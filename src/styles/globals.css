@@ -1,65 +1,289 @@
 /* Override index.css root centering */
 #root { text-align: left; }
 
-/* AprIQ — Global Stylesheet | Brand Guide v1.2 */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap');
+/* AprIQ — Global Stylesheet | Brand Guide v1.3 (UI Upgrade) */
 
 :root {
   --petrol:    #0F4C5C;
   --ink:       #111111;
   --paper:     #F9FAFA;
+  --white:     #FFFFFF;
   --mist:      #E4E5E5;
   --grey:      #979899;
   --orange:    #FF8210;
   --pale-blue: #BFD1D6;
-  --font-heading: 'Aptos', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --teal-50:   #eaf2f4;
+
+  /* ── Typography ── */
+  --font-heading: 'Plus Jakarta Sans', 'Segoe UI', -apple-system, system-ui, sans-serif;
   --font-body:    'Roboto', 'Segoe UI', -apple-system, system-ui, sans-serif;
+  --font-mono:    'DM Mono', ui-monospace, Consolas, monospace;
+
+  /* ── Spacing ── */
   --s4:4px; --s8:8px; --s12:12px; --s16:16px; --s24:24px;
   --s32:32px; --s40:40px; --s48:48px; --s64:64px;
+
+  /* ── Radii ── */
   --r-sm:10px; --r-md:12px; --r-lg:16px; --r-xl:20px;
+
+  /* ── Layout ── */
   --max-w:960px; --pad-x:24px;
-  --ease:150ms ease; --ease-fade:180ms ease;
+
+  /* ── Transitions (intentional, shared across UI) ── */
+  --ease: 150ms ease;
+  --ease-fade: 180ms ease;
+  --ease-ui: 150ms ease;
+  --ease-lift: 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-color: 180ms ease;
+  --page-end-pad: 80px;
+  /* Chat / bubble vertical rhythm (AprIQ Intelligence, advisor-style stacks) */
+  --bubble-stack-gap: 12px;
+
+  /* ── Shadows — teal-tinted, not generic black ── */
+  --shadow-sm:    0 1px 4px rgba(15,76,92,0.07);
+  --shadow-panel: 0 2px 12px rgba(15,76,92,0.08), 0 0 0 0.5px rgba(229,228,231,0.9);
+  --shadow-md:    0 4px 20px rgba(15,76,92,0.10), 0 1px 4px rgba(15,76,92,0.06);
+  --shadow-lg:    0 8px 32px rgba(15,76,92,0.12), 0 2px 8px rgba(15,76,92,0.06);
+  --shadow-btn:   0 4px 16px rgba(17,17,17,0.16);
+  --shadow-btn-orange: 0 4px 16px rgba(255,130,16,0.28);
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden;}
-body{font-family:var(--font-body);background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6;overflow-x:hidden;}
-h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);color:var(--ink);line-height:1.2;font-weight:600;}
-p{font-family:var(--font-body);color:var(--grey);line-height:1.7;font-size:14px;}
-a{color:var(--petrol);text-decoration:none;}
-a:hover{text-decoration:underline;}
-.wrap{max-width:var(--max-w);margin:0 auto;padding:0 var(--pad-x);}
-.panel{background:var(--paper);border:1px solid var(--mist);border-radius:var(--r-lg);padding:var(--s32);}
-.pill{display:inline-flex;align-items:center;padding:6px 16px;border-radius:100px;border:1px solid var(--mist);font-family:var(--font-body);font-size:13px;color:var(--ink);background:var(--paper);white-space:nowrap;}
-.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
-.btn-ink{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 26px;background:var(--ink);color:var(--paper);border:none;border-radius:var(--r-md);font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;transition:opacity var(--ease);text-decoration:none;}
-.btn-ink:hover{opacity:0.86;text-decoration:none;}
-.btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 26px;background:var(--paper);color:var(--ink);border:1px solid var(--mist);border-radius:var(--r-md);font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;transition:background var(--ease);text-decoration:none;}
-.btn-outline:hover{background:var(--mist);}
-.input{width:100%;padding:10px 14px;background:var(--paper);border:1px solid var(--mist);border-radius:var(--r-md);font-family:var(--font-body);font-size:13px;color:var(--ink);outline:none;transition:border-color var(--ease);appearance:none;}
-.input::placeholder{color:var(--grey);}
-.input:focus{border-color:var(--pale-blue);}
-.fi{opacity:0;transform:translateY(7px);transition:opacity var(--ease-fade),transform 200ms ease;}
-.fi.show{opacity:1;transform:translateY(0);}
-.fi-group .fi:nth-child(1){transition-delay:0ms;}
-.fi-group .fi:nth-child(2){transition-delay:55ms;}
-.fi-group .fi:nth-child(3){transition-delay:110ms;}
-.fi-group .fi:nth-child(4){transition-delay:165ms;}
-.fi-group .fi:nth-child(5){transition-delay:220ms;}
-.fi-group .fi:nth-child(6){transition-delay:275ms;}
-.section{padding:56px 0;}
-.section-sm{padding:32px 0;}
-.divider{border:none;border-top:1px solid var(--mist);margin:32px 0;}
-@media(max-width:700px){
-  :root{--pad-x:16px;--s32:24px;}
-  h1{font-size:24px!important;}
-  h2{font-size:18px!important;}
-  .panel{padding:24px 20px;}
-  .nav-desktop{display:none!important;}
-  .hamburger{display:flex!important;}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
 }
-@media(min-width:701px){
-  .hamburger{display:none!important;}
-  .mobile-menu{display:none!important;}
+
+body {
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  font-family: var(--font-heading);
+  color: var(--ink);
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+p {
+  font-family: var(--font-body);
+  color: var(--grey);
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+a {
+  color: var(--petrol);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+/* ── Layout helpers ── */
+.wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--pad-x); }
+
+/* ── Panel — white on paper background creates depth ── */
+.panel {
+  background: var(--white);
+  border: 0.5px solid var(--mist);
+  border-radius: var(--r-lg);
+  padding: var(--s32);
+  box-shadow: var(--shadow-panel);
+}
+
+/* ── Pills (approved orange border — AprIQ brand) ── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--orange);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--paper);
+  white-space: nowrap;
+  transition: border-color var(--ease-ui), box-shadow var(--ease-ui), transform var(--ease-lift);
+}
+.pill-row { display: flex; flex-wrap: wrap; gap: var(--s8); margin-top: var(--s24); }
+
+/* Orange-border tag — same language as landing pills */
+.pill-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s8);
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--orange);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--paper);
+  white-space: nowrap;
+  transition: border-color var(--ease-ui), box-shadow var(--ease-ui), transform var(--ease-lift);
+}
+.pill-accent:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+/* Small elevated tiles (feature grids, etc.) */
+.card-tile {
+  background: var(--white);
+  border: 0.5px solid var(--mist);
+  border-radius: var(--r-md);
+  padding: var(--s24);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--ease-ui), border-color var(--ease-ui), transform var(--ease-lift);
+}
+@media (hover: hover) {
+  .card-tile:hover {
+    box-shadow: var(--shadow-panel);
+  }
+}
+
+/* Last section breathing room before footer */
+.section-page-end { padding-bottom: var(--page-end-pad); }
+
+/* ── Buttons ── */
+.btn-ink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 26px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  /* Smooth transform + shadow on hover */
+  transition: transform 160ms cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 160ms ease,
+              opacity 160ms ease;
+}
+.btn-ink:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-btn);
+  opacity: 1;
+  text-decoration: none;
+}
+.btn-ink:active {
+  transform: scale(0.97) translateY(0);
+  box-shadow: none;
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 26px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--mist);
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--ease), transform 120ms ease, box-shadow 120ms ease;
+}
+.btn-outline:hover {
+  background: var(--mist);
+  text-decoration: none;
+}
+.btn-outline:active { transform: scale(0.97); }
+
+/* ── Inputs ── */
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--paper);
+  border: 1.5px solid var(--mist);
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color var(--ease), box-shadow var(--ease);
+  appearance: none;
+}
+.input::placeholder { color: var(--grey); }
+.input:focus {
+  border-color: var(--petrol);
+  box-shadow: 0 0 0 3px rgba(15,76,92,0.10);
+}
+
+/* ── Financial figure — monospace + tabular nums ── */
+/* Apply class "fig" to any cost/rate display element */
+.fig {
+  /* Keep numeric alignment without introducing a different "0" glyph style */
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* ── Calculator date input (single calendar icon) ── */
+input.apriq-date::-webkit-calendar-picker-indicator {
+  opacity: 0;           /* hide the default (black) icon */
+  pointer-events: none; /* keep clicks going to our orange icon button */
+}
+
+/* ── Smooth nav header transition ── */
+header {
+  transition: background 250ms ease, box-shadow 250ms ease,
+              backdrop-filter 250ms ease, border-color 250ms ease;
+}
+
+/* ── Fade-in animation system (unchanged) ── */
+.fi { opacity:0; transform:translateY(7px); transition:opacity var(--ease-fade), transform 200ms ease; }
+.fi.show { opacity:1; transform:translateY(0); }
+.fi-group .fi:nth-child(1) { transition-delay:0ms; }
+.fi-group .fi:nth-child(2) { transition-delay:55ms; }
+.fi-group .fi:nth-child(3) { transition-delay:110ms; }
+.fi-group .fi:nth-child(4) { transition-delay:165ms; }
+.fi-group .fi:nth-child(5) { transition-delay:220ms; }
+.fi-group .fi:nth-child(6) { transition-delay:275ms; }
+
+/* ── Section spacing (consistent mobile / tablet / desktop rhythm) ── */
+.section    { padding: 40px 0; }
+.section-sm { padding: 28px 0; }
+.divider    { border: none; border-top: 1px solid var(--mist); margin: 32px 0; }
+
+@media (min-width: 701px) {
+  .section { padding: 48px 0; }
+  .section-sm { padding: 32px 0; }
+}
+@media (min-width: 1024px) {
+  .section { padding: 52px 0; }
+}
+
+/* ── Responsive ── */
+@media(max-width:700px) {
+  :root { --pad-x:16px; --s32:24px; }
+  h1 { font-size: 24px !important; }
+  h2 { font-size: 18px !important; }
+  .panel { padding: 24px 20px; }
+  .nav-desktop { display: none !important; }
+  .hamburger { display: flex !important; }
+}
+@media(min-width:701px) {
+  .hamburger { display: none !important; }
+  .mobile-menu { display: none !important; }
 }
 
 /* ── Checkbox styling — orange tick, transparent bg ── */
@@ -93,49 +317,48 @@ input[type="checkbox"]:checked::after {
   transform: rotate(45deg);
 }
 
-
-/* ── Prevent iOS input zoom (font-size 16px minimum) ── */
+/* ── Prevent iOS input zoom ── */
 input, select, textarea {
   font-size: 16px;
   touch-action: manipulation;
 }
-
-/* Enforce >=16px computed size on mobile to prevent focus-zoom,
-   even when inline styles set smaller rem-based sizes. */
 @media (max-width: 900px) {
   input, select, textarea, button {
     font-size: 16px !important;
   }
 }
 
-/* ── Force all inputs to always use light color scheme ── */
-/* This prevents iOS/Android/Chrome dark mode from making inputs black */
-input, select, textarea, input[type="date"], input[type="number"], input[type="text"], input[type="email"], input[type="password"] {
+/* ── Force light color-scheme on all inputs ── */
+input, select, textarea,
+input[type="date"], input[type="number"],
+input[type="text"], input[type="email"], input[type="password"] {
   color-scheme: light !important;
 }
 
-/* Keep date picker icon visible and consistent with light mode */
-input[type="date"]::-webkit-calendar-picker-indicator {
-  opacity: 0 !important;
-  filter: none !important;
-  background: transparent !important;
-}
-
-/* Ensure iOS keeps date text visible */
+/* Native date picker: keep calendar control visible (year/month navigation). */
 input[type="date"] {
-  color: #111111 !important;
-  -webkit-text-fill-color: #111111 !important;
+  color: var(--ink);
+  font-family: var(--font-body);
 }
-
-/* Force the editable date text to remain visible on iOS */
 input[type="date"]::-webkit-datetime-edit,
 input[type="date"]::-webkit-datetime-edit-fields-wrapper,
 input[type="date"]::-webkit-datetime-edit-text,
 input[type="date"]::-webkit-datetime-edit-month-field,
 input[type="date"]::-webkit-datetime-edit-day-field,
 input[type="date"]::-webkit-datetime-edit-year-field {
-  color: #111111 !important;
-  -webkit-text-fill-color: #111111 !important;
+  color: var(--ink);
+  -webkit-text-fill-color: var(--ink);
+}
+
+/* Subtle transitions on native controls (no layout animation) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select,
+textarea {
+  transition: border-color var(--ease-ui), box-shadow var(--ease-ui);
+}
+button {
+  transition: background var(--ease-ui), border-color var(--ease-ui), color var(--ease-ui),
+    transform var(--ease-lift), box-shadow var(--ease-ui), opacity var(--ease-ui);
 }
 
 /* ── Footer mobile responsive ── */
@@ -152,14 +375,7 @@ input[type="date"]::-webkit-datetime-edit-year-field {
   .footer-centre { text-align: center !important; }
 }
 
-
-
-
-
-
-
-
-/* ── Mobile footer phones ≤600px ── */
+/* ── Mobile footer ≤600px ── */
 @media (max-width: 600px) {
   footer .wrap {
     flex-wrap: wrap !important;
@@ -167,11 +383,8 @@ input[type="date"]::-webkit-datetime-edit-year-field {
     padding: 24px 20px !important;
     align-items: flex-start !important;
   }
-  /* LEFT col: logo (order 1) */
   footer .footer-brand { order: 1; flex: 0 0 auto !important; }
   footer .footer-brand p { display: none !important; }
-
-  /* RIGHT col: all text info right-aligned (order 2) */
   footer .footer-centre {
     order: 2;
     flex: 0 0 auto !important;
@@ -181,8 +394,6 @@ input[type="date"]::-webkit-datetime-edit-year-field {
   }
   footer .footer-centre > div { flex-direction: column !important; align-items: flex-end !important; }
   footer .footer-sep { display: none !important; }
-
-  /* RIGHT col continued: FAQ + copyright (order 3) */
   footer .footer-right {
     order: 3;
     flex: 0 0 auto !important;
@@ -192,7 +403,6 @@ input[type="date"]::-webkit-datetime-edit-year-field {
     margin-top: 4px !important;
     gap: 6px !important;
   }
-  /* Social icons: move to LEFT under logo (order 4, reset margin) */
   footer .footer-social {
     order: 4;
     flex: 0 0 100% !important;

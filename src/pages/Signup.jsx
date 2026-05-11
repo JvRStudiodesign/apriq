@@ -82,7 +82,7 @@ export default function Signup() {
     transition: 'all 150ms ease',
     flexShrink: 0,
   });
-  const cbLabel = { fontFamily: "'Roboto', 'Segoe UI', system-ui, sans-serif", fontSize: '0.875rem', color: '#979899', lineHeight: 1.5 };
+  const cbLabel = { fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif", fontSize: '0.875rem', color: '#979899', lineHeight: 1.5 };
   const checkMark = (
     <svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true" focusable="false">
       <path d="M1 5.2L4.2 8.2L11 1.5" stroke="#F9FAFA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -90,9 +90,9 @@ export default function Signup() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA', fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif" }}>
       <div style={{ background: '#F9FAFA', padding: '2.5rem', borderRadius: '20px', width: '100%', maxWidth: '420px', boxShadow: '0 1px 12px rgba(0,0,0,0.04)' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem', color: '#111111' }}>Create your account</h1>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem', color: '#111111', fontFamily: "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif" }}>Create your account</h1>
         <p style={{ color: '#979899', marginBottom: '2rem', fontSize: '0.9rem' }}>
           30-day <span style={{ color: '#FF8210', fontWeight: 600 }}>Pro</span> trial — no card required
         </p>

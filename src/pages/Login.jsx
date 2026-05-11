@@ -38,7 +38,7 @@ export default function Login() {
   const btnS = { width: '100%', padding: '0.75rem', background: '#fff', color: '#1a1a18', border: '1.5px solid #E4E5E5', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit' };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9FAFA', fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif" }}>
       <div style={{ background: '#F9FAFA', padding: '2.5rem', borderRadius: '20px', width: '100%', maxWidth: '400px', boxShadow: '0 1px 12px rgba(0,0,0,0.04)' }}>
         <img src="/logo-transparent.png" alt="AprIQ" style={{ height:'80px', objectFit:'contain', display:'block', margin:'0 auto 1rem', mixBlendMode:'multiply' }} />
         <p style={{ color: '#979899', marginBottom: '2rem', fontSize: '0.85rem', textAlign:'center' }}>Construction Cost Intelligence</p>

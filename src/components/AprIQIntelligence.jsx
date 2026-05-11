@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 
 const Q_LIMIT = 5;
 const LS_KEY = 'apriq-intelligence-questions';
-const FONT = "'Roboto',system-ui,sans-serif";
+const FONT_BODY = "'Roboto','Segoe UI',system-ui,sans-serif";
+const FONT_HEADING = "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif";
+const BUBBLE_GAP = 'var(--bubble-stack-gap)';
 const SUGGESTED = [
   'What does it cost to build in SA?',
   'How does escalation affect my budget?',
@@ -30,37 +32,40 @@ function incrementUsed() {
 
 const s = {
   wrap: { position: 'fixed', bottom: 'calc(24px + env(safe-area-inset-bottom))', right: 'calc(24px + env(safe-area-inset-right))', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', zIndex: 9999, colorScheme: 'light' },
-  fab: { width: '48px', height: '48px', minWidth: '48px', minHeight: '48px', borderRadius: '10px', border: '1.5px solid #FF8210', background: '#F9FAFA', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0, padding: 0 },
+  fab: { width: '48px', height: '48px', minWidth: '48px', minHeight: '48px', borderRadius: '10px', border: '1.5px solid #FF8210', background: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0, padding: 0, boxShadow: '0 1px 4px rgba(15,76,92,0.07)', transition: 'transform 160ms cubic-bezier(0.34,1.56,0.64,1), box-shadow 150ms ease, border-color 150ms ease' },
   ping: { position: 'absolute', top: '-3px', right: '-3px', width: '11px', height: '11px', borderRadius: '50%', background: '#FF8210', border: '2px solid #F9FAFA' },
-  panel: { background: '#F9FAFA', border: '1px solid #E4E5E5', borderRadius: '20px', width: '320px', maxWidth: 'calc(100vw - 32px)', overflow: 'hidden', colorScheme: 'light' },
-  header: { padding: '18px 18px 14px', borderBottom: '1px solid #E4E5E5', display: 'flex', alignItems: 'center', gap: '10px', background: '#F9FAFA' },
+  panel: { background: '#FFFFFF', border: '0.5px solid #E4E5E5', borderRadius: '20px', width: '320px', maxWidth: 'calc(100vw - 32px)', overflow: 'hidden', colorScheme: 'light', boxShadow: '0 4px 24px rgba(15,76,92,0.10)' },
+  header: { padding: '18px 18px 14px', borderBottom: '1px solid #E4E5E5', display: 'flex', alignItems: 'center', gap: '10px', background: '#FFFFFF' },
   avatar: { width: '36px', height: '36px', minWidth: '36px', borderRadius: '10px', border: '1.5px solid #FF8210', background: '#F9FAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  title: { fontSize: '13px', fontWeight: 500, color: '#111111', fontFamily: FONT },
-  sub: { fontSize: '11px', color: '#979899', marginTop: '1px', fontFamily: FONT },
-  xbtn: { marginLeft: 'auto', width: '30px', height: '30px', minWidth: '30px', maxWidth: '30px', minHeight: '30px', maxHeight: '30px', borderRadius: '10px', border: '1px solid #E4E5E5', background: '#F9FAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, flexShrink: 0 },
-  body: { padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', background: '#F9FAFA', maxHeight: 'min(260px, calc(100dvh - 240px))', overflowY: 'auto' },
-  aiBubble: { background: '#F9FAFA', border: '1px solid #E4E5E5', borderRadius: '16px', borderBottomLeftRadius: '4px', padding: '10px 13px', fontSize: '12px', color: '#111111', lineHeight: 1.6, maxWidth: '95%', fontFamily: FONT },
-  userBubble: { background: '#E4E5E5', borderRadius: '16px', borderBottomRightRadius: '4px', padding: '10px 13px', fontSize: '12px', color: '#111111', lineHeight: 1.6, maxWidth: '90%', alignSelf: 'flex-end', fontFamily: FONT },
-  msgLabel: { fontSize: '10px', color: '#979899', fontFamily: FONT },
-  qlabel: { fontSize: '10px', color: '#979899', marginBottom: '6px', fontFamily: FONT },
-  qrow: { display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' },
-  qchip: { width: '100%', padding: '8px 12px', borderRadius: '12px', border: '1px solid #BFD1D6', background: '#F9FAFA', fontSize: '11px', color: '#0F4C5C', cursor: 'pointer', fontFamily: FONT, lineHeight: 1.4, textAlign: 'left', boxSizing: 'border-box' },
-  counter: { fontSize: '10px', color: '#979899', textAlign: 'center', padding: '4px 0 6px', borderTop: '1px solid #E4E5E5', background: '#F9FAFA', fontFamily: FONT },
+  title: { fontSize: '13px', fontWeight: 600, color: '#111111', fontFamily: FONT_HEADING, letterSpacing: '-0.01em' },
+  sub: { fontSize: '11px', color: '#979899', marginTop: '1px', fontFamily: FONT_BODY },
+  xbtn: { marginLeft: 'auto', width: '30px', height: '30px', minWidth: '30px', maxWidth: '30px', minHeight: '30px', maxHeight: '30px', borderRadius: '10px', border: '1px solid #E4E5E5', background: '#F9FAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, flexShrink: 0, transition: 'background var(--ease-ui), border-color var(--ease-ui), box-shadow var(--ease-ui), transform var(--ease-lift)' },
+  body: { padding: '14px', display: 'flex', flexDirection: 'column', gap: BUBBLE_GAP, background: '#F9FAFA', maxHeight: 'min(260px, calc(100dvh - 240px))', overflowY: 'auto' },
+  aiBubble: { background: '#FFFFFF', border: '0.5px solid #E4E5E5', borderRadius: '16px', borderBottomLeftRadius: '4px', padding: '10px 13px', fontSize: '12px', color: '#111111', lineHeight: 1.6, maxWidth: '95%', fontFamily: FONT_BODY, boxShadow: '0 1px 4px rgba(15,76,92,0.06)' },
+  userBubble: { background: '#E4E5E5', borderRadius: '16px', borderBottomRightRadius: '4px', padding: '10px 13px', fontSize: '12px', color: '#111111', lineHeight: 1.6, maxWidth: '90%', alignSelf: 'flex-end', fontFamily: FONT_BODY },
+  msgLabel: { fontSize: '10px', color: '#979899', fontFamily: FONT_BODY, fontWeight: 500 },
+  qlabel: { fontSize: '10px', color: '#979899', marginBottom: '6px', fontFamily: FONT_BODY, fontWeight: 500 },
+  qrow: { display: 'flex', flexDirection: 'column', gap: BUBBLE_GAP, width: '100%' },
+  qchip: { width: '100%', padding: '8px 12px', borderRadius: '12px', border: '1px solid #BFD1D6', background: '#F9FAFA', fontSize: '11px', color: '#0F4C5C', cursor: 'pointer', fontFamily: FONT_BODY, lineHeight: 1.4, textAlign: 'left', boxSizing: 'border-box', transition: 'border-color var(--ease-ui), background var(--ease-ui), box-shadow var(--ease-ui), transform var(--ease-lift)' },
+  counter: { fontSize: '10px', color: '#979899', textAlign: 'center', padding: '4px 0 6px', borderTop: '1px solid #E4E5E5', background: '#F9FAFA', fontFamily: FONT_BODY },
   footer: { padding: '10px 12px', borderTop: '1px solid #E4E5E5', display: 'flex', gap: '6px', alignItems: 'center', background: '#F9FAFA' },
-  input: { flex: 1, padding: '8px 11px', fontSize: '11px', borderRadius: '10px', border: '1px solid #E4E5E5', background: '#F9FAFA', color: '#111111', fontFamily: FONT, outline: 'none', height: '34px' },
-  sendBtn: (disabled) => ({ width: '32px', height: '32px', minWidth: '32px', borderRadius: '10px', background: disabled ? '#E4E5E5' : '#FF8210', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }),
-  limitBody: { padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '14px', background: '#F9FAFA' },
-  upgradeBtn: { display: 'block', width: '100%', padding: '11px', borderRadius: '12px', background: '#111111', color: '#F9FAFA', fontSize: '13px', fontWeight: 500, textDecoration: 'none', textAlign: 'center', fontFamily: FONT },
-  trialBar: { padding: '10px 16px', borderTop: '1px solid #E4E5E5', background: '#F9FAFA', fontSize: '11px', color: '#979899', textAlign: 'center', fontFamily: FONT },
+  input: { flex: 1, padding: '8px 11px', fontSize: '11px', borderRadius: '10px', border: '1px solid #E4E5E5', background: '#F9FAFA', color: '#111111', fontFamily: FONT_BODY, outline: 'none', height: '34px', transition: 'border-color var(--ease-ui), box-shadow var(--ease-ui)' },
+  sendBtn: (disabled) => ({ width: '32px', height: '32px', minWidth: '32px', borderRadius: '10px', background: disabled ? '#E4E5E5' : '#FF8210', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background var(--ease-ui), transform var(--ease-lift), box-shadow var(--ease-ui)' }),
+  limitBody: { padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: BUBBLE_GAP, background: '#F9FAFA' },
+  upgradeBtn: { display: 'block', width: '100%', padding: '11px', borderRadius: '12px', background: '#111111', color: '#F9FAFA', fontSize: '13px', fontWeight: 600, textDecoration: 'none', textAlign: 'center', fontFamily: FONT_HEADING, transition: 'background var(--ease-ui), transform var(--ease-lift), box-shadow var(--ease-ui)' },
+  trialBar: { padding: '10px 16px', borderTop: '1px solid #E4E5E5', background: '#F9FAFA', fontSize: '11px', color: '#979899', textAlign: 'center', fontFamily: FONT_BODY },
 };
 
-const FaceIcon = ({ size = 24 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block' }}>
-    <circle cx="9" cy="10" r="1.4" fill="#FF8210"/>
-    <circle cx="15" cy="10" r="1.4" fill="#FF8210"/>
-    <path d="M8 14.5c1.2 1.8 6 1.8 8 0" fill="none" stroke="#FF8210" strokeWidth="1.6" strokeLinecap="round"/>
-  </svg>
-);
+// AprIQ Advisor icon (AI-specific mark; not the brand logo)
+function AdvisorIcon({ size = 24 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block' }}>
+      <circle cx="9" cy="10" r="1.4" fill="#FF8210" />
+      <circle cx="15" cy="10" r="1.4" fill="#FF8210" />
+      <path d="M8 14.5c1.2 1.8 6 1.8 8 0" fill="none" stroke="#FF8210" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 const XIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2.5" strokeLinecap="round">
@@ -127,8 +132,8 @@ export default function AprIQIntelligence() {
   if (!open) {
     return (
       <div style={s.wrap}>
-        <button style={s.fab} onClick={() => setOpen(true)}>
-          <FaceIcon size={40}/>
+        <button type="button" style={s.fab} onClick={() => setOpen(true)} aria-label="Open AprIQ Intelligence">
+          <AdvisorIcon size={32} />
           <div style={s.ping}/>
         </button>
       </div>
@@ -139,7 +144,7 @@ export default function AprIQIntelligence() {
     <div style={s.wrap}>
       <div style={s.panel}>
         <div style={s.header}>
-          <div style={s.avatar}><FaceIcon size={24}/></div>
+          <div style={s.avatar}><AdvisorIcon size={22} /></div>
           <div>
             <div style={s.title}>AprIQ Intelligence</div>
             <div style={s.sub}>Construction cost advisor</div>
@@ -150,10 +155,10 @@ export default function AprIQIntelligence() {
         {atLimit ? (
           <>
             <div style={s.limitBody}>
-              <FaceIcon size={36}/>
+              <AdvisorIcon size={36} />
               <div>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: '#111111', marginBottom: '6px', fontFamily: FONT }}>You have used your {Q_LIMIT} free questions</p>
-                <p style={{ fontSize: '12px', color: '#979899', lineHeight: 1.6, fontFamily: FONT }}>Sign up free to continue. Your 30-day trial includes full AprIQ advisor access inside the platform.</p>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111', marginBottom: '6px', fontFamily: FONT_HEADING }}>You have used your {Q_LIMIT} free questions</p>
+                <p style={{ fontSize: '12px', color: '#979899', lineHeight: 1.6, fontFamily: FONT_BODY }}>Sign up free to continue. Your 30-day trial includes full AprIQ advisor access inside the platform.</p>
               </div>
               <a href="/signup" style={s.upgradeBtn}>Start free trial</a>
             </div>
@@ -178,13 +183,13 @@ export default function AprIQIntelligence() {
                 </>
               )}
               {messages.map((msg, i) => (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '92%' }}>
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: BUBBLE_GAP, alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '92%' }}>
                   <span style={s.msgLabel}>{msg.role === 'user' ? 'You' : 'AprIQ Intelligence'}</span>
                   <div style={msg.role === 'user' ? s.userBubble : s.aiBubble}>{msg.content}</div>
                 </div>
               ))}
               {loading && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '92%' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: BUBBLE_GAP, maxWidth: '92%' }}>
                   <span style={s.msgLabel}>AprIQ Intelligence</span>
                   <div style={s.aiBubble}><span style={{ color: '#979899' }}>Thinking...</span></div>
                 </div>
@@ -200,8 +205,8 @@ export default function AprIQIntelligence() {
           </>
         )}
       </div>
-      <button style={s.fab} onClick={() => setOpen(false)}>
-        <FaceIcon size={40}/>
+      <button type="button" style={s.fab} onClick={() => setOpen(false)} aria-label="Minimize AprIQ Intelligence">
+        <AdvisorIcon size={32} />
       </button>
     </div>
   );

@@ -8,6 +8,18 @@
 
 const now = () => new Date();
 
+// Dev-only escape hatch to unlock Pro features locally.
+// Usage: in devtools console run: localStorage.setItem('apriq_dev_pro','1') then refresh.
+function devForcePro() {
+  try {
+    // Vite injects this at build time; in production it is false.
+    if (!import.meta.env?.DEV) return false;
+    return localStorage.getItem('apriq_dev_pro') === '1';
+  } catch {
+    return false;
+  }
+}
+
 function isFutureDate(d) {
   if (!d) return false;
   const t = new Date(d).getTime();
@@ -25,6 +37,7 @@ function isFutureDate(d) {
  *   anything else                                  → 'free'
  */
 export function effectiveTier(profile) {
+  if (devForcePro()) return 'pro';
   if (!profile) return 'free';
   if (profile.tier === 'pro') {
     if (profile.pro_until == null)        return 'pro';

@@ -48,37 +48,29 @@ const COMPARISON = [
   { feature:'Storage',       desc:'Save more working data over time',                         free:'Limited', pro:'More' },
 ];
 
-const FaceIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 13 13" style={{ flexShrink: 0, display: 'block' }}>
-    <circle cx="4.5" cy="4.5" r="1.1" fill="#FF8210"/>
-    <circle cx="8.5" cy="4.5" r="1.1" fill="#FF8210"/>
-    <path d="M3.5 7.5 Q6.5 10.5 9.5 7.5" fill="none" stroke="#FF8210" strokeWidth="1.2" strokeLinecap="round"/>
-  </svg>
-);
-
 export default function FeaturesPage() {
   const r1 = useFadeIn(), r2 = useFadeIn(), r3 = useFadeIn();
   return (
     <div>
       <div style={s.pageTop}/>
 
-      <section style={s.section}><div className="wrap" ref={r1}><div style={s.panel} className="fi-group">
+      <section className="section"><div className="wrap" ref={r1}><div className="panel fi-group">
         <h1 style={s.h1} className="fi">Features</h1>
         <p style={s.body} className="fi">AprIQ combines speed, structure, and clarity to support early-stage construction cost planning. Key features include building and project type selection, structured cost adjustments, rate summaries, elemental breakdowns, and clear total project cost outputs.</p>
         <p style={{...s.body, marginTop:12}} className="fi">AprIQ also supports practical workflow needs by allowing estimates to be saved, linked to projects and clients, and used to support early feasibility discussions, budget planning, and decision-making.</p>
-        <div style={s.pillRow} className="fi">
-          {BENEFIT_PILLS.map((p) => <span key={p} style={s.pill}>{p}</span>)}
+        <div className="pill-row fi">
+          {BENEFIT_PILLS.map((p) => <span key={p} className="pill-accent">{p}</span>)}
         </div>
-        <div style={{...s.pillRow, marginTop:8}} className="fi">
-          {FEATURE_PILLS.map((p) => <span key={p} style={s.pill}>{p}</span>)}
-          <span style={s.pill}>
-            <FaceIcon/>
+        <div className="pill-row fi" style={{ marginTop: 8 }}>
+          {FEATURE_PILLS.map((p) => <span key={p} className="pill-accent">{p}</span>)}
+          <span className="pill-accent" style={{ gap: 8 }}>
+            <img src="/logo-transparent.png" alt="" width={14} height={14} style={{ objectFit: 'contain', display: 'block', flexShrink: 0 }} />
             AprIQ Intelligence
           </span>
         </div>
       </div></div></section>
 
-      <section style={s.section}><div className="wrap" ref={r2}><div style={s.panel} className="fi-group">
+      <section className="section"><div className="wrap" ref={r2}><div className="panel fi-group">
 
         <div style={s.aiHeader} className="fi">
           <h2 style={{...s.h2, marginBottom:0}}>AI-powered cost intelligence</h2>
@@ -93,7 +85,7 @@ export default function FeaturesPage() {
 
         <div style={s.cardGrid} className="fi">
           {AI_CARDS.map((card) => (
-            <div key={card.title} style={s.card}>
+            <div key={card.title} className="card-tile" style={s.card}>
               <div style={s.cardIcon}>{card.icon}</div>
               <div style={s.cardTitle}>{card.title}</div>
               <div style={s.cardBody}>{card.body}</div>
@@ -104,15 +96,15 @@ export default function FeaturesPage() {
         <div style={s.divider} className="fi"/>
         <div style={s.caps} className="fi">Location-based costing context</div>
         <p style={s.body} className="fi">South African construction rates are not uniform. AprIQ Intelligence draws on current regional market knowledge to contextualise your estimate — coastal premium builds in the Western Cape, Gauteng commercial rates, KwaZulu-Natal residential norms, and the cost impact of remote or difficult-access sites. When you ask a location-specific question, the response reflects actual regional conditions, not generic national averages.</p>
-        <div style={s.pillRow} className="fi">
+        <div className="pill-row fi">
           {['Western Cape','Gauteng','KwaZulu-Natal','Remote sites','Escalation rates','Material costs','Specification risk','Budget pressure'].map((p) => (
-            <span key={p} style={s.pill}>{p}</span>
+            <span key={p} className="pill-accent">{p}</span>
           ))}
         </div>
 
       </div></div></section>
 
-      <section style={s.section}><div className="wrap" ref={r3}><div style={s.panel} className="fi-group">
+      <section className="section section-page-end"><div className="wrap" ref={r3}><div className="panel fi-group">
         <h2 style={s.h2} className="fi">Free and Pro</h2>
         <p style={s.body} className="fi">Choose the plan that fits how you work.</p>
         <p style={{...s.body, marginTop:8}} className="fi">Free is designed for getting started with AprIQ and exploring the platform's early-stage estimating workflow. Pro is built for users who need a more complete working setup, with expanded access for ongoing project use, saved workflows, and professional output needs.</p>
@@ -129,10 +121,10 @@ export default function FeaturesPage() {
                 <span style={s.rowDesc}>{row.desc}</span>
               </div>
               <div style={s.colFree}>
-                <span style={{fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color: row.free === 'No' ? '#979899' : '#111111'}}>{row.free}</span>
+                <span style={{fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize:13, color: row.free === 'No' ? '#979899' : '#111111'}}>{row.free}</span>
               </div>
               <div style={s.colPro}>
-                <span style={{fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color: ['Yes','Full','More'].includes(row.pro) ? '#0F4C5C' : '#979899', fontWeight:500}}>{row.pro}</span>
+                <span style={{fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize:13, color: ['Yes','Full','More'].includes(row.pro) ? '#0F4C5C' : '#979899', fontWeight:500}}>{row.pro}</span>
               </div>
             </div>
           ))}
@@ -145,28 +137,24 @@ export default function FeaturesPage() {
 
 const s = {
   pageTop:    { height: 48 },
-  section:    { padding: '0 0 20px' },
-  panel:      { background: '#F9FAFA', border: '1px solid #E4E5E5', borderRadius: 16, padding: 32 },
-  h1:         { fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize: 28, fontWeight: 700, color: '#111111', marginBottom: 20 },
-  h2:         { fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize: 22, fontWeight: 600, color: '#111111', marginBottom: 16 },
-  body:       { fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 14, color: '#979899', lineHeight: 1.72 },
-  pillRow:    { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 20 },
-  pill:       { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 16px', borderRadius: 100, border: '1px solid #FF8210', fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 13, color: '#111111', background: '#F9FAFA', whiteSpace: 'nowrap' },
+  h1:         { fontFamily:"'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", fontSize: 28, fontWeight: 700, color: '#111111', marginBottom: 20 },
+  h2:         { fontFamily:"'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", fontSize: 22, fontWeight: 600, color: '#111111', marginBottom: 16 },
+  body:       { fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 14, color: '#979899', lineHeight: 1.72 },
   divider:    { height: 1, background: '#E4E5E5', margin: '28px 0' },
-  caps:       { fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 11, fontWeight: 600, color: '#979899', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 20 },
+  caps:       { fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 11, fontWeight: 600, color: '#979899', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 20 },
   aiHeader:   { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  proTag:     { display: 'inline-flex', alignItems: 'center', padding: '3px 12px', borderRadius: 100, border: '1px solid #0F4C5C', fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 11, fontWeight: 500, color: '#0F4C5C', background: '#F9FAFA', whiteSpace: 'nowrap' },
-  cardGrid:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
-  card:       { background: '#F9FAFA', border: '1px solid #E4E5E5', borderRadius: 12, padding: '18px 20px' },
+  proTag:     { display: 'inline-flex', alignItems: 'center', padding: '3px 12px', borderRadius: 100, border: '1px solid #FF8210', fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 11, fontWeight: 600, color: '#0F4C5C', background: '#F9FAFA', whiteSpace: 'nowrap', transition: 'border-color 150ms ease, box-shadow 150ms ease, transform 160ms cubic-bezier(0.34,1.56,0.64,1)' },
+  cardGrid:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 },
+  card:       { display: 'flex', flexDirection: 'column', minHeight: '100%' },
   cardIcon:   { width: 32, height: 32, borderRadius: 8, border: '1px solid #E4E5E5', background: '#F9FAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12, flexShrink: 0 },
-  cardTitle:  { fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 13, fontWeight: 500, color: '#111111', marginBottom: 6 },
-  cardBody:   { fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 12, color: '#979899', lineHeight: 1.6 },
-  tableWrap:  { marginTop: 28, border: '1px solid #E4E5E5', borderRadius: 12, overflow: 'hidden' },
+  cardTitle:  { fontFamily:"'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", fontSize: 13, fontWeight: 600, color: '#111111', marginBottom: 6 },
+  cardBody:   { fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 12, color: '#979899', lineHeight: 1.6 },
+  tableWrap:  { marginTop: 28, border: '1px solid #E4E5E5', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(15,76,92,0.06)' },
   tableHead:  { display: 'grid', gridTemplateColumns: '1fr 120px 120px', background: '#111111', padding: '12px 20px', gap: 16 },
   tableRow:   { display: 'grid', gridTemplateColumns: '1fr 120px 120px', padding: '14px 20px', gap: 16, borderBottom: '1px solid #E4E5E5', alignItems: 'center' },
-  colFeature: { display: 'flex', flexDirection: 'column', gap: 2, fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 12, color: '#F9FAFA', fontWeight: 500 },
-  colFree:    { fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 12, color: '#F9FAFA', fontWeight: 500, display: 'flex', alignItems: 'center' },
-  colPro:     { fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 12, color: '#FF8210', fontWeight: 600, display: 'flex', alignItems: 'center' },
-  rowFeature: { fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 13, color: '#111111', fontWeight: 500 },
-  rowDesc:    { fontFamily:"'Roboto',system-ui,sans-serif", fontSize: 12, color: '#979899', lineHeight: 1.4 },
+  colFeature: { display: 'flex', flexDirection: 'column', gap: 2, fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 12, color: '#F9FAFA', fontWeight: 500 },
+  colFree:    { fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 12, color: '#F9FAFA', fontWeight: 500, display: 'flex', alignItems: 'center' },
+  colPro:     { fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 12, color: '#FF8210', fontWeight: 600, display: 'flex', alignItems: 'center' },
+  rowFeature: { fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 13, color: '#111111', fontWeight: 500 },
+  rowDesc:    { fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize: 12, color: '#979899', lineHeight: 1.4 },
 };

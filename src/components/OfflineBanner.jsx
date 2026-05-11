@@ -17,7 +17,7 @@ export function OfflineBanner() {
       padding:'0.5rem 1.5rem',
       display:'flex', alignItems:'center', justifyContent:'center', gap:'8px',
       fontSize:'0.78rem', fontWeight:'500',
-      fontFamily:"'Roboto', system-ui, sans-serif",
+      fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif",
     }}>
       <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#FF8210', display:'inline-block', flexShrink:0 }} />
       Offline mode — configurator available

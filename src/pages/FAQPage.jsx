@@ -36,7 +36,7 @@ export default function FAQPage() {
   return (
     <div>
       <div style={s.pageTop}/>
-      <section style={s.section}><div className="wrap" ref={ref}><div style={s.panel} className="fi-group">
+      <section className="section section-page-end"><div className="wrap" ref={ref}><div className="panel fi-group">
         <h1 style={s.h1} className="fi">FAQ's</h1>
         <div style={s.list} className="fi">{FAQS.map((item,i) => <FAQItem key={i} item={item}/>)}</div>
       </div></div></section>
@@ -45,13 +45,12 @@ export default function FAQPage() {
 }
 
 const s = {
-  pageTop:{ height:48 }, section:{ padding:'0 0 40px' },
-  panel:{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:16, padding:32 },
-  h1:{ fontFamily:"'Aptos','Segoe UI',system-ui,sans-serif", fontSize:28, fontWeight:700, color:'#111111', marginBottom:28 },
+  pageTop:{ height:48 },
+  h1:{ fontFamily:"'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif", fontSize:28, fontWeight:700, color:'#111111', marginBottom:28 },
   list:{ display:'flex', flexDirection:'column' },
   item:{ borderTop:'1px solid #E4E5E5' },
-  question:{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, padding:'18px 0', background:'none', border:'none', cursor:'pointer', textAlign:'left' },
-  qText:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:14, fontWeight:500, color:'#111111', lineHeight:1.4 },
+  question:{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, padding:'18px 0', background:'none', border:'none', cursor:'pointer', textAlign:'left', transition:'opacity 150ms ease' },
+  qText:{ fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize:14, fontWeight:500, color:'#111111', lineHeight:1.4 },
   answer:{ paddingBottom:18 },
-  aText:{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#979899', lineHeight:1.7 },
+  aText:{ fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", fontSize:13, color:'#979899', lineHeight:1.7 },
 };

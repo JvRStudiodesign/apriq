@@ -150,11 +150,11 @@ export default function UserProfile() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto', system-ui, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#F9FAFA', fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif" }}>
 
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '2rem 1.25rem' }}>
-        <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem', letterSpacing: '-0.01em', fontFamily: "'Roboto', system-ui, sans-serif" }}>Profile</h1>
+        <h1 style={{ fontSize: '1.375rem', fontWeight: '700', color: '#111111', marginBottom: '0.25rem', letterSpacing: '-0.01em', fontFamily: "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif" }}>Profile</h1>
         <p style={{ fontSize: '0.78rem', color: '#979899', marginBottom: '1.5rem' }}>Your details auto-populate on every PDF export.</p>
 
         {/* Logo */}
@@ -304,7 +304,7 @@ export default function UserProfile() {
 
         {/* Danger zone */}
         <div style={{ borderTop: '1px solid #E4E5E5', marginTop: 32, paddingTop: 32 }}>
-          <div style={{ fontFamily: "'Aptos', 'Segoe UI', system-ui, sans-serif", fontSize: '0.85rem', fontWeight: 600, color: '#979899', marginBottom: 16 }}>
+          <div style={{ fontFamily: "'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif", fontSize: '0.85rem', fontWeight: 600, color: '#979899', marginBottom: 16 }}>
             Danger zone
           </div>
           <button
@@ -312,17 +312,17 @@ export default function UserProfile() {
             onClick={() => { setDeleteErr(''); setDeleteOpen(true); }}
             style={{
               background: 'transparent',
-              color: '#CC3333',
-              border: '1.5px solid #CC3333',
+              color: '#111111',
+              border: '1.5px solid #FF8210',
               borderRadius: 10,
               padding: '0.75rem 1.5rem',
               fontWeight: 600,
               cursor: 'pointer',
-              fontFamily: 'inherit',
-              transition: 'all 150ms ease',
+              fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif",
+              transition: 'background 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 160ms cubic-bezier(0.34,1.56,0.64,1)',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#FFF0F0'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,130,16,0.08)'; e.currentTarget.style.boxShadow = '0 1px 4px rgba(15,76,92,0.08)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.boxShadow = 'none'; }}
           >
             Delete my account
           </button>
@@ -356,7 +356,7 @@ export default function UserProfile() {
               maxWidth: 420,
             }}
           >
-            <div style={{ fontFamily: "'Aptos', 'Segoe UI', system-ui, sans-serif", fontSize: '1.1rem', fontWeight: 600, color: '#111111', marginBottom: 10 }}>
+            <div style={{ fontFamily: "'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif", fontSize: '1.1rem', fontWeight: 600, color: '#111111', marginBottom: 10 }}>
               Delete your account?
             </div>
             <div style={{ fontFamily: "'Roboto', 'Segoe UI', system-ui, sans-serif", fontSize: '0.9rem', color: '#979899', lineHeight: 1.6, marginBottom: 18 }}>

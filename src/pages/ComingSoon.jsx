@@ -19,12 +19,12 @@ export default function ComingSoon() {
   }
 
   return (
-    <div style={{ minHeight:'100vh', background:'#F9FAFA', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', display:'flex', flexDirection:'column' }}>
+    <div style={{ minHeight:'100vh', background:'#F9FAFA', fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", display:'flex', flexDirection:'column' }}>
       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'3rem 1.5rem', textAlign:'center' }}>
         <div style={{ maxWidth:'600px', width:'100%' }}>
 
           <div style={{ marginBottom:'2rem' }}>
-            <img src="/logo-launch.png" alt="AprIQ" style={{ height:'108px', width:'auto', objectFit:'contain', display:'block', margin:'0 auto' }} />
+            <img src="/logo-transparent.png" alt="AprIQ" style={{ height:'108px', width:'auto', objectFit:'contain', display:'block', margin:'0 auto' }} />
           </div>
 
           <div style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'#111111', color:'#F9FAFA', fontSize:'0.72rem', fontWeight:'600', padding:'5px 14px', borderRadius:'20px', letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:'2rem' }}>

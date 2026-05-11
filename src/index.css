@@ -1,25 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
+/* AprIQ — index.css
+   Vite entry-point styles. Brand vars live in src/styles/globals.css.
+   This file: base reset, AprIQ input overrides, font smoothing.
+   NOTE: Removed leftover Vite template purple --accent variables. */
 
 :root {
-  --text: #6b6375;
+  --text:   #6b6375;
   --text-h: #08060d;
-  --bg: #fff;
+  --bg:     #fff;
   --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --code-bg:#f4f3ec;
 
-  --sans: 'Roboto', system-ui, 'Segoe UI', sans-serif;
-  --heading: 'Roboto', system-ui, 'Segoe UI', sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* AprIQ accent — orange, not purple */
+  --accent:        #FF8210;
+  --accent-bg:     rgba(255,130,16,0.10);
+  --accent-border: rgba(255,130,16,0.50);
+
+  --social-bg: rgba(244,243,236,0.5);
+  --shadow:
+    rgba(0,0,0,0.08) 0 8px 16px -3px,
+    rgba(0,0,0,0.04) 0 3px 6px -2px;
+
+  --sans:    'Roboto', 'Segoe UI', system-ui, sans-serif;
+  --heading: 'Plus Jakarta Sans', system-ui, 'Segoe UI', sans-serif;
+  --mono:    'DM Mono', ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--text);
   background: #F9FAFA;
   font-synthesis: none;
@@ -32,29 +39,9 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+/* No dark mode purple — AprIQ is light-only */
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
+body { margin: 0; }
 
 #root {
   width: 100%;
@@ -67,10 +54,9 @@ body {
   box-sizing: border-box;
 }
 
-h1,
-h2 {
+h1, h2 {
   font-family: var(--heading);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-h);
 }
 
@@ -92,26 +78,20 @@ h2 {
     font-size: 20px;
   }
 }
-p {
-  margin: 0;
-}
+p { margin: 0; }
 
-code,
-.counter {
+code {
   font-family: var(--mono);
   display: inline-flex;
   border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
   font-size: 15px;
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+  color: var(--text-h);
 }
 
-/* AprIQ orange accent overrides */
+/* ── AprIQ orange range slider ── */
 input[type="range"] {
   accent-color: #FF8210;
 }
@@ -121,6 +101,8 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-moz-range-thumb {
   background: #FF8210 !important;
 }
+
+/* ── AprIQ orange checkbox ── */
 input[type="checkbox"] {
   accent-color: #FF8210;
 }
@@ -129,7 +111,7 @@ input[type="checkbox"]:checked {
   border-color: #FF8210;
 }
 
-/* Number input — subtle arrows */
+/* ── Number input — subtle arrows ── */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   opacity: 0.4;

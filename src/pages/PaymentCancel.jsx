@@ -14,12 +14,12 @@ export default function PaymentCancel() {
       alignItems: 'center',
       justifyContent: 'center',
       background: '#F9FAFA',
-      fontFamily: 'Roboto, sans-serif',
+      fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif",
       padding: '2rem',
       textAlign: 'center',
     }}>
       <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>×</div>
-      <h1 style={{ color: '#111111', fontSize: '1.75rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+      <h1 style={{ color: '#111111', fontSize: '1.75rem', fontWeight: 600, marginBottom: '0.5rem', fontFamily: "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif" }}>
         Payment cancelled
       </h1>
       <p style={{ color: '#979899', fontSize: '1rem', maxWidth: 400, marginBottom: '1.5rem' }}>

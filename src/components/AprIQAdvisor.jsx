@@ -13,7 +13,8 @@ import {
 const PRO_DAILY_LIMIT   = 20;
 const TRIAL_DAILY_LIMIT = 5;
 const AI_TRIAL_DAYS     = 7;
-const FONT = "'Roboto',system-ui,sans-serif";
+const FONT = "'Roboto','Segoe UI',system-ui,sans-serif";
+const FONT_HEADING = "'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif";
 const UNLIMITED_AI_EMAIL = 'apriq@apriq.co.za';
 
 const s = {
@@ -22,7 +23,7 @@ const s = {
   header: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'20px 24px 16px', borderBottom:'1px solid #E4E5E5', flexShrink:0 },
   titleWrap: { display:'flex', alignItems:'center', gap:8 },
   dot: (active) => ({ width:8, height:8, borderRadius:'50%', background: active ? '#FF8210' : '#BFD1D6', flexShrink:0 }),
-  title: { fontSize:15, fontWeight:500, color:'#111111', fontFamily:FONT },
+  title: { fontSize:15, fontWeight:600, color:'#111111', fontFamily:FONT_HEADING },
   metaWrap: { display:'flex', alignItems:'center', gap:8, flexShrink:0 },
   counter: (warn) => ({ fontSize:11, color: warn ? '#FF8210' : '#979899', padding:'3px 10px', borderRadius:20, border:`1px solid ${warn ? '#FF8210' : '#E4E5E5'}`, background:'#F9FAFA', whiteSpace:'nowrap', fontFamily:FONT }),
   resetBtn: { padding:'6px 10px', borderRadius:'10px', border:'1px solid #E4E5E5', background:'#F9FAFA', cursor:'pointer', fontFamily:FONT, fontSize:'11px', color:'#979899', lineHeight:1, flexShrink:0 },
@@ -322,7 +323,7 @@ if (stage === 'locked') return (
           <a href="/plans" style={s.upgradeCard}>
             <LockIcon/>
             <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <p style={{ fontSize: 15, fontWeight: 500, color: '#111111', fontFamily: FONT }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: '#111111', fontFamily: FONT_HEADING }}>
                 {isTrialAiExpired ? 'Your AprIQ advisor trial has ended' : 'AprIQ advisor is a Pro feature'}
               </p>
               <p style={{ fontSize: 13, color: '#979899', lineHeight: 1.55, fontFamily: FONT }}>
