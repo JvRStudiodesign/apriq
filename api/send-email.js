@@ -77,9 +77,13 @@ export default async function handler(req, res) {
   const { type, to, ...data } = req.body || {};
   if (!type || !TEMPLATES[type]) return res.status(400).json({ error: 'Invalid type' });
 
-  // Notification types rate-limited strictly to prevent inbox spam
-  const isNotification = ['contact','feedback','new_user','new_client','new_waitlist',
-    'waitlist_confirm','feedback_confirm','contact_confirm'].includes(type);
+  // Types callable from the browser (no internal secret): founder alerts + user-facing
+  // transactional mail. Stricter per-IP cap below prevents abuse when INTERNAL_API_SECRET is set.
+  const isNotification = [
+    'contact', 'feedback', 'new_user', 'new_client', 'new_waitlist',
+    'waitlist_confirm', 'feedback_confirm', 'contact_confirm',
+    'welcome', 'trial_warning', 'trial_expired',
+  ].includes(type);
   if (!isNotification && internalSecret && req.headers['x-internal-secret'] !== internalSecret) {
     return res.status(401).json({ error: 'Unauthorized' });
   }

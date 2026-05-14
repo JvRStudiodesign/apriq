@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 const BRAND = {
   teal:   '#0F4C5C',
@@ -38,9 +39,19 @@ export default function UpgradeModal({ isOpen, onClose, user, profile, mode = 'u
     }
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) {
+        setError('Your session expired. Please sign in again.');
+        setLoading(false);
+        return;
+      }
       const res = await fetch('/api/payfast-redirect', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ userId, email, firstName, lastName }),
       });
       if (!res.ok) {
