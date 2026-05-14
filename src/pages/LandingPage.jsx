@@ -1,4 +1,4 @@
-import { Link, useOutletContext } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useFadeIn } from '../hooks/useFadeIn';
 import AprIQIntelligence from '../components/AprIQIntelligence';
 
@@ -8,7 +8,6 @@ const WHO_PILLS    = ['Architects','Quantity Surveyor','Developers','Contractors
 const FEATURE_PILLS= ['ROM Estimates','Feasibility Planning','Building Types','Project Types','Cost Adjustments','Element Breakdowns','Rate Summaries'];
 
 export default function LandingPage() {
-  const { openModal } = useOutletContext();
   const r1=useFadeIn(), r2=useFadeIn(), r3=useFadeIn(), r4=useFadeIn(), r5=useFadeIn();
 
   return (
@@ -21,16 +20,16 @@ export default function LandingPage() {
             <h1 style={s.h1}>Early-Stage Construction Cost Intelligence for South Africa</h1>
             <p style={s.heroSub}>AprIQ provides early-stage construction feasibility and Rough Order of Magnitude cost estimates, enabling faster budget structuring and clearer professional estimates for project teams.</p>
             <div style={{ display:'flex', justifyContent:'center' }}>
-              <button
-                onClick={() => openModal('waitlist')}
-                style={s.cta}
+              <Link
+                to="/signup"
+                style={{ ...s.cta, textDecoration: 'none' }}
                 onMouseEnter={e => { e.currentTarget.style.transform='translateY(-1px)'; e.currentTarget.style.boxShadow='0 4px 16px rgba(17,17,17,0.18)'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}
                 onMouseDown={e  => { e.currentTarget.style.transform='scale(0.97)'; e.currentTarget.style.boxShadow='none'; }}
                 onMouseUp={e    => { e.currentTarget.style.transform='translateY(-1px)'; }}
               >
-                Join the waiting list
-              </button>
+                Sign up
+              </Link>
             </div>
           </div>
         </div>

@@ -1,23 +1,6 @@
-import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { Link } from 'react-router-dom';
 
 export default function ComingSoon() {
-  const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!email) return;
-    setLoading(true);
-    const normalizedEmail = email.trim().toLowerCase();
-    const r = await supabase.rpc('waitlist_join', { p_email: normalizedEmail, p_name: null, p_profession: null });
-    const error = r?.error || null;
-    if (error) console.error('Waitlist error:', error);
-    setLoading(false);
-    setSubmitted(true);
-  }
-
   return (
     <div style={{ minHeight:'100vh', background:'#F9FAFA', fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", display:'flex', flexDirection:'column' }}>
       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'3rem 1.5rem', textAlign:'center' }}>
@@ -40,24 +23,21 @@ export default function ComingSoon() {
             Instant ROM cost estimates calibrated to South African market rates. Built for architects, developers and quantity surveyors.
           </p>
 
-          {submitted ? (
-            <div style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:'20px', padding:'1.5rem 2rem', maxWidth:'380px', margin:'0 auto' }}>
-              <div style={{ fontSize:'1.75rem', marginBottom:'0.5rem' }}>✓</div>
-              <p style={{ fontWeight:'600', color:'#111111', marginBottom:'0.25rem' }}>You are on the list</p>
-              <p style={{ fontSize:'0.82rem', color:'#979899' }}>We will reach out when AprIQ launches.</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} style={{ display:'flex', gap:'8px', maxWidth:'440px', margin:'0 auto 3rem', flexWrap:'wrap', justifyContent:'center' }}>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.co.za" required
-                style={{ flex:1, minWidth:'220px', padding:'0.8rem 1rem', border:'1.5px solid #E4E5E5', borderRadius:'12px', fontSize:'0.95rem', fontFamily:'inherit', outline:'none', color:'#111111', background:'#fff' }} />
-              <button type="submit" disabled={loading}
-                style={{ padding:'0.8rem 1.5rem', background:'#111111', color:'#F9FAFA', border:'none', borderRadius:'12px', fontSize:'0.95rem', fontWeight:'600', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
-                {loading ? 'Joining...' : 'Join waitlist'}
-              </button>
-            </form>
-          )}
+          <div style={{ margin:'0 auto 3rem' }}>
+            <Link
+              to="/signup"
+              style={{
+                display:'inline-flex', alignItems:'center', justifyContent:'center',
+                padding:'0.85rem 1.75rem', background:'#111111', color:'#F9FAFA',
+                borderRadius:'12px', fontSize:'0.95rem', fontWeight:'600', textDecoration:'none',
+                fontFamily:'inherit',
+              }}
+            >
+              Create your account
+            </Link>
+          </div>
 
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'10px', maxWidth:'540px', margin: submitted ? '2rem auto 0' : '0 auto', width:'100%' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'10px', maxWidth:'540px', margin:'0 auto', width:'100%' }}>
             {[['⚡','Instant estimates'],['📐','100 building types'],['📄','PDF export'],['🇿🇦','SA market rates'],['🔗','Shareable links'],['👥','Projects & clients']].map(([icon,label]) => (
               <div key={label} style={{ background:'#F9FAFA', border:'1px solid #E4E5E5', borderRadius:'12px', padding:'10px 14px', fontSize:'0.8rem', display:'flex', alignItems:'center', gap:'8px', justifyContent:'center' }}>
                 <span style={{ fontSize:'1rem', filter:'grayscale(1)', opacity:0.5 }}>{icon}</span>

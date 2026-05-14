@@ -5,14 +5,15 @@ import { useAuth } from '../hooks/useAuth';
 export default function Upgrade() {
   const { profile } = useAuth();
   const navigate = useNavigate();
-  const { openUpgrade } = useOutletContext() || {};
+  const { openUpgrade, upgradeDismissedOnPage } = useOutletContext() || {};
   const tier = profile?.tier || 'free';
   const isPro = tier === 'pro';
 
   useEffect(() => {
     if (isPro) return;
+    if (upgradeDismissedOnPage) return;
     if (typeof openUpgrade === 'function') openUpgrade();
-  }, [isPro, openUpgrade]);
+  }, [isPro, openUpgrade, upgradeDismissedOnPage]);
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '2rem 1.25rem 4rem', fontFamily: "'Roboto','Segoe UI',system-ui,sans-serif" }}>
@@ -23,7 +24,7 @@ export default function Upgrade() {
         </div>
       ) : (
         <p style={{ color: '#979899', fontSize: '0.9rem' }}>
-          Opening upgrade options…
+          Use the dialog to subscribe with PayFast. You can close it anytime with the × in the corner.
         </p>
       )}
     </div>

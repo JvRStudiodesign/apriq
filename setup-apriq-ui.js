@@ -156,7 +156,7 @@ function Header({ onOpenModal, isLoggedIn }) {
                   </>
                 ) : (
                   <>
-                    <button style={{ ...h.dropItem, ...h.dropBtn }} onClick={() => { setProfileOpen(false); onOpenModal('waitlist'); }}>Join the waiting list</button>
+                    <Link to="/signup" style={{ ...h.dropItem, ...h.dropBtn, textDecoration: 'none', display: 'block' }} onClick={() => setProfileOpen(false)}>Sign up</Link>
                     <button style={{ ...h.dropItem, ...h.dropBtn, color:T.petrol, fontWeight:500 }} onClick={() => { setProfileOpen(false); onOpenModal('signin'); }}>Sign in</button>
                   </>
                 )}
@@ -180,9 +180,7 @@ function Header({ onOpenModal, isLoggedIn }) {
             </Link>
           ))}
           <div style={h.mobileDivider}/>
-          <button style={{ ...h.mobileLink, ...h.mobileLinkBtn, color:T.petrol, fontWeight:500 }} onClick={() => { setMenuOpen(false); onOpenModal('waitlist'); }}>
-            Join the waiting list
-          </button>
+          <Link to="/signup" style={{ ...h.mobileLink, color:T.petrol, fontWeight:500 }} onClick={() => setMenuOpen(false)}>Sign up</Link>
         </div>
       )}
     </header>
@@ -259,10 +257,10 @@ const f = {
   socialIcon:{ width:30, height:30, borderRadius:10, border:'1px solid #E4E5E5', display:'flex', alignItems:'center', justifyContent:'center', textDecoration:'none' },
 };
 
-export function WaitlistModal({ open, onClose, mode = 'waitlist' }) {
+export function SiteModal({ open, onClose, mode = 'signin' }) {
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
   if (!open) return null;
-  const isWaitlist = mode === 'waitlist';
+  const isContact = mode === 'contact';
   return (
     <div style={m.overlay} onClick={(e) => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true">
       <div style={m.panel}>
@@ -272,27 +270,29 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist' }) {
           </svg>
         </button>
         <span style={m.brand}>AprIQ</span>
-        <h2 style={m.title}>{isWaitlist ? 'Join the waiting list' : 'Sign in to AprIQ'}</h2>
-        <p style={m.sub}>{isWaitlist ? 'Be among the first to access AprIQ when we launch.' : 'Welcome back. Enter your details below.'}</p>
+        <h2 style={m.title}>{isContact ? 'Contact us' : 'Sign in to AprIQ'}</h2>
+        <p style={m.sub}>{isContact ? 'Send us a message and we will get back to you.' : 'Welcome back. Enter your details below.'}</p>
         <div style={m.form}>
-          {isWaitlist && <input type="text" placeholder="Full name" style={m.input}/>}
-          <input type="email" placeholder="Email address" style={m.input}/>
-          {isWaitlist ? (
-            <select style={m.input}>
-              <option value="">Select your profession</option>
-              <option>Architect</option>
-              <option>Quantity Surveyor</option>
-              <option>Developer</option>
-              <option>Contractor</option>
-              <option>Other</option>
-            </select>
+          {isContact ? (
+            <>
+              <input type="email" placeholder="Email address" style={m.input}/>
+              <textarea placeholder="Message" rows={3} style={{ ...m.input, resize:'vertical', lineHeight:1.5 }} />
+              <button type="button" style={m.submit}>Send message</button>
+            </>
           ) : (
-            <input type="password" placeholder="Password" style={m.input}/>
+            <>
+              <input type="email" placeholder="Email address" style={m.input}/>
+              <input type="password" placeholder="Password" style={m.input}/>
+              <button type="button" style={m.submit}>Sign in</button>
+            </>
           )}
-          <button style={m.submit}>{isWaitlist ? 'Join the waiting list' : 'Sign in'}</button>
         </div>
         <p style={m.toggle}>
-          {isWaitlist ? <>Already have access?&nbsp;<button style={m.toggleLink}>Sign in</button></> : <>Don't have an account?&nbsp;<button style={m.toggleLink}>Join the waiting list</button></>}
+          {isContact ? (
+            <>Have an account?&nbsp;<button type="button" style={m.toggleLink} onClick={() => onClose()}>Close</button></>
+          ) : (
+            <>No account?&nbsp;<Link to="/signup" onClick={onClose} style={{ ...m.toggleLink, textDecoration:'none' }}>Sign up</Link></>
+          )}
         </p>
       </div>
     </div>
@@ -315,22 +315,22 @@ const m = {
 
 export default function Layout() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState('waitlist');
+  const [modalMode, setModalMode] = useState('signin');
   const isLoggedIn = false;
-  function openModal(mode = 'waitlist') { setModalMode(mode); setModalOpen(true); }
+  function openModal(mode = 'signin') { setModalMode(mode); setModalOpen(true); }
   return (
     <>
       <Header onOpenModal={openModal} isLoggedIn={isLoggedIn}/>
       <main><Outlet context={{ openModal, isLoggedIn }}/></main>
       <Footer/>
-      <WaitlistModal open={modalOpen} onClose={() => setModalOpen(false)} mode={modalMode}/>
+      <SiteModal open={modalOpen} onClose={() => setModalOpen(false)} mode={modalMode}/>
     </>
   );
 }
 `);
 
 // ─── LandingPage.jsx ────────────────────────────────────────────────────────
-write('src/pages/LandingPage.jsx', `import { Link, useOutletContext } from 'react-router-dom';
+write('src/pages/LandingPage.jsx', `import { Link } from 'react-router-dom';
 import { useFadeIn } from '../hooks/useFadeIn';
 
 const WHY_PILLS = ['Faster Early Decisions','Structured Cost Guidance','Instant Cost Breakdown','Clearer Feasibility Planning'];
@@ -339,7 +339,6 @@ const WHO_PILLS = ['Architects','QS','Developers','Contractors','Everyone'];
 const FEATURE_PILLS = ['ROM Estimates','Feasibility Planning','Building Types','Project Types','Cost Adjustments','Element Breakdowns','Rate Summaries'];
 
 export default function LandingPage() {
-  const { openModal } = useOutletContext();
   const r1=useFadeIn(), r2=useFadeIn(), r3=useFadeIn(), r4=useFadeIn(), r5=useFadeIn();
   return (
     <div>
@@ -347,7 +346,7 @@ export default function LandingPage() {
         <div style={s.heroWrap} className="wrap">
           <h1 style={s.h1}>Early-Stage Construction Cost Intelligence for South Africa</h1>
           <p style={s.heroSub}>AprIQ provides early-stage construction feasibility and Rough Order of Magnitude cost estimates, enabling faster budget structuring and clearer professional estimates for project teams.</p>
-          <button onClick={() => openModal('waitlist')} style={s.cta}>Join the waiting list</button>
+          <Link to="/signup" style={{ ...s.cta, textDecoration: 'none', display: 'inline-block' }}>Sign up</Link>
         </div>
       </section>
 

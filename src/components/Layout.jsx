@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Link, Outlet, useLocation } from 'react-router-dom';
@@ -146,10 +146,11 @@ function Header({ onOpenModal, isLoggedIn }) {
                   </>
                 ) : (
                   <>
-                    <button
-                      style={{ ...h.dropItem, ...h.dropBtn }}
-                      onClick={() => { setProfileOpen(false); onOpenModal('waitlist'); }}
-                    >Join the waiting list</button>
+                    <Link
+                      to="/signup"
+                      style={{ ...h.dropItem, ...h.dropBtn, textDecoration: 'none', display: 'block' }}
+                      onClick={() => setProfileOpen(false)}
+                    >Sign up</Link>
                     <button
                       style={{ ...h.dropItem, ...h.dropBtn, color:T.petrol, fontWeight:500 }}
                       onClick={() => { setProfileOpen(false); onOpenModal('signin'); }}
@@ -208,10 +209,11 @@ function Header({ onOpenModal, isLoggedIn }) {
               style={{ ...h.mobileLink, ...h.mobileLinkBtn, color:T.petrol, fontWeight:500 }}
               onClick={() => { setMenuOpen(false); onOpenModal('signin'); }}
             >Sign in</button>
-            <button
-              style={{ ...h.mobileLink, ...h.mobileLinkBtn, color:T.petrol, fontWeight:500 }}
-              onClick={() => { setMenuOpen(false); onOpenModal('waitlist'); }}
-            >Join the waiting list</button>
+            <Link
+              to="/signup"
+              style={{ ...h.mobileLink, color:T.petrol, fontWeight:500 }}
+              onClick={() => setMenuOpen(false)}
+            >Sign up</Link>
           </>)}
         </div>
       )}
@@ -333,18 +335,10 @@ const f = {
   socialIcon:{ width:30, height:30, borderRadius:10, border:'1px solid #FF8210', display:'flex', alignItems:'center', justifyContent:'center', textDecoration:'none' },
 };
 
-/* ── Waitlist / Sign-in / Contact modal ── */
-export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _openModal }) {
+/* ── Sign-in / Contact modal ── */
+export function SiteModal({ open, onClose, mode = 'contact' }) {
   const [currentMode, setCurrentMode] = React.useState(mode);
   React.useEffect(() => { setCurrentMode(mode); }, [mode]);
-
-  /* Waitlist */
-  const [name,         setName]         = React.useState('');
-  const [email,        setEmail]        = React.useState('');
-  const [profession,   setProfession]   = React.useState('');
-  const [submitted,    setSubmitted]    = React.useState(false);
-  const [saving,       setSaving]       = React.useState(false);
-  const [waitlistError,setWaitlistError]= React.useState('');
 
   /* Sign in */
   const [signEmail,    setSignEmail]    = React.useState('');
@@ -379,25 +373,6 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
     else { onClose(); window.location.href = '/'; }
   }
 
-  async function handleWaitlist() {
-    if (!email) return;
-    setSaving(true);
-    setWaitlistError('');
-    const normalizedEmail = email.trim().toLowerCase();
-    let error = null;
-    const r = await supabase.rpc('waitlist_join', { p_email: normalizedEmail, p_name: name, p_profession: profession });
-    error = r?.error || null;
-    if (error) {
-      const fallback = await supabase.from('waitlist').insert({ email: normalizedEmail, name, profession, updated_at: new Date().toISOString() });
-      error = fallback?.error || null;
-    }
-    if (error) console.error('Waitlist error:', error);
-    fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'new_waitlist', name, email: normalizedEmail, profession }) }).catch(()=>{});
-    fetch('/api/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'waitlist_confirm', to: normalizedEmail, name }) }).catch(()=>{});
-    setSaving(false);
-    setSubmitted(true);
-  }
-
   async function handleContact() {
     if (!contactEmail || !contactMessage) return;
     setContactSaving(true);
@@ -410,7 +385,6 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
   }
 
   if (!open) return null;
-  const isWaitlist = currentMode === 'waitlist';
   const isContact  = currentMode === 'contact';
   const isSignin   = currentMode === 'signin';
 
@@ -423,8 +397,8 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
           </svg>
         </button>
         <img src="/logo-transparent.png" alt="AprIQ" style={m.brandLogo} />
-        <h2 style={m.title}>{isContact ? 'Contact us' : isWaitlist ? 'Join the waiting list' : 'Sign in to AprIQ'}</h2>
-        <p style={m.sub}>{isContact ? 'Send us a message and we will get back to you.' : isWaitlist ? 'Be among the first to access AprIQ when we launch.' : 'Welcome back. Enter your details below.'}</p>
+        <h2 style={m.title}>{isContact ? 'Contact us' : 'Sign in to AprIQ'}</h2>
+        <p style={m.sub}>{isContact ? 'Send us a message and we will get back to you.' : 'Welcome back. Enter your details below.'}</p>
 
         {isContact && (
           <div style={m.form}>
@@ -440,31 +414,6 @@ export function WaitlistModal({ open, onClose, mode = 'waitlist', openModal: _op
                   <button onClick={handleContact} disabled={contactSaving} style={{ ...m.submit, opacity:contactSaving?0.6:1 }}>{contactSaving?'Sending...':'Send message'}</button>
                 </>
             }
-          </div>
-        )}
-
-        {isWaitlist && (
-          <div style={m.form}>
-            {submitted
-              ? <p style={{ fontFamily:"'Roboto',system-ui,sans-serif", fontSize:13, color:'#0F4C5C', textAlign:'center', padding:'12px 0' }}>You are on the list. We will be in touch.</p>
-              : <>
-                  {waitlistError && <p style={{ fontSize:12, color:'#c0392b', margin:'0 0 4px' }}>{waitlistError}</p>}
-                  <input type="text"   placeholder="Full name"           value={name}       onChange={e=>setName(e.target.value)}       style={m.input}/>
-                  <input type="email"  placeholder="Email address"       value={email}      onChange={e=>setEmail(e.target.value)}      style={m.input}/>
-                  <select value={profession} onChange={e=>setProfession(e.target.value)} style={m.input}>
-                    <option value="">Select your profession</option>
-                    <option>Architect</option>
-                    <option>Quantity Surveyor</option>
-                    <option>Developer</option>
-                    <option>Contractor</option>
-                    <option>Other</option>
-                  </select>
-                  <button onClick={handleWaitlist} disabled={saving} style={{ ...m.submit, opacity:saving?0.6:1 }}>{saving?'Saving...':'Join the waiting list'}</button>
-                </>
-            }
-            <div style={m.dividerRow}><span style={m.dividerLine}/><span style={m.dividerText}>or</span><span style={m.dividerLine}/></div>
-            <button onClick={handleGoogle} style={m.googleBtn}>Continue with Google</button>
-            <p style={m.toggle}>Already have an account?&nbsp;<button style={m.toggleLink} onClick={() => setCurrentMode('signin')}>Sign in</button></p>
           </div>
         )}
 
@@ -505,35 +454,58 @@ const m = {
 /* ── Layout shell ── */
 export default function Layout() {
   const [modalOpen,  setModalOpen]  = useState(false);
-  const [modalMode,  setModalMode]  = useState('waitlist');
+  const [modalMode,  setModalMode]  = useState('contact');
   const [showUpgrade,setShowUpgrade]= useState(false);
   const [upgradeMode,setUpgradeMode]= useState('upgrade');
+  /** While on /upgrade, set true when user closes the upgrade modal so we do not auto-re-open it. */
+  const [upgradeDismissedOnPage,setUpgradeDismissedOnPage]= useState(false);
   const { user, profile } = useAuth();
   const location  = useLocation();
   const isLoggedIn = !!user;
 
-  function openModal(mode = 'waitlist')  { setModalMode(mode); setModalOpen(true); }
-  function openUpgrade(mode = 'upgrade') { setUpgradeMode(typeof mode === 'string' ? mode : 'upgrade'); setShowUpgrade(true); }
+  const openModal = useCallback((mode = 'contact') => {
+    setModalMode(mode);
+    setModalOpen(true);
+  }, []);
+
+  const openUpgrade = useCallback((mode = 'upgrade') => {
+    setUpgradeMode(typeof mode === 'string' ? mode : 'upgrade');
+    setUpgradeDismissedOnPage(false);
+    setShowUpgrade(true);
+  }, []);
+
+  const closeUpgradeModal = useCallback(() => {
+    setShowUpgrade(false);
+    if (location.pathname === '/upgrade') setUpgradeDismissedOnPage(true);
+  }, [location.pathname]);
 
   useEffect(() => {
     const handler = () => openModal('contact');
     window.addEventListener('open-contact-modal', handler);
     window.__openContactModal = () => openModal('contact');
     return () => { window.removeEventListener('open-contact-modal', handler); };
-  }, []);
+  }, [openModal]);
 
   useEffect(() => {
     setModalOpen(false);
-    setShowUpgrade(false);
+    if (location.pathname !== '/upgrade') {
+      setShowUpgrade(false);
+      setUpgradeDismissedOnPage(false);
+    }
   }, [location.pathname]);
+
+  const outletContext = useMemo(
+    () => ({ openModal, openUpgrade, isLoggedIn, upgradeDismissedOnPage }),
+    [openModal, openUpgrade, isLoggedIn, upgradeDismissedOnPage],
+  );
 
   return (
     <>
       <Header onOpenModal={openModal} isLoggedIn={isLoggedIn}/>
-      <main><Outlet context={{ openModal, openUpgrade, isLoggedIn }}/></main>
+      <main><Outlet context={outletContext}/></main>
       <Footer/>
-      <WaitlistModal open={modalOpen} onClose={() => setModalOpen(false)} mode={modalMode}/>
-      <UpgradeModal isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} user={user} profile={profile} mode={upgradeMode}/>
+      <SiteModal open={modalOpen} onClose={() => setModalOpen(false)} mode={modalMode}/>
+      <UpgradeModal isOpen={showUpgrade} onClose={closeUpgradeModal} user={user} profile={profile} mode={upgradeMode}/>
     </>
   );
 }

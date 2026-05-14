@@ -75,7 +75,7 @@ export default function UpgradeModal({ isOpen, onClose, user, profile, mode = 'u
         position: 'fixed', inset: 0,
         background: 'rgba(15, 76, 92, 0.45)',
         backdropFilter: 'blur(4px)',
-        zIndex: 1000, display: 'flex',
+        zIndex: 12000, display: 'flex',
         alignItems: 'center', justifyContent: 'center',
         padding: '1rem',
       }}
@@ -98,7 +98,14 @@ export default function UpgradeModal({ isOpen, onClose, user, profile, mode = 'u
               {copy.subtitle}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: BRAND.grey, fontSize: '1.25rem', lineHeight: 1, padding: '0.25rem' }}>×</button>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={(e) => { e.stopPropagation(); onClose?.(); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: BRAND.grey, fontSize: '1.25rem', lineHeight: 1, padding: '0.25rem' }}
+          >
+            ×
+          </button>
         </div>
 
         {mode === 'replace_card' && (
