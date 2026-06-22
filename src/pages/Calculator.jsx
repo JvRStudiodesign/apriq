@@ -11,6 +11,8 @@ import {
   RENOVATION_COMPLEXITY, COMPLEXITY, LAND_PROCUREMENT, LAND_SLOPE, BREAKDOWN_ELEMENTS,
 } from '../engine/rates';
 
+import PlacesAutocomplete from '../components/PlacesAutocomplete';
+
 const AprIQAdvisor = lazy(() => import('../components/AprIQAdvisor'));
 
 const card    = { background: '#FFFFFF', borderRadius: '16px', padding: '1.5rem', border: '0.5px solid #E4E5E5', marginBottom: '1rem', boxShadow: '0 2px 12px rgba(15,76,92,0.08)' };
@@ -773,7 +775,7 @@ export default function Calculator() {
       }
     : null;
 
-  const Summary = () => !result ? null : (<>
+  const summaryNode = !result ? null : (<>
     {/* ── Total project cost hero ── */}
     <div style={{ background: '#111111', borderRadius: '14px', padding: '1.5rem', marginBottom: '0.75rem', color: '#F9FAFA' }}>
       <p style={{ fontSize: '0.68rem', color: '#979899', marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total project cost</p>
@@ -1074,13 +1076,26 @@ export default function Calculator() {
             { label:'Project name *', field:'project_name', placeholder:'e.g. Sandton Residential' },
             { label:'Reference number', field:'reference_number', placeholder:'e.g. PRJ-2026-001' },
             { label:'Address', field:'address', placeholder:'123 Main Street, Sandton' },
-          ].map(f=>(
+          ].map(f=>{
+            const fieldStyle = { width:'100%', padding:'0.5rem 0.75rem', border:'1.5px solid #e5e5e3', borderRadius:'9px', fontSize:'0.82rem', fontFamily:'inherit', outline:'none', boxSizing:'border-box', color:'#1a1a18' };
+            return (
             <div key={f.field} style={{ marginBottom:'0.625rem' }}>
               <label style={{ display:'block', fontSize:'0.65rem', fontWeight:'600', color:'#999', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'3px' }}>{f.label}</label>
-              <input value={newProjForm[f.field]} onChange={e=>setNewProjForm(p=>({...p,[f.field]:e.target.value}))} placeholder={f.placeholder}
-                style={{ width:'100%', padding:'0.5rem 0.75rem', border:'1.5px solid #e5e5e3', borderRadius:'9px', fontSize:'0.82rem', fontFamily:'inherit', outline:'none', boxSizing:'border-box', color:'#1a1a18' }}/>
+              {f.field==='address' ? (
+                <PlacesAutocomplete
+                  value={newProjForm[f.field]}
+                  onChange={val=>setNewProjForm(p=>({...p,[f.field]:val}))}
+                  onSelect={val=>setNewProjForm(p=>({...p,[f.field]:val}))}
+                  placeholder={f.placeholder}
+                  style={fieldStyle}
+                />
+              ) : (
+                <input value={newProjForm[f.field]} onChange={e=>setNewProjForm(p=>({...p,[f.field]:e.target.value}))} placeholder={f.placeholder}
+                  style={fieldStyle}/>
+              )}
             </div>
-          ))}
+            );
+          })}
           <div style={{ marginBottom:'0.625rem' }}>
             <label style={{ display:'block', fontSize:'0.65rem', fontWeight:'600', color:'#999', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'3px' }}>Client</label>
             <select value={newProjForm.client_id} onChange={e=>setNewProjForm(p=>({...p,client_id:e.target.value}))}
@@ -1391,7 +1406,7 @@ export default function Calculator() {
               <div style={{ ...card, textAlign: 'center', padding: '2rem 1.5rem' }}>
                 <p style={{ color: '#ccc', fontSize: '0.875rem' }}>{isPro ? 'Adjust any input to see a live estimate.' : 'Fill in inputs and click Calculate estimate.'}</p>
               </div>
-            ) : <Summary />}
+            ) : summaryNode}
           </div>
           <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
             <InstallPWA />
@@ -1404,7 +1419,7 @@ export default function Calculator() {
             <div style={{ ...card, textAlign: 'center', padding: '3rem 1.5rem' }}>
               <p style={{ color: '#ccc', fontSize: '0.875rem' }}>{isPro ? 'Adjust any input to see a live estimate.' : 'Fill in inputs and click Calculate estimate.'}</p>
             </div>
-          ) : <Summary />}
+          ) : summaryNode}
         </div>
       </div>
 

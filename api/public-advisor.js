@@ -2,6 +2,18 @@ import { rateLimitAsync, getClientIP } from './_rate-limit.js';
 
 const GEMINI_KEY = (process.env.GEMINI_API_KEY || '').trim();
 
+// Primary model first, then a live fallback. gemini-2.0-flash was shut down
+// 2026-06-01; gemini-2.5-flash retires no earlier than 2026-10-16, so keep a
+// current fallback (gemini-3.5-flash) ahead of that to avoid an outage.
+function publicAdvisorModels() {
+  const raw = (process.env.GEMINI_ADVISOR_MODELS || '').trim();
+  const pieces = (raw || 'gemini-2.5-flash,gemini-3.5-flash')
+    .split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return pieces.length ? pieces : ['gemini-2.5-flash', 'gemini-3.5-flash'];
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!GEMINI_KEY) return res.status(503).json({ error: 'AI not configured' });
@@ -66,27 +78,37 @@ export default async function handler(req, res) {
       { role: 'model', parts: [{ text: 'Understood. I will answer construction cost questions for South Africa with precision, genuine insight, and accurate regional context for any location across the country.' }] },
     ].concat(history).concat([{ role: 'user', parts: [{ text: message }] }]);
 
-    const geminiRes = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_KEY,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: contents,
-          generationConfig: { maxOutputTokens: 600, temperature: 0.3 },
-        }),
-      }
-    );
+    const generationConfig = { maxOutputTokens: 600, temperature: 0.3 };
+    const models = publicAdvisorModels();
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      console.error('Gemini error:', errText);
-      return res.status(502).json({ error: 'AI service unavailable' });
+    let aiReply = '';
+    let lastErr = '';
+    for (const modelId of models) {
+      const geminiRes = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/' +
+          encodeURIComponent(modelId) +
+          ':generateContent?key=' + GEMINI_KEY,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: contents, generationConfig }),
+        }
+      );
+
+      if (!geminiRes.ok) {
+        lastErr = await geminiRes.text().catch(() => '');
+        console.error('Gemini error:', modelId, geminiRes.status, lastErr);
+        // Try the next model on any non-OK status (404 retired, 429, 5xx, etc.).
+        continue;
+      }
+
+      const geminiData = await geminiRes.json().catch(() => ({}));
+      const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) { aiReply = text; break; }
+      console.warn('Gemini empty reply:', modelId, geminiData?.candidates?.[0]?.finishReason);
     }
 
-    const geminiData = await geminiRes.json();
-    const aiReply = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!aiReply) return res.status(502).json({ error: 'Empty response' });
+    if (!aiReply) return res.status(502).json({ error: 'AI service unavailable' });
 
     return res.status(200).json({ reply: aiReply });
 

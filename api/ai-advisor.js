@@ -52,7 +52,9 @@ function envInt(name, fallback) {
 
 function parseGeminiAdvisorModels() {
   const rawTrim = (process.env.GEMINI_ADVISOR_MODELS || '').trim();
-  const source = rawTrim || 'gemini-2.5-flash,gemini-2.0-flash';
+  // gemini-2.0-flash was shut down 2026-06-01 (returns 404). Fall back to a
+  // current, live model instead so the advisor survives single-model outages.
+  const source = rawTrim || 'gemini-2.5-flash,gemini-3.5-flash';
   const pieces = source
     .split(/[,\s]+/)
     .map((s) => s.trim())
