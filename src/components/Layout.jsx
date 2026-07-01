@@ -23,6 +23,7 @@ const NAV = [
   { label:'How it works', to:'/how-it-works' },
   { label:'Features',     to:'/features'     },
   { label:'About',        to:'/about'        },
+  { label:'Blog',         to:'/blog'         },
   { label:'Contact us',   to:'/contact',  modal:'contact' },
 ];
 
