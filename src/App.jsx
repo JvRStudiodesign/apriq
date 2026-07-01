@@ -22,6 +22,8 @@ import HowItWorksPage from './pages/HowItWorksPage';
 import FeaturesPage from './pages/FeaturesPage';
 import FAQPage from './pages/FAQPage';
 import BillingPage from './pages/BillingPage';
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
 
 
 function RootRoute() {
@@ -53,6 +55,8 @@ export default function App() {
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/faq" element={<FAQPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/legal" element={<LegalPage />} />
             <Route path="/plans" element={<BillingPage />} />
             <Route path="/estimate/:token" element={<SharedEstimate />} />

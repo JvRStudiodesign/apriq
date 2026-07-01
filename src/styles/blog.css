@@ -1,0 +1,101 @@
+/* ── Blog article content — matches AprIQ brand tokens (globals.css) ── */
+.blog-article {
+  max-width: 720px;
+}
+.blog-article h2 {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--petrol);
+  margin: 36px 0 12px;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+.blog-article h3 {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 26px 0 8px;
+}
+.blog-article p {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: #4a4b4c;
+  line-height: 1.75;
+  margin: 0 0 16px;
+}
+.blog-article a {
+  color: var(--petrol);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.blog-article strong { color: var(--ink); font-weight: 600; }
+.blog-article ul {
+  margin: 0 0 16px;
+  padding-left: 22px;
+}
+.blog-article li {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: #4a4b4c;
+  line-height: 1.7;
+  margin: 0 0 8px;
+}
+.blog-article blockquote {
+  margin: 24px 0;
+  padding: 14px 20px;
+  border-left: 4px solid var(--orange);
+  background: var(--white);
+  border-radius: 0 12px 12px 0;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.6;
+  box-shadow: var(--shadow-sm);
+}
+.blog-article blockquote p { margin: 0; color: var(--ink); }
+.blog-article em { color: var(--grey); font-style: italic; font-size: 14px; }
+
+/* Tables — same language as the Features comparison table */
+.blog-article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 22px 0;
+  font-size: 14px;
+  background: var(--white);
+  border: 1px solid var(--mist);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.blog-article th,
+.blog-article td {
+  text-align: left;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--mist);
+  vertical-align: top;
+  font-family: var(--font-body);
+}
+.blog-article thead th {
+  background: var(--petrol);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+}
+.blog-article tbody td { color: #4a4b4c; }
+.blog-article tbody tr:last-child td { border-bottom: none; }
+.blog-article tbody tr:nth-child(even) { background: #fbfcfc; }
+
+/* Inline figures inside the article body */
+.blog-article .post-figure { margin: 24px 0; }
+.blog-article .post-figure img {
+  border: 1px solid var(--mist);
+  border-radius: 14px;
+  width: 100%;
+}
+
+@media (max-width: 700px) {
+  .blog-article h2 { font-size: 20px; }
+  .blog-article p,
+  .blog-article li { font-size: 14px; }
+}
